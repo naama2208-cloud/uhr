@@ -46,8 +46,9 @@ const clip=r=>`inset(${r.y}px ${W-r.x-r.w}px ${PH-r.y-r.h}px ${r.x}px)`;
 
 // ---------- the endless grid ----------
 let base=day0(new Date()),days=[];
-function addDay(){const i=days.length,d=addDays(base,i),de=el('day',track);de.style.top=i*DAYH+'px';de.style.height=DAYH+'px';
-  const hd=el('dh',de);hd.innerHTML=`<b>${i===0?'today':i===1?'tomorrow':DAYS[d.getDay()]}</b><span>${DAYS[d.getDay()].slice(0,3)} ${d.getDate()} ${MON[d.getMonth()]}</span>`;
+// one week, as a week: today and the six days after it, by name only — then it rolls round to today again
+function addDay(){const i=days.length,d=addDays(base,i%7),de=el('day',track);de.style.top=i*DAYH+'px';de.style.height=DAYH+'px';
+  const hd=el('dh',de);hd.innerHTML=`<b>${i%7===0?'today':DAYS[d.getDay()]}</b>`;
   const bands=[];for(let r=0;r<6;r++){const b=el('band',de);b.style.top=HEAD+r*ROW+'px';bands.push(b)}
   const sqs=[];for(let h=0;h<24;h++){const q=el('sq',de);q.style.left=colX(h%4)+'px';q.style.top=HEAD+(h>>2)*ROW+'px';q.dataset.i=i;q.dataset.h=h;sqs.push(q)}
   days.push({d,de,sqs,bands});track.style.height=days.length*DAYH+ROW+'px';paint(i)}
@@ -55,7 +56,7 @@ function paint(i){const {d,sqs}=days[i],now=new Date();
   sqs.forEach(q=>{q.className='sq';q.innerHTML='';delete q.dataset.id;q.removeAttribute('aria-label')});
   occ(d).forEach(a=>{const q=sqs[a.h];if(q.dataset.id){q.dataset.more=(+q.dataset.more||1)+1;q.querySelector('.more')||q.insertAdjacentHTML('beforeend','<span class="more">+</span>');return}
     q.dataset.id=a.id;q.classList.add('al',a.days.length?'fixed':'temp');q.innerHTML=`<span class="t">${p2(a.h)}<br>${p2(a.m)}</span><span class="n">${esc(a.name)}</span>`;q.setAttribute('aria-label',`${p2(a.h)}:${p2(a.m)} ${a.name}`)});
-  if(i===0){const h=now.getHours(),q=sqs[h];q.classList.add('now');
+  if(i%7===0){const h=now.getHours(),q=sqs[h];q.classList.add('now');
     if(!q.dataset.id)q.insertAdjacentHTML('beforeend',`<span class="nt">${p2(h)}<br>${p2(now.getMinutes())}</span>`);
     q.insertAdjacentHTML('beforeend',`<i class="nb" style="width:${(now.getMinutes()+1)/60*100}%"></i>`)}}
 const paintAll=()=>days.forEach((_,i)=>paint(i));
@@ -66,7 +67,7 @@ sc.scrollTop=nowY();
 sc.addEventListener('scroll',()=>{if(sc.scrollTop+PH>days.length*DAYH-2*DAYH)for(let k=0;k<7;k++)addDay()},{passive:true});
 const sqAt=(i,h)=>days[i]&&days[i].sqs[h];
 const indexOf=a=>{const now=new Date();if(!a.days.length)return Math.round((parse(a.date)-base)/864e5);
-  for(let i=0;i<400;i++){const d=addDays(base,i);if(a.days.includes(d.getDay())&&at(d,a.h,a.m)>now)return i}return 0};
+  for(let i=0;i<8;i++){const d=addDays(base,i);if(a.days.includes(d.getDay())&&at(d,a.h,a.m)>now)return i}return 0};
 function reveal(i,h){while(i>=days.length)addDay();sc.scrollTop=Math.max(0,i*DAYH+HEAD+(h>>2)*ROW-Math.round(PH*.32))}
 
 // ---------- sound (synthesised) ----------
@@ -107,7 +108,7 @@ function go(n){step=n;sh.classList.add('fall');void sh.offsetWidth;sh.classList.
   lab.textContent=LABELS[n];body.innerHTML='';const inn=el('in',body);STEPS[n](inn);bGo.textContent='continue'}
 // when a once-alarm's chosen time has already passed that day, it moves to the next day
 const effDate=()=>{let d=parse(draft.date);if(draft.once&&at(d,draft.h,draft.m)<=new Date())d=addDays(d,1);return d};
-const dayWord=d=>{const k=Math.round((day0(d)-day0(new Date()))/864e5);return(k===0?'today':k===1?'tomorrow':DAYS[d.getDay()])+' · '+d.getDate()+' '+MON[d.getMonth()]};
+const dayWord=d=>{const k=Math.round((day0(d)-day0(new Date()))/864e5);return k===0?'today':DAYS[d.getDay()]};
 function wheel(inn,{get,set,fmt=p2,step:st=1,mod,onchange}){const w=el('wheel',inn);w.tabIndex=0;w.setAttribute('role','spinbutton');
   const pv=el('',w,'span'),cu=el('',w,'b'),nx=el('',w,'span');
   const draw=()=>{const v=get();pv.textContent=fmt((v-st+mod*st)%mod);cu.textContent=fmt(v);nx.textContent=fmt((v+st)%mod);w.setAttribute('aria-valuenow',v);onchange&&onchange()};
@@ -195,7 +196,7 @@ addEventListener('pointerup',e=>{if(sy!=null&&ringing&&(sy-e.clientY)/S>PH*.2)st
 let lastMin=-1;
 setInterval(()=>{const n=new Date(),mk=n.getHours()*60+n.getMinutes();
   if(ymd(day0(n))!==ymd(base)){const y=sc.scrollTop;rebuild();sc.scrollTop=Math.max(0,y-DAYH)}
-  if(mk!==lastMin){lastMin=mk;paint(0)}
+  if(mk!==lastMin){lastMin=mk;days.forEach((_,i)=>i%7===0&&paint(i))}
   if(ringing)return;const key=ymd(n)+' '+mk;if(firedAt===key)return;
   const due=alarms.find(a=>a.h===n.getHours()&&a.m===n.getMinutes()&&((a.date===ymd(n)&&!a.days.length)||a.days.includes(n.getDay())));
   if(due){firedAt=key;ring(due)}},1000);
