@@ -93,7 +93,7 @@ sh.innerHTML=`<div class="sv">${VX.map((x,i)=>`<i style="left:${x}px;--d:${i*STE
 <div class="top"><div class="dots"></div><div class="lab"></div></div><div class="body"></div>
 <div class="acts"><button type="button" class="b-del">delete</button><button type="button" class="b-go">continue</button></div>`;
 const dots=sh.querySelector('.dots'),lab=sh.querySelector('.lab'),body=sh.querySelector('.body'),bDel=sh.querySelector('.b-del'),bGo=sh.querySelector('.b-go');
-const LABELS=['hour','minutes','name','sound','repeat'];
+const LABELS=['time','name','sound','repeat'];
 let draft=null,step=0,origin=null;
 function openSheet(i,h,a){origin=sqAt(i,h);const d=days[i].d;
   draft=a?{id:a.id,h:a.h,m:a.m,name:a.name,sound:a.sound,days:[...a.days],once:!a.days.length,date:a.date||ymd(d),edit:true}
@@ -123,13 +123,15 @@ function wheel(inn,{get,set,fmt=p2,step:st=1,mod,onchange}){const w=el('wheel',i
   w.addEventListener('keydown',e=>{if(e.key==='ArrowUp'){e.preventDefault();bump(-1)}if(e.key==='ArrowDown'){e.preventDefault();bump(1)}});
   draw();return draw}
 const STEPS=[
-  inn=>{const note=el('hint',inn,'p');wheel(inn,{get:()=>draft.h,set:v=>draft.h=v,mod:24,onchange:()=>note.textContent=dayWord(effDate())});inn.appendChild(note);
-    el('hint',inn,'p').textContent='drag up or down'},
-  inn=>{const cap=el('cap',inn);const note=el('hint',inn,'p');
-    const draw=wheel(inn,{get:()=>draft.m,set:v=>draft.m=v,step:5,mod:60,onchange:()=>{cap.textContent=p2(draft.h)+' :';note.textContent=dayWord(effDate())}});
+  // time: hour and minutes on one screen — two wheels, each dragged on its own
+  inn=>{const pr=el('pair',inn),note=el('hint',inn,'p');const upd=()=>note.textContent=dayWord(effDate());
+    const dh=wheel(pr,{get:()=>draft.h,set:v=>draft.h=v,mod:24,onchange:upd});pr.firstChild.setAttribute('aria-label','hour');
+    const co=el('colon',pr);co.innerHTML='<i></i><i></i>';
+    const dm=wheel(pr,{get:()=>draft.m,set:v=>draft.m=v,step:5,mod:60,onchange:upd});pr.lastChild.setAttribute('aria-label','minutes');
     inn.appendChild(note);const ch=el('chips',inn);
     [['in 1 minute','soon'],['00',0],['15',15],['30',30],['45',45]].forEach(([t,v])=>{const b=el('chip'+(v==='soon'?' or':''),ch,'button');b.type='button';b.textContent=v==='soon'?t:':'+t;
-      b.onclick=()=>{if(v==='soon'){const n=new Date(Date.now()+60000);draft.h=n.getHours();draft.m=n.getMinutes();draft.date=ymd(n);draft.once=true}else draft.m=v;draw();tick()}})},
+      b.onclick=()=>{if(v==='soon'){const n=new Date(Date.now()+60000);draft.h=n.getHours();draft.m=n.getMinutes();draft.date=ymd(n);draft.once=true}else draft.m=v;dh();dm();tick()}});
+    el('hint',inn,'p').textContent='drag each number up or down'},
   inn=>{const cap=el('cap',inn);cap.textContent=p2(draft.h)+':'+p2(draft.m);const nm=el('nm',inn,'input');nm.id='uhr-name';nm.maxLength=16;nm.placeholder='name it';nm.autocomplete='off';nm.value=draft.name;
     nm.setAttribute('aria-label','name');const fitIn=()=>nm.style.setProperty('--fs',Math.max(36,Math.min(72,360/(Math.max(nm.value.length,6)*.56)))+'px');fitIn();
     nm.addEventListener('input',()=>{draft.name=nm.value;fitIn()});nm.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();next()}});
@@ -145,7 +147,7 @@ const STEPS=[
     ['once','every week'].forEach((t,k)=>{const b=el('chip',ch,'button');b.type='button';b.textContent=t;b.onclick=()=>{draft.once=!k;if(!draft.days.length)draft.days=[effDate().getDay()];draw();tick()}});
     DS.forEach((t,k)=>{const b=el('chip sqd',dch,'button');b.type='button';b.textContent=t;b.onclick=()=>{const i=draft.days.indexOf(k);i<0?draft.days.push(k):draft.days.length>1&&draft.days.splice(i,1);draft.days.sort();draw();tick()}});
     draw()}];
-function next(){if(step<4){go(step+1);return}commit()}
+function next(){if(step<STEPS.length-1){go(step+1);return}commit()}
 function commit(){const d=effDate(),a={id:draft.id,h:draft.h,m:draft.m,name:(draft.name.trim()||'ühr').split(/\s+/).slice(0,2).join(' '),sound:draft.sound,
     days:draft.once?[]:[...draft.days],date:draft.once?ymd(d):null};
   alarms=alarms.filter(x=>x.id!==a.id);alarms.push(a);store();paintAll();

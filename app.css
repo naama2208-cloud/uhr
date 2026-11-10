@@ -76,8 +76,13 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .wheel b{font:700 236px/.8 var(--font);letter-spacing:-.045em;font-variant-numeric:tabular-nums;margin:16px 0 20px -10px;transition:transform 90ms}
 .wheel b.kick{transform:translateY(var(--k,0))}
 .wheel:focus-visible b{color:var(--orange)}
+.pair{display:flex;align-items:center;gap:6px}
+.pair .wheel b{font-size:134px;margin:12px 0 14px -5px}
+.pair .wheel span{font-size:44px}
+.colon{display:flex;flex-direction:column;gap:34px;margin:0 6px 0 2px;padding-top:6px}
+.colon i{width:16px;height:16px;border-radius:50%;background:var(--orange)}
 .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
-.chip{height:44px;padding:0 16px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);font-size:16px;cursor:pointer;border-radius:0}
+.chip{height:44px;padding:0 13px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);font-size:16px;cursor:pointer;border-radius:0}
 .chip.on{background:var(--ink);color:var(--paper)}
 .chip.or{border-color:var(--orange);color:var(--orange)}
 .chip.sqd{width:44px;padding:0;text-align:center}
