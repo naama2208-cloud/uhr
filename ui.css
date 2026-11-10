@@ -1,0 +1,229 @@
+*{box-sizing:border-box;margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--font);text-transform:lowercase}
+.stage{display:flex;justify-content:center;padding:16px}
+.phone{position:relative;width:402px;height:874px;flex:none;background:var(--paper);transform-origin:top center;overflow:hidden;cursor:pointer;outline:1px solid color-mix(in srgb,var(--ink) 15%,transparent);user-select:none;touch-action:none}
+.logo{position:absolute;left:var(--margin);top:var(--head);font-size:var(--t-logo);letter-spacing:-.5px}
+.logo{line-height:1}.u{position:relative;display:inline-block}.u i{position:absolute;border-radius:50%;background:var(--orange)}
+.h{position:absolute;left:0;right:0;height:1px;background:var(--line);opacity:.55}
+.v{position:absolute;top:calc(var(--top) - 24px);bottom:62px;width:1px;background:var(--line);opacity:.55}
+.v,.lab,.al{transition:left var(--move) var(--ease),width var(--move) var(--ease),top var(--move) var(--ease),height var(--move) var(--ease),opacity var(--move) var(--ease),transform 260ms var(--ease)}
+.lab{position:absolute;top:calc(var(--top) - 20px);font-size:var(--t-label);color:var(--grey)}
+.lab.on{color:var(--ink);font-size:var(--t-body)}
+.hr{position:absolute;font-size:var(--t-micro);color:var(--grey);opacity:0;transition:opacity 300ms}
+.isday .hr{opacity:1}
+.al{position:absolute;padding:3px 4px;overflow:hidden;color:var(--paper);font-size:var(--t-micro);line-height:1.1;transform-origin:top}
+.al.temp{background:var(--orange)}.al.fixed{background:var(--ink)}
+.al span{display:none}.al.big{font-size:var(--t-body);padding:6px}.al.big b{font-weight:700}.al.big span{display:block}
+.al.enter{transform:scaleY(0)}
+.hi{position:absolute;outline:2px solid var(--orange);opacity:0;transition:opacity 120ms;pointer-events:none}.hi.show{opacity:1}
+.next{position:absolute;left:var(--margin);bottom:24px;font-size:var(--t-body)}.next small{display:block;font-size:var(--t-label);color:var(--grey)}
+.msg{position:absolute;font-size:var(--t-label);color:var(--grey);opacity:0}.msg.show{animation:f 1.2s var(--ease)}
+@keyframes f{0%,70%{opacity:1}to{opacity:0}}
+.nav{position:fixed;top:12px;right:16px;font-size:var(--t-label);color:var(--grey)}
+.h,.v{transition:left var(--move) var(--ease),transform var(--move) var(--ease)}
+.h{transform-origin:left}.v{transform-origin:top}.logo{transform-origin:left top}
+.logo,.next{transition:opacity var(--move) var(--ease),transform var(--move) var(--ease)}
+.intro .logo{transform:translateY(240px) scale(2)}
+.mess .lab,.mess .al,.mess .next{opacity:0!important}
+.nowf{transition:opacity var(--move) var(--ease)}.mess .nowf{opacity:0!important}
+.nav2{position:fixed;top:12px;left:16px;font-size:var(--t-label);color:var(--grey)}
+.nowf{color:var(--ink);font-size:var(--t-body);font-weight:700;line-height:1.1;padding:6px}
+.form{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity var(--move) var(--ease)}
+.ishour .form{opacity:1;transition-delay:var(--move)}
+.ishour .hr{opacity:0}
+.form>*{position:absolute}.ishour .form>*{pointer-events:auto}.form .big{font-size:var(--t-hour);font-weight:700;letter-spacing:-4px;line-height:1;display:flex;align-items:flex-end}
+.mins{cursor:ew-resize;touch-action:none}.mins i{position:absolute;top:0;bottom:0;width:3px;background:var(--orange)}.qt{position:absolute;top:4px;font-size:var(--t-micro);color:var(--grey)}
+.what{border:0;border-bottom:1px solid var(--ink);background:none;font:inherit;font-size:var(--t-title);color:var(--ink);text-transform:lowercase;outline:none}
+.type,.days{display:flex;gap:var(--gap)}.days{gap:4px}
+.type b,.days b{flex:1;display:flex;align-items:center;padding:0 8px;font-weight:400;font-size:var(--t-body);outline:1px solid var(--ink);cursor:pointer}
+.days b{justify-content:center;padding:0}.type b.on{background:var(--orange);color:var(--paper);outline-color:var(--orange)}
+.type b.on[data-t=fixed],.days b.on{background:var(--ink);color:var(--paper)}.days.off{opacity:.25;pointer-events:none}
+.del{font-size:var(--t-label);color:var(--grey);cursor:pointer}.done{font-weight:400;font-size:var(--t-title);cursor:pointer}
+.grow{position:absolute;outline:2px solid var(--orange);opacity:0;pointer-events:none;transition:left var(--move) var(--ease),top var(--move) var(--ease),width var(--move) var(--ease),height var(--move) var(--ease),opacity calc(var(--move) / 2)}
+@keyframes fv{from{transform:translateY(-900px)}to{transform:none}}
+@keyframes fh{from{transform:translateX(-420px)}to{transform:none}}
+@keyframes fhr{from{transform:translateX(420px)}to{transform:none}}
+@keyframes jolt{0%{translate:0 0}35%{translate:0 4px}70%{translate:0 -1px}to{translate:0 0}}
+.dropping .v{transition:none}.v.fall{animation:fv var(--fall) var(--gravity) both}
+.h.fall{animation:fh var(--fall) var(--gravity) both}.h.fall.r{animation-name:fhr}
+.dropping .al,.dropping .lab,.dropping .hr{transition:none!important}.dropping .nowf{opacity:0!important;transition:none}
+.land{animation:jolt 220ms ease-out}
+.hr{display:none}
+/* hour panel: grid steps back, the square itself takes the colour of its type */
+.phone{--panel:color-mix(in srgb,var(--orange) 9%,var(--paper));-webkit-touch-callout:none}
+.phone.t-temp{--panel:var(--orange)}.phone.t-fixed{--panel:var(--ink)}
+.grow{background:var(--panel);outline:0;transition:left var(--move) var(--ease),top var(--move) var(--ease),width var(--move) var(--ease),height var(--move) var(--ease),opacity calc(var(--move) / 2),background var(--quick)}
+.ishour .h,.ishour .v{opacity:0;transition:opacity 300ms}
+.t-temp .form,.t-fixed .form{color:var(--paper)}
+.form .what{color:inherit;border-bottom-color:currentColor}.what::placeholder{color:inherit;opacity:.5}
+.form .type b,.form .days b{outline-color:currentColor;transition:background var(--quick),color 300ms}
+.t-temp .form .type b.on,.t-fixed .form .type b.on,.t-fixed .form .days b.on{background:var(--paper);color:var(--panel);outline-color:var(--paper)}
+.t-temp .mins i,.t-fixed .mins i{background:currentColor}.form .qt{color:inherit;opacity:.6}
+.note{font-size:var(--t-label);opacity:.8}
+.form .del{font-size:var(--t-title);color:var(--ink);cursor:pointer}
+.nowf{font-size:var(--t-logo);line-height:.9}
+/* frame 61: 16 over 30, flush left; colon = two orange circles stacked beside the hour */
+.clk{display:grid;grid-template-columns:auto auto;column-gap:8px;justify-content:start;align-items:center;line-height:1.06}
+.clk b{font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums}.clk em{display:flex;flex-direction:column;gap:7px}.clk em i{width:6px;height:6px;border-radius:50%;background:var(--orange)}
+/* splash clock */
+.sp{position:absolute;z-index:4;color:var(--ink);font-size:var(--t-logo);line-height:.9;padding:6px;transform-origin:0 0;pointer-events:none;animation:spIn 600ms var(--ease)}
+.sp.fly{transition:transform calc(var(--move) * 1.4) var(--ease),opacity 400ms}
+.sp.fly .clk b{transition:transform calc(var(--move) * 1.4) var(--ease)}
+@keyframes spIn{from{opacity:0}}
+/* long press */
+.al.pending{background:transparent!important;outline:1.5px dashed currentColor;outline-offset:-1.5px}
+.al.temp.pending{color:var(--orange)}.al.fixed.pending{color:var(--ink)}
+.menu{position:absolute;z-index:5;width:110px;background:var(--paper);outline:1px solid var(--ink);display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity 150ms}
+.menu.show{opacity:1;pointer-events:auto}.menu b{font-weight:400;font-size:var(--t-body);padding:10px 12px}.menu b+b{border-top:1px solid var(--ink);color:var(--orange)}
+.live .v,.live .al,.live .lab{transition:none!important}.live .al,.live .lab:not(.on),.live .nowf{opacity:var(--fade)!important}
+/* splash (under type): ühr breathes thin → black, orange guides follow each letter */
+.splash{position:absolute;inset:0;z-index:6;background:var(--paper);transition:opacity var(--quick) var(--ease)}.splash.out{opacity:0;pointer-events:none}
+.splash .sw{position:absolute;left:0;right:0;top:calc(var(--top) + 2*(var(--row) + var(--gap)));display:flex;justify-content:center;font-family:"under",var(--font);font-size:var(--t-splash);line-height:1;font-weight:100;color:var(--ink)}
+.splash .sw span{display:block}
+.splash .gv{position:absolute;top:calc(var(--top) + 2*(var(--row) + var(--gap)) - 2*var(--gap));height:calc(var(--t-splash) + 4*var(--gap));width:1px;background:var(--line);opacity:.55}
+.splash .gh{position:absolute;left:0;right:0;height:1px;background:var(--line);opacity:.55}
+.splash .dot{position:absolute;border-radius:50%;background:var(--orange)}
+/* ringing (זוכרת): time opens into stripes, one per weight */
+.nav3{position:fixed;top:12px;left:50%;transform:translateX(-50%);font-size:var(--t-label);color:var(--orange)}
+.ring{position:absolute;inset:0;z-index:7;background:var(--paper);display:none;cursor:default}.ring.on{display:block}
+.ring .rh{position:absolute;left:var(--margin);top:var(--head);font-size:var(--t-body);color:var(--grey)}
+.ring .rt{position:absolute;left:0;right:0;top:calc(var(--top) + 2*(var(--row) + var(--gap)));display:flex;justify-content:center;align-items:center;gap:.06em;font-family:"under",var(--font);font-size:var(--t-ring);line-height:1}
+.ring .c{display:grid;place-items:center}.ring .c>*{grid-area:1/1}
+.ring .c span{color:var(--c);font-weight:var(--w)}
+.ring .c span.core{color:var(--ink);font-weight:900;animation:core 4s infinite cubic-bezier(.65,0,.35,1)}
+.ring .dots{display:flex;flex-direction:column;align-items:center;gap:.24em}
+.ring .dots b{display:block;width:calc(.2em*var(--s));aspect-ratio:1;border-radius:50%;background:var(--c)}
+.ring .dots.core b{background:var(--ink);width:.2em;animation:dot 4s infinite cubic-bezier(.65,0,.35,1)}
+@keyframes core{0%{font-weight:900}25%,70%{font-weight:100}95%,100%{font-weight:900}}
+@keyframes dot{0%{transform:scale(1)}25%,70%{transform:scale(.3)}95%,100%{transform:scale(1)}}
+.ring .rl{position:absolute;left:var(--margin);right:var(--margin);top:calc(var(--top) + 3*(var(--row) + var(--gap)));font-size:var(--t-title);text-align:center}.ring .rl small{display:block;margin-top:6px;font-size:var(--t-label);color:var(--grey)}
+.ring .stop{position:absolute;left:var(--margin);right:var(--margin);bottom:calc(var(--gap)*4);height:var(--field);background:var(--orange);color:var(--paper);font-size:var(--t-title);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ring.fixed .stop{background:var(--ink)}
+@media (prefers-reduced-motion:reduce){.ring .core,.ring .dots.core b{animation-duration:8s}}
+.nav,.nav2,.nav3{z-index:10}
+.ring .snooze{position:absolute;left:var(--margin);right:var(--margin);bottom:var(--gap);height:calc(var(--row)/2);display:flex;align-items:center;justify-content:center;font-size:var(--t-body);cursor:pointer}
+.splash:not(.ready) .gv,.splash:not(.ready) .gh,.splash:not(.ready) .dot{visibility:hidden}
+.ring{background:var(--orange);transition:clip-path var(--move) var(--ease),background var(--quick) var(--ease)}.ring.fixed{background:var(--ink)}
+.ring.open{background:var(--paper);transition:clip-path var(--move) var(--ease),background var(--quick) var(--ease) calc(var(--move) * .5)}
+.ring>*{opacity:0;transition:opacity var(--quick)}.ring.open>*{opacity:1;transition:opacity var(--quick) var(--ease) calc(var(--move) * .7)}
+.ring .c span.core,.ring .dots.core b{animation:none!important;will-change:transform}
+.u{line-height:1}
+.logo{font-family:var(--type);font-weight:900;letter-spacing:0}
+.splash:not(.ready) .u i{visibility:hidden}
+/* field: time leads, name follows at the foot; nothing is cut */
+.al.big{display:flex;flex-direction:column;justify-content:space-between;padding:calc(var(--gap)/4) calc(var(--gap)/4) calc(var(--gap)/3)}
+.al.big b{font-size:var(--t-title);font-weight:400;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.al.big span{font-size:var(--t-label);line-height:1.2;overflow-wrap:anywhere}
+/* ringing: hour over minutes, colon = two orange circles beside the hour (same as now) */
+.ring .rt{display:grid;grid-template-columns:auto auto;justify-content:center;align-items:center;gap:0 .02em;top:calc(var(--top) + var(--row));line-height:.9}
+.ring .rw{display:flex;gap:.03em}
+.ring .co{display:flex;flex-direction:column;gap:.2em}.ring .co i{display:block;width:.11em;height:.11em;border-radius:50%;background:var(--orange)}
+.ring .rl{top:calc(var(--top) + 4*(var(--row) + var(--gap)))}
+.ring .co{margin-left:-.06em}
+.ring .rt{grid-template-columns:auto;justify-items:start}.ring .co{margin-left:.06em;align-self:center}
+/* ringing stripes, as under's big u: one shape nine times, only the weight changes, one layer after the next */
+.ring .c span{color:var(--c);font-weight:900;-webkit-text-stroke:.6px var(--ink);paint-order:stroke fill;
+  animation:ringw var(--ring) cubic-bezier(.7,0,.3,1) infinite;animation-delay:calc(var(--move) + var(--i) * var(--ring) / 100)}
+@keyframes ringw{0%,12%,88%,100%{font-weight:900}42%,62%{font-weight:var(--w)}}
+@media (prefers-reduced-motion:reduce){.ring .c span{animation-duration:calc(var(--ring) * 2)}}
+/* ringing: minutes exactly under the hour — every digit sits in the same width, so the columns line up; no colon */
+.ring .rt{grid-template-columns:auto;justify-content:center;justify-items:center}
+.ring .rw{gap:0}.ring .c{width:.8em}
+/* ringing layout: header on top, time + name centred in the space left, stop and snooze at the foot. every distance is a token */
+.ring.on{display:flex;flex-direction:column}
+.ring .rh,.ring .rt,.ring .rl,.ring .stop,.ring .snooze{position:static;left:auto;right:auto;top:auto;bottom:auto}
+.ring .rh{padding:var(--head) var(--margin) 0}
+.ring .mid{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:calc(var(--gap)*2)}
+.ring .rt{display:grid;grid-template-columns:auto;justify-items:center;row-gap:0;padding-top:.07em}
+.ring .rw{display:flex;gap:var(--gap)}.ring .c{width:.78em}
+.ring .rl{text-align:center}
+.ring .stop{order:1;margin:0 var(--margin)}
+.ring .snooze{order:2;margin:var(--gap) var(--margin)}
+.ring .rw{gap:calc(var(--gap) - .03em)}.ring .rt{margin-bottom:-.14em}
+.ring .c{width:.86em}.ring .rw{gap:var(--gap)}.ring .rw+.rw{margin-top:-.02em}
+.ring .rt{margin-left:-.017em}
+/* ringing = a poster, the result of the grid (the grid itself stays unseen): everything flush left on --margin */
+.ring .mid{align-items:flex-start;justify-content:center;padding:0 var(--margin);gap:calc(var(--gap)*2)}
+.ring .rt{justify-items:start;margin-left:-.04em;padding-top:0;margin-bottom:-.12em}
+.ring .c{width:auto}
+.ring .rl{text-align:left;font-size:var(--t-title);line-height:1.1}
+.ring .rl small{font-size:var(--t-label);margin-top:4px}
+.ring .stop,.ring.fixed .stop{background:none;color:var(--orange);height:auto;justify-content:flex-start;font-size:var(--t-title);margin:0 var(--margin);padding:0}
+.ring.fixed .stop{color:var(--ink)}
+.ring .snooze{justify-content:flex-start;margin:calc(var(--gap)/2) var(--margin) calc(var(--gap)*2);height:auto;font-size:var(--t-body);color:var(--grey)}
+.ring .rt{margin-left:0}
+.ring .rt{margin-left:-.02em}.ring .rw{gap:calc(var(--gap) - .047em)}.ring .rw+.rw{margin-top:-.04em}
+/* ringing wave: four digits, four rings — each ring one digit breathes 900 → 100 → 900 */
+.ring .c .gh{visibility:hidden;animation:none;font-weight:900}
+.ring .c .w{color:var(--ink);font-weight:900;-webkit-text-stroke:0;animation:wave var(--ring) cubic-bezier(.7,0,.3,1) infinite;animation-delay:calc(var(--move) + var(--i) * var(--breath))}
+@keyframes wave{0%{font-weight:900}12%{font-weight:100}25%,100%{font-weight:900}}
+@media (prefers-reduced-motion:reduce){.ring .c .w{animation-duration:calc(var(--ring) * 2)}}
+/* ringing in helvetica: stripes = grid hairlines inside the digit */
+@property --lw{syntax:'<length>';inherits:false;initial-value:6px}
+@property --lc{syntax:'<color>';inherits:false;initial-value:#221D1A}
+.ring .rt{font-family:var(--font);font-weight:700;font-variant-numeric:tabular-nums;margin:0;line-height:.74;letter-spacing:0}
+.ring .rw{gap:var(--gap)}.ring .rw+.rw{margin-top:0}
+.ring .c .w{font-family:var(--font);font-weight:700;color:transparent;-webkit-text-stroke:0;paint-order:normal;--lw:var(--stripe);--lc:var(--ink);
+  background:repeating-linear-gradient(90deg,var(--lc) 0 var(--lw),transparent var(--lw) var(--stripe));-webkit-background-clip:text;background-clip:text;
+  animation:lines var(--ring) cubic-bezier(.7,0,.3,1) infinite;animation-delay:calc(var(--move) + var(--i) * var(--ring) / 8)}
+@keyframes lines{0%,10%,90%,100%{--lw:var(--stripe);--lc:var(--ink)}40%,60%{--lw:1px;--lc:var(--orange)}}
+@media (prefers-reduced-motion:reduce){.ring .c .w{animation-duration:calc(var(--ring) * 2)}}
+.ring .rt{line-height:.72}.ring .rw+.rw{margin-top:var(--gap)}
+.ring .rw{gap:calc(var(--gap) - .086em)}.ring .rt{margin-left:-.04em}.ring .rw+.rw{margin-top:calc(var(--gap) - .026em)}
+.ring .rw{gap:calc(var(--gap) - .1em)}
+.ring .rw{gap:0}.ring .c+.c{margin-left:-.02em}
+/* the stripes are painted only inside the box: give the box room above and below (Helvetica Neue sits lower than Arial) without moving the layout */
+.ring .c .w{padding:.12em 0;margin:-.12em 0}
+/* now: the same type as the ringing poster — helvetica bold, tabular, hour over minutes, no colon */
+.clk2{display:grid;justify-items:start;row-gap:.068em;font-family:var(--font);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:.72}
+.clk2 b{display:block;font-weight:700}
+.sp{line-height:.72;padding:6px}
+.clk2{display:inline-grid}
+.clk2{letter-spacing:0}
+/* now fills its field */
+.sp,.nowf{font-size:var(--now-fs,var(--t-logo));padding:0}
+.sp .clk2,.nowf .clk2{margin-left:calc(-1 * var(--now-il,0px))}
+/* field: the same composition as now and ringing — hour over minutes, no colon — set small (--t-logo) so the name has room below */
+.al.big b{font-size:var(--t-logo);font-weight:700;line-height:.72;letter-spacing:0;font-variant-numeric:tabular-nums}
+.al.big b i{display:block;font-style:normal}.al.big b i+i{margin-top:.068em}
+.al.big span{font-size:var(--t-label);line-height:1.2}
+/* now = an alarm without a colour: same size and inset as the fields, a 1px orange line inside the square */
+.sp,.nowf{padding:calc(var(--gap)/4)}
+.nowf{outline:1px solid var(--orange);outline-offset:-1px}
+/* hour panel (מדייקת): the same composition, hour over minutes, no colon */
+.form .big{display:block;line-height:.72;letter-spacing:0;font-variant-numeric:tabular-nums}
+.form .big i{display:block;font-style:normal}.form .big i+i{margin-top:.068em}
+.sp,.nowf{padding:4px}
+.sp .clk2,.nowf .clk2{margin-left:calc(-1 * var(--now-il,0px));margin-top:calc(-1 * var(--now-it,0px))}
+/* sound (צליל): a row of three choices in the hour panel, like temporary / fixed */
+.form .snd{display:flex;gap:var(--gap)}
+.form .snd b{flex:1;display:flex;align-items:center;padding:0 8px;font-weight:400;font-size:var(--t-body);outline:1px solid currentColor;outline-offset:-1px;cursor:pointer}
+.form .snd b.on{background:var(--ink);color:var(--paper)}
+.t-temp .form .snd b.on,.t-fixed .form .snd b.on{background:var(--paper);color:var(--panel)}
+/* ringing: one shape, three rhythms */
+.ring.s-chime .c .w{animation:lines-chime 2000ms cubic-bezier(.45,0,.55,1) infinite;animation-delay:var(--move)}
+@keyframes lines-chime{0%,100%{--lw:var(--stripe);--lc:var(--ink)}45%{--lw:1px;--lc:var(--orange)}}
+.ring.s-pulse .c .w{animation:lines-pulse 1200ms linear infinite;animation-delay:var(--move)}
+@keyframes lines-pulse{0%,34%,100%{--lw:var(--stripe);--lc:var(--ink)}8%,24%{--lw:1px;--lc:var(--orange)}16%{--lw:var(--stripe);--lc:var(--ink)}}
+/* the big time in the hour panel previews the chosen ring once */
+.form{--pc:var(--ink)}.t-temp .form,.t-fixed .form{--pc:var(--paper)}
+.form .big span{--lw:var(--stripe);padding:.12em 0;color:transparent;background:repeating-linear-gradient(90deg,var(--pc) 0 var(--lw),transparent var(--lw) var(--stripe));-webkit-background-clip:text;background-clip:text}
+.form .big.play.s-radar span{animation:pv-radar var(--ring) cubic-bezier(.7,0,.3,1)}
+.form .big.play.s-chime span{animation:pv-chime 2000ms cubic-bezier(.45,0,.55,1)}
+.form .big.play.s-pulse span{animation:pv-pulse 1200ms linear}
+@keyframes pv-radar{0%,10%,90%,100%{--lw:var(--stripe)}40%,60%{--lw:1px}}
+@keyframes pv-chime{0%,100%{--lw:var(--stripe)}45%{--lw:1px}}
+@keyframes pv-pulse{0%,34%,100%{--lw:var(--stripe)}8%,24%{--lw:1px}16%{--lw:var(--stripe)}}
+/* now: svg on its own baselines (see nowFit) */
+.sp,.nowf{padding:0}
+.nowsvg{display:block;overflow:visible}.nowsvg text{font-family:var(--font);font-weight:700;fill:currentColor;font-variant-numeric:tabular-nums}
+/* phone: full screen, links in a quiet row underneath */
+@media (max-width:520px){
+  .stage{padding:0;overflow:hidden}.phone{outline:0}
+  body{padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}
+  .nav,.nav2,.nav3{position:fixed;top:auto;bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+  .nav{right:16px;left:auto}.nav2{left:16px}.nav3{left:50%;transform:translateX(-50%)}
+}
+@media (max-width:520px){body{position:relative}.nav,.nav2,.nav3{position:absolute}}
+/* hour panel: the time sits a gap inside the coloured square, not on its edge */
+.form .big{padding-top:var(--gap)}

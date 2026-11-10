@@ -1,0 +1,14 @@
+/* ühr — every decision once, by name. product and system both read this file. */
+:root{
+/* color */
+--paper:#F3F1EC;--ink:#221D1A;--orange:#FF411F;--grey:#737373;--line:var(--orange);
+/* space */
+--margin:21px;--field:72px;--gap:24px;--top:96px;--row:96px;--head:28px;
+/* type */
+--font:"Helvetica Neue",Helvetica,Arial,sans-serif;--type:"under","Helvetica Neue",Helvetica,Arial,sans-serif;
+--t-micro:9px;--t-label:11px;--t-body:15px;--t-title:22px;--t-logo:32px;--t-ring:355px;--stripe:6px;--t-hour:112px;--t-splash:120px;
+/* motion */
+--move:640ms;--ease:cubic-bezier(.7,0,.2,1);--step:40ms;--fall:460ms;--gravity:cubic-bezier(.6,0,1,1);
+--quick:300ms;--thicken:1500ms;--breath:1000ms;--ring:2000ms}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#221D1A;--ink:#F3F1EC}}
+:root[data-theme="dark"]{--paper:#221D1A;--ink:#F3F1EC}

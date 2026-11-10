@@ -1,0 +1,212 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ühr system</title><link rel="stylesheet" href="under.css"><link rel="stylesheet" href="tokens.css"><link rel="stylesheet" href="ui.css">
+<style>
+body{text-transform:none;background:var(--paper);color:var(--ink);font-family:var(--font)}
+.sys{max-width:1080px;margin:0 auto;padding-block:72px 120px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--gap);align-items:end;padding-bottom:var(--gap);border-bottom:1px solid var(--line)}
+.top h1{grid-column:span 6;font-family:var(--type);font-weight:900;font-size:var(--t-splash);line-height:.85;direction:ltr;text-align:right;position:relative}
+.top h1 .u{position:relative;display:inline-block}
+
+.top h1 small{display:block;font-family:var(--font);font-weight:400;font-size:var(--t-body);color:var(--grey);margin-top:12px;line-height:1.2}
+.top p{grid-column:span 6;font-size:var(--t-body);line-height:1.5;max-width:46ch}
+.top p b{color:var(--orange);font-weight:400}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 18px;padding:12px 0;font-size:var(--t-label);border-bottom:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+nav.toc a{color:var(--grey);text-decoration:none}nav.toc a:hover,nav.toc a:focus-visible{color:var(--orange)}
+section{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:var(--gap);padding:var(--gap) 0 calc(var(--gap)*2);border-bottom:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
+.hd{grid-column:span 3}
+.hd .n{font-size:var(--t-label);color:var(--orange);font-variant-numeric:tabular-nums}
+.hd h2{font-size:var(--t-title);font-weight:700;margin-top:6px;line-height:1.1}
+.hd h2 span{display:block;font-weight:400;color:var(--grey);font-size:var(--t-body);direction:ltr;text-align:right;margin-top:2px}
+.hd p{font-size:var(--t-label);color:var(--grey);line-height:1.6;margin-top:10px}
+.bd{grid-column:span 9;min-width:0}
+code{font-family:var(--font);font-size:var(--t-label);color:var(--grey);direction:ltr;unicode-bidi:isolate}
+.rows>div{display:grid;grid-template-columns:110px 150px minmax(0,1fr);gap:16px;align-items:center;padding:12px 0;border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);min-height:44px}
+.rows>div:first-child{border-top:0}
+.rows b{font-weight:700;font-size:var(--t-body)}
+.rows .use{font-size:var(--t-label);color:var(--grey);line-height:1.5}
+/* color */
+.sw{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gap)}
+.sw>div{display:flex;flex-direction:column;gap:8px}
+.chip{aspect-ratio:1;max-width:100%;outline:1px solid color-mix(in srgb,var(--ink) 15%,transparent);outline-offset:-1px}
+.sw b{font-size:var(--t-body)}.sw .use{font-size:var(--t-label);color:var(--grey);line-height:1.5}
+/* type */
+.spec{direction:ltr;text-align:right;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.fonts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gap);margin-bottom:var(--gap)}
+.fonts>div{border-top:1px solid var(--line);padding-top:12px}
+.fonts .big{font-size:64px;line-height:1;direction:ltr;text-align:right;margin:12px 0}
+.fonts .use{font-size:var(--t-label);color:var(--grey);line-height:1.6}
+/* space */
+.bar{height:12px;background:var(--orange)}
+/* motion */
+.track{position:relative;height:32px;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent);cursor:pointer;overflow:hidden}
+.track i{position:absolute;right:0;bottom:0;width:20px;height:20px;background:var(--ink)}
+.track .bars{position:absolute;inset:0;display:flex;gap:10px;justify-content:flex-end;align-items:flex-end}
+.track .bars i{position:static;width:1px;height:100%;background:var(--line)}
+.track .wt{position:absolute;right:0;bottom:-6px;font-family:var(--type);font-size:38px;line-height:1;font-weight:100}
+.play{font:inherit;font-size:var(--t-label);background:none;border:0;color:var(--orange);cursor:pointer;padding:0}
+.play:focus-visible,.track:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+/* states */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gap)}
+.tile{display:flex;flex-direction:column;gap:8px}
+.tile .box{position:relative;height:96px;display:flex;flex-direction:column;justify-content:flex-start;padding:6px;font-size:var(--t-body);line-height:1.1;direction:ltr;text-align:left;overflow:hidden}
+.tile b{font-size:var(--t-body)}.tile .use{font-size:var(--t-label);color:var(--grey);line-height:1.5}
+.b-temp{background:var(--orange);color:var(--paper)}.b-fixed{background:var(--ink);color:var(--paper)}
+.b-pend{outline:1.5px dashed var(--orange);outline-offset:-1.5px;color:var(--orange)}
+.b-now{outline:1px solid color-mix(in srgb,var(--line) 55%,transparent);outline-offset:-1px}
+.b-now .clk2{font-size:var(--t-logo)}
+.b-pass{outline:1px solid color-mix(in srgb,var(--line) 55%,transparent);outline-offset:-1px;color:var(--grey);justify-content:flex-end!important;font-size:var(--t-label)!important}
+.b-ring{background:repeating-linear-gradient(90deg,var(--ink) 0 6px,var(--orange) 6px 12px,var(--paper) 12px 18px);color:var(--ink)}
+.b-ring span{background:var(--paper);align-self:flex-start;padding:2px 4px;font-weight:700}
+.b-snz{outline:1px solid color-mix(in srgb,var(--line) 55%,transparent);outline-offset:-1px;justify-content:flex-end!important;font-size:var(--t-body)}
+.b-hi{outline:2px solid var(--orange);outline-offset:-2px}
+.jolt{animation:jolt 220ms ease-out}
+/* gestures */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:var(--t-label)}
+th,td{text-align:right;padding:10px 8px 10px 0;border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);vertical-align:top;line-height:1.5}
+th{font-weight:400;color:var(--grey)}td:first-child{font-size:var(--t-body);font-weight:700;white-space:nowrap}
+/* flow */
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:var(--gap);counter-reset:f}
+.flow>div{border-top:2px solid var(--ink);padding-top:10px}
+.flow b{display:block;font-size:var(--t-title);font-weight:400}
+.flow p{font-size:var(--t-label);color:var(--grey);line-height:1.6;margin-top:6px}
+/* live */
+.live-ctl{display:flex;gap:18px;margin-bottom:12px}
+.live-ctl .play{font-size:var(--t-body)}
+#app.stage{padding:0;justify-content:flex-start;direction:ltr}
+.nav{left:max(16px,env(safe-area-inset-left,0px));right:auto;direction:ltr}
+@media(max-width:760px){.top h1,.top p,.hd,.bd{grid-column:1/-1}.sw,.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.flow{grid-template-columns:1fr}.fonts{grid-template-columns:1fr}
+  .rows>div{grid-template-columns:90px minmax(0,1fr)}.rows>div>:last-child{grid-column:1/-1}.top h1{font-size:88px}}
+@media (prefers-reduced-motion:reduce){.jolt{animation:none}}
+.top .pr{grid-column:1/-1;max-width:none;border-top:1px solid color-mix(in srgb,var(--line) 45%,transparent);padding-top:12px}
+.tile .box{justify-content:space-between!important}.tile .box .clk2{font-size:var(--t-logo)}.tile .box .nm{font-size:var(--t-label);font-weight:400}
+.b-ring{background:repeating-linear-gradient(90deg,var(--orange) 0 1px,transparent 1px var(--stripe))!important;color:var(--ink)}
+.rule{display:grid;grid-template-columns:110px minmax(0,1fr);gap:16px;padding:12px 0;border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);font-size:var(--t-label);color:var(--grey);line-height:1.6}
+.rule b{color:var(--ink);font-size:var(--t-body)}.rules{margin-bottom:var(--gap)}
+.spec .clk2{font-size:inherit}
+.spec .clk2 b,.tile .box .clk2 b{font-size:inherit;font-weight:700}
+</style></head>
+<body><a class="nav" href="index.html">← product</a>
+<main class="sys">
+  <header class="top">
+    <h1><span class="u">u<i></i><i></i></span>hr<small>system</small></h1>
+    <p>מערכת היא החלטות שמקבלים פעם אחת: צבע, רווח, אותיות, תנועה. לכל החלטה יש שם, והיא משמשת בכל מקום. הדף הזה קורא מאותו קובץ (<code>tokens.css</code>) כמו המוצר: <b>שינוי כאן הוא שינוי שם.</b></p>
+    <p class="pr">העיקרון, מתוך Musica Viva של מילר-ברוקמן: <b>צורה אחת שחוזרת, ובכל פעם משתנה בה דבר אחד, במידה קבועה ולכיוון אחד.</b> הגריד שזז, השעה שמתפרקת לקווים והצלצולים בנויים כולם כך.</p>
+  </header>
+  <nav class="toc" aria-label="sections"><a href="#color">צבע</a><a href="#type">אותיות</a><a href="#space">רווח</a><a href="#grid">גריד</a><a href="#motion">תנועה</a><a href="#states">מצבים</a><a href="#sound">צליל</a><a href="#feedback">משוב</a><a href="#gestures">מחוות</a><a href="#flow">פעולות</a><a href="#live">לייב</a></nav>
+
+  <section id="color"><div class="hd"><div class="n">01</div><h2>צבע<span>color</span></h2><p>ארבעה צבעים. כתום אחד לכל מה שזמני, לכל קו ולכל נקודה.</p></div>
+    <div class="bd"><div class="sw" id="sw"></div></div></section>
+
+  <section id="type"><div class="hd"><div class="n">02</div><h2>אותיות<span>type</span></h2><p>שני גופנים, lowercase. under רק בלוגו. helvetica לכל השאר. לשעה יש צורה אחת בכל מקום, ורק הגודל שלה משתנה.</p></div>
+    <div class="bd">
+      <div class="fonts">
+        <div><b>helvetica</b> <code>--font</code><div class="big" style="font-family:var(--font)">pill</div><div class="use">כל הממשק: ימים, שעות, שמות התראות, כפתורים, שעון עכשיו.</div></div>
+        <div><b>under 100–900</b> <code>--type</code><div class="big" id="underSpec" style="font-family:var(--type)">16:30</div><div class="use">רק במקום אחד: הלוגו ühr. פונט וריאבילי: המשקל הוא התנועה של הספלאש.</div></div>
+      </div>
+      <div class="rules">
+        <div class="rule"><b>שעה</b><span>השעה תמיד מעל הדקות, בלי נקודתיים. helvetica bold, ספרות ברוחב קבוע, כך שכל ספרה יושבת בדיוק מתחת לספרה שמעליה. 32 בשדה, 112 במדייקת, 355 בפתיחה ובצלצול.</span></div>
+        <div class="rule"><b>עכשיו</b><span>ממלא את השדה של השעה הנוכחית, נמדד על הדיו ולא על התיבה, עם 4px מכל צד.</span></div>
+        <div class="rule"><b>שם</b><span>עד 2 מילים ו-14 אותיות. זה מה שנכנס בשדה, ולא יותר.</span></div>
+        <div class="rule"><b>פוסטר</b><span>בפתיחה ובצלצול השעה ממלאת את הרוחב מ-<code>--margin</code> עד <code>--margin</code>, מיושרת לשמאל. הגריד לא נראה: הפוסטר הוא התוצאה שלו.</span></div>
+      </div>
+      <div class="rows" id="ts"></div></div></section>
+
+  <section id="space"><div class="hd"><div class="n">03</div><h2>רווח<span>space</span></h2><p>כל מרחק נגזר מכאן. המרווח שווה לשורת טקסט.</p></div>
+    <div class="bd rows" id="sp"></div></section>
+
+  <section id="grid"><div class="hd"><div class="n">04</div><h2>גריד<span>grid</span></h2><p>גריד אחד, שלוש רמות. רק הטורים משתנים.</p></div>
+    <div class="bd rows">
+      <div><b>שבוע</b><code>7 טורים</code><span class="use">טור = יום. שורה = 4 שעות.</span></div>
+      <div><b>יום</b><code>4 × 6 שדות</code><span class="use">שדה = שעה. 8 הקווים של השבוע הופכים ל-8 הקצוות של היום, וכל קו זז למקום החדש שלו.</span></div>
+      <div><b>שעה</b><code>4 רבעים</code><span class="use">רבע = 15 דקות. השדה גדל עד שהוא ממלא את הגריד.</span></div>
+    </div></section>
+
+  <section id="motion"><div class="hd"><div class="n">05</div><h2>תנועה<span>motion</span></h2><p>לחיצה על שורה מפעילה את התנועה. כל אנימציה במוצר משתמשת באחת מהן.</p></div>
+    <div class="bd rows" id="mo"></div></section>
+
+  <section id="states"><div class="hd"><div class="n">06</div><h2>מצבים<span>states</span></h2><p>מה ששדה, התראה או מסך יכולים להיות.</p></div>
+    <div class="bd tiles">
+      <div class="tile"><div class="box b-temp"><span class="clk2"><b>07</b><b>00</b></span><span class="nm">wake up</span></div><b>זמני</b><span class="use">פעם אחת. נעלם אחרי stop.</span></div>
+      <div class="tile"><div class="box b-fixed"><span class="clk2"><b>20</b><b>00</b></span><span class="nm">pill</span></div><b>קבוע</b><span class="use">כל יום, או ימים שנבחרו. נשאר אחרי stop.</span></div>
+      <div class="tile"><div class="box b-pend"><span class="clk2"><b>18</b><b>00</b></span><span class="nm">babysitter</span></div><b>מתלבטת</b><span class="use">אחרי לחיצה ארוכה, בזמן שבוחרים edit או delete.</span></div>
+      <div class="tile"><div class="box b-now"><span class="clk2"><b>16</b><b>30</b></span></div><b>עכשיו</b><span class="use">תמיד בשדה של השעה הנוכחית וממלא אותו, אלא אם יש בשעה הזאת התראה.</span></div>
+      <div class="tile"><div class="box b-pass">passed</div><b>נכשל</b><span class="use">שעה שכבר עברה היום. זמני עובר לשבוע הבא.</span></div>
+      <div class="tile"><div class="box b-ring"></div><b>מצלצל</b><span class="use">השדה ממלא את המסך, והשעה מתפרקת לקווי הגריד בקצב של הצלצול.</span></div>
+      <div class="tile"><div class="box b-snz">snooze · 9 min</div><b>נודניק</b><span class="use">המסך חוזר לשדה. מצלצל שוב אחרי 9 דקות.</span></div>
+      <div class="tile"><div class="box b-hi"></div><b>נלחץ</b><span class="use">מסגרת כתומה כל עוד האצבע על השדה.</span></div>
+    </div></section>
+
+  <section id="sound"><div class="hd"><div class="n">07</div><h2>צליל<span>sound</span></h2><p>בוחרים צלצול במדייקת. הצורה לא משתנה (הספרה מתפרקת לקווי הגריד): הצליל קובע רק את הקצב.</p></div>
+    <div class="bd rows">
+      <div><b>radar</b><code>4 × 1568 Hz · 1000ms</code><span class="use">ארבעה צפצופים קצרים והפסקה. הקווים מתדקקים בגל, ספרה אחרי ספרה.</span></div>
+      <div><b>chime</b><code>880 Hz · 2000ms</code><span class="use">פעמון אחד ארוך שדועך. כל הספרות נפתחות יחד, לאט, ונסגרות לאט.</span></div>
+      <div><b>pulse</b><code>2 × 330 Hz · 1200ms</code><span class="use">שתי פעימות, כמו דופק. הקווים נפתחים ונסגרים פעמיים, יחד, ואז הפסקה.</span></div>
+      <div><b>תצוגה</b><code>מדייקת</code><span class="use">לחיצה על צלצול משמיעה אותו, והשעה הגדולה מראה את התנועה שלו פעם אחת.</span></div>
+    </div></section>
+
+  <section id="feedback"><div class="hd"><div class="n">08</div><h2>משוב<span>feedback</span></h2><p>איך המוצר עונה. כל תגובה עם שם אחד.</p></div>
+    <div class="bd rows">
+      <div><b>הדגשה</b><code>outline 2px · orange</code><span class="use">נגיעה בשדה. נעלמת כשהאצבע עוזבת.</span></div>
+      <div><b>נחיתה</b><button class="play" type="button" id="jbtn">▶ jolt 220ms</button><span class="use">הגריד נוחת במכה קטנה אחרי מתמקדת / מתרחקת. <span id="jbox" style="display:inline-block;width:14px;height:14px;background:var(--ink);vertical-align:middle;margin-inline-start:6px"></span></span></div>
+      <div><b>צלצול</b><button class="play" type="button" id="bbtn">▶ radar</button><span class="use">הצליל והקווים רצים על אותו שעון. שלושה צלצולים: ראו <a href="#sound" style="color:var(--orange)">צליל</a>.</span></div>
+      <div><b>מקווקו</b><code>dashed 1.5px</code><span class="use">השדה מחכה להחלטה: edit או delete.</span></div>
+      <div><b>הודעה</b><code>--t-label · grey</code><span class="use">מילה אחת שנעלמת לבד, למשל passed.</span></div>
+    </div></section>
+
+  <section id="gestures"><div class="hd"><div class="n">09</div><h2>מחוות<span>gestures</span></h2><p>אותה מחווה עושה את אותו הדבר בכל רמה.</p></div>
+    <div class="bd tbl"><table>
+      <thead><tr><th>מחווה</th><th>שבוע</th><th>יום</th><th>שעה</th></tr></thead>
+      <tbody>
+        <tr><td>לחיצה</td><td>מתמקדת ביום</td><td>מתמקדת בשעה · על שם היום: מתרחקת</td><td>done · מעל הגריד: שומרת וחוזרת</td></tr>
+        <tr><td>לחיצה ארוכה</td><td>—</td><td>על התראה: edit / delete</td><td>—</td></tr>
+        <tr><td>שתי אצבעות פותחות</td><td>מתמקדת ביום</td><td>מתמקדת בשעה</td><td>—</td></tr>
+        <tr><td>שתי אצבעות סוגרות</td><td>—</td><td>מתרחקת לשבוע</td><td>—</td></tr>
+        <tr><td>גרירה</td><td>—</td><td>—</td><td>דקות, לרוחב ארבעת הרבעים</td></tr>
+      </tbody></table></div></section>
+
+  <section id="flow"><div class="hd"><div class="n">10</div><h2>פעולות<span>action</span></h2><p>לבחור שעה: יש לי משהו, ואני צריכה תזכורת כדי לא לשכוח.</p></div>
+    <div class="bd flow">
+      <div><b>מחליטה</b><p>הפתיחה. ühr מתעבה ב-under על קווים כתומים. השעה של עכשיו מופיעה כפוסטר, הגריד נבנה, והיא נוחתת בשדה שלה.</p></div>
+      <div><b>מתמקדת</b><p>שבוע ← יום ← שעה. הגריד נופל: אנכיים מלמעלה, אופקיים מהצדדים, ונוחת.</p></div>
+      <div><b>מתרחקת</b><p>אותה תנועה, הפוך. לחיצה על שם היום או שתי אצבעות סוגרות.</p></div>
+      <div><b>מדייקת</b><p>בתוך השעה: דקות, מה (עד 2 מילים), צלצול, זמני או קבוע, ובאילו ימים.</p></div>
+      <div><b>זוכרת</b><p>בשעה של ההתראה השעון מצלצל לבד. stop: זמני נעלם, קבוע נשאר. snooze · 9 min.</p></div>
+    </div></section>
+
+  <section id="live"><div class="hd"><div class="n">11</div><h2>לייב<span>live</span></h2><p>המוצר עצמו, מאותם קבצים. אין כאן העתק.</p></div>
+    <div class="bd"><div class="live-ctl"><button class="play" type="button" id="again">▶ מחליטה</button><button class="play" type="button" id="ringNow">▶ זוכרת</button></div>
+      <div class="stage" id="app"></div></div></section>
+</main>
+<script src="grid.js"></script><script>
+const cs=getComputedStyle(document.documentElement),g=n=>cs.getPropertyValue(n).trim(),num=n=>parseFloat(g(n));
+document.getElementById('sw').innerHTML=[['--paper','נייר','רקע.'],['--ink','דיו','טקסט וקבוע.'],['--orange','כתום','זמני, קו, נקודה, הדגשה, הקווים שהשעה מתפרקת אליהם.'],['--grey','שקט','תוויות ומה שעבר.']]
+  .map(([k,n,u])=>`<div><div class="chip" style="background:var(${k})"></div><b>${n}</b><code>${k} · ${g(k)}</code><span class="use">${u}</span></div>`).join('');
+document.getElementById('ts').innerHTML=[['--t-splash','ספלאש','הלוגו בפתיחה ובראש המערכת','var(--type)',900],['--t-hour','שעה','השעה בתוך מדייקת','var(--font)',700],['--t-ring','צלצול','השעה בפתיחה ובצלצול','var(--font)',700],
+  ['--t-logo','לוגו · שדה','הלוגו באפליקציה (under) · השעה בשדה (helvetica)','var(--type)',900],['--t-title','כותרת','what? · done · stop','var(--font)',400],['--t-body','גוף','next · ימים · כפתורים','var(--font)',400],
+  ['--t-label','תווית','שם בשדה · ימי השבוע · passed','var(--font)',400],['--t-micro','זעיר','התראה בתצוגת שבוע','var(--font)',400]]
+  .map(([k,n,u,f,w])=>`<div><b>${n}</b><code>${k} · ${g(k)}</code><div><div class="spec" style="font-family:${f};font-weight:${w};font-size:min(var(${k}),14vw)">${k=='--t-splash'||k=='--t-logo'?'<span class="u">u<i></i><i></i></span>hr':['--t-hour','--t-ring'].includes(k)?'<span class="clk2"><b>07</b><b>00</b></span>':'wake up'}</div><span class="use">${u}</span></div></div>`).join('');
+document.getElementById('sp').innerHTML=[['--margin','שוליים'],['--gap','מרווח = שורת טקסט'],['--field','רוחב שדה'],['--row','גובה שדה'],['--top','מלמעלה'],['--head','לוגו מלמעלה'],['--stripe','פס בצלצול']]
+  .map(([k,n])=>`<div><b>${n}</b><code>${k} · ${g(k)}</code><div class="bar" style="width:var(${k})"></div></div>`).join('');
+const mo=[['--move','תנועה','כל מעבר בין רמות',(t,d)=>slide(t,d,g('--ease'))],['--step','צעד','ההשהיה בין קו לקו, מהיום שנלחץ החוצה',(t,d)=>steps(t,d)],
+  ['--fall','נפילה','הגריד נופל בתאוצה של כובד',(t,d)=>slide(t,d,g('--gravity'))],['--quick','מהיר','הופעה והיעלמות',(t,d)=>fade(t,d)],
+  ['--thicken','התעבות','ühr מ-100 ל-900 בספלאש',(t,d)=>weight(t,d,false)],['--breath','נשימה','צלצול אחד: ארבעה צפצופים והפסקה',(t,d)=>weight(t,d,true)],['--ring','קווים','הספרה מתפרקת לקווי הגריד: הקו מתדקק מ-<code>--stripe</code> עד 1px כתום וחוזר. radar: ספרה אחרי ספרה. chime ו-pulse: כל הספרות יחד',(t,d)=>fade(t,d/2)]];
+const mel=document.getElementById('mo');
+mel.innerHTML=mo.map(([k,n,u],i)=>`<div><b>${n}</b><code>${k} · ${g(k)}</code><div><div class="track" tabindex="0" role="button" aria-label="play ${n}" data-i="${i}">${i==1?'<span class="bars">'+'<i></i>'.repeat(8)+'</span>':i>3?'<span class="wt">u</span>':'<i></i>'}</div><span class="use">${u}</span></div></div>`).join('');
+function slide(t,d,e){const b=t.querySelector('i');b.animate([{transform:'translateX(0)'},{transform:`translateX(${-(t.clientWidth-20)}px)`}],{duration:d,easing:e,fill:'both'})}
+function steps(t,d){t.querySelectorAll('i').forEach((l,i)=>l.animate([{transform:'translateY(-100%)'},{transform:'none'}],{duration:num('--fall'),delay:i*d,easing:g('--gravity'),fill:'backwards'}))}
+function fade(t,d){t.querySelector('i').animate([{opacity:1},{opacity:0},{opacity:1}],{duration:d*2})}
+function weight(t,d,br){const w=t.querySelector('.wt'),t0=performance.now(),io=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2,B=[0,110,220,330],L=br?d*3:d;
+  const f=n=>{const e=n-t0;if(e>L){w.style.fontWeight=100;return}let k;
+    if(!br)k=io(e/d);else{const ms=e%d;k=ms<450?B.reduce((s,b)=>s+io(Math.min(1,Math.max(0,(ms-b)/90))),0)/4:1-io(Math.min(1,(ms-450)/500));k=1-k}
+    w.style.fontWeight=Math.round(100+800*k);requestAnimationFrame(f)};requestAnimationFrame(f)}
+mel.addEventListener('click',e=>{const t=e.target.closest('.track');if(t)mo[t.dataset.i][3](t,num(mo[t.dataset.i][0]))});
+mel.addEventListener('keydown',e=>{const t=e.target.closest('.track');if(t&&(e.key==='Enter'||e.key===' ')){e.preventDefault();t.click()}});
+document.getElementById('jbtn').onclick=()=>{const b=document.getElementById('jbox');b.classList.remove('jolt');void b.offsetWidth;b.classList.add('jolt')};
+let ac;document.getElementById('bbtn').onclick=()=>{try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();const t0=ac.currentTime;
+  [0,.11,.22,.33].forEach(t=>[[1568,.09],[3136,.025]].forEach(([f,v])=>{const o=ac.createOscillator(),gn=ac.createGain();o.frequency.value=f;gn.gain.setValueAtTime(0,t0+t);gn.gain.linearRampToValueAtTime(v,t0+t+.005);gn.gain.exponentialRampToValueAtTime(.0001,t0+t+.1);o.connect(gn).connect(ac.destination);o.start(t0+t);o.stop(t0+t+.11)}))}catch(e){}};
+const app=document.getElementById('app');mountUhr(app);
+const dots=()=>document.querySelectorAll('.sys .u').forEach(umlaut);dots();(document.fonts?document.fonts.ready:Promise.resolve()).then(dots);
+document.getElementById('again').onclick=()=>mountUhr(app);
+document.getElementById('ringNow').onclick=()=>app.uhr&&app.uhr.ring();
+</script></body></html>
