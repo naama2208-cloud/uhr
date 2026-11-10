@@ -102,10 +102,10 @@ function openSheet(i,h,a){origin=sqAt(i,h);const d=days[i].d;
   buzz(10);go(0)}
 function closeSheet(target,after){const r=target?rel(target):{x:W/2-10,y:PH/2-10,w:20,h:20};sh.style.clipPath=clip(r);
   setTimeout(()=>{sh.classList.remove('on');body.innerHTML='';after&&after()},MOVE)}
-function go(n){step=n;sh.classList.add('fall');void sh.offsetWidth;sh.classList.remove('fall');
+function go(n,dir){const from=dir||(n>step?1:n<step?-1:0);step=n;sh.classList.add('fall');void sh.offsetWidth;sh.classList.remove('fall');
   dots.innerHTML=LABELS.map((l,k)=>`<button type="button" aria-label="${l}" class="${k<n?'done':k===n?'cur':''}"></button>`).join('');
   [...dots.children].forEach((b,k)=>b.onclick=()=>{if(k!==step)go(k)});
-  lab.textContent=LABELS[n];body.innerHTML='';const inn=el('in',body);STEPS[n](inn);bGo.textContent='continue'}
+  lab.textContent=LABELS[n];body.innerHTML='';const inn=el('in'+(from>0?' from-r':from<0?' from-l':''),body);STEPS[n](inn);bGo.textContent='continue'}
 // when a once-alarm's chosen time has already passed that day, it moves to the next day
 const effDate=()=>{let d=parse(draft.date);if(draft.once&&at(d,draft.h,draft.m)<=new Date())d=addDays(d,1);return d};
 const dayWord=d=>{const k=Math.round((day0(d)-day0(new Date()))/864e5);return k===0?'today':DAYS[d.getDay()]};
@@ -116,7 +116,7 @@ function wheel(inn,{get,set,fmt=p2,step:st=1,mod,onchange}){const w=el('wheel',i
     cu.style.setProperty('--k',(dir>0?-8:8)+'px');cu.classList.add('kick');setTimeout(()=>cu.classList.remove('kick'),90)};
   let y0=null,acc=0;
   w.addEventListener('pointerdown',e=>{y0=e.clientY;acc=0;try{w.setPointerCapture(e.pointerId)}catch(_){}});
-  w.addEventListener('pointermove',e=>{if(y0==null)return;acc+=(e.clientY-y0)/S;y0=e.clientY;while(Math.abs(acc)>=40){bump(acc>0?-1:1);acc+=acc>0?-40:40}});
+  w.addEventListener('pointermove',e=>{if(y0==null||(sw&&sw.on))return;acc+=(e.clientY-y0)/S;y0=e.clientY;while(Math.abs(acc)>=40){bump(acc>0?-1:1);acc+=acc>0?-40:40}});
   w.addEventListener('pointerup',()=>y0=null);w.addEventListener('pointercancel',()=>y0=null);
   pv.addEventListener('click',()=>bump(-1));nx.addEventListener('click',()=>bump(1));
   let wacc=0;w.addEventListener('wheel',e=>{e.preventDefault();wacc+=e.deltaY;if(Math.abs(wacc)>30){bump(wacc>0?1:-1);wacc=0}},{passive:false});
@@ -154,6 +154,16 @@ function commit(){const d=effDate(),a={id:draft.id,h:draft.h,m:draft.m,name:(dra
   const i=indexOf(a);reveal(i,a.h);const q=sqAt(i,a.h);buzz([10,40,10]);
   closeSheet(q,()=>{if(q){q.classList.add('pop');setTimeout(()=>q.classList.remove('pop'),700)}})}
 bGo.addEventListener('click',next);
+// carousel: swipe the step sideways — left for the next, right for the one before; the page follows the finger
+let sw=null;
+body.addEventListener('pointerdown',e=>{sw={x:e.clientX,y:e.clientY,on:false}},true);
+body.addEventListener('pointermove',e=>{if(!sw)return;const dx=(e.clientX-sw.x)/S,dy=(e.clientY-sw.y)/S;
+  if(!sw.on&&Math.abs(dx)>14&&Math.abs(dx)>Math.abs(dy)*1.4)sw.on=true;
+  if(sw.on){const inn=body.firstChild,edge=(dx>0&&step===0)||(dx<0&&step===STEPS.length-1);inn.style.animation='none';inn.style.transform=`translateX(${edge?dx*.25:dx}px)`;inn.style.opacity=1-Math.min(.5,Math.abs(dx)/600)}},true);
+const swEnd=e=>{if(!sw)return;const dx=(e.clientX-sw.x)/S,on=sw.on;sw=null;if(!on)return;const inn=body.firstChild;
+  if(dx<-70&&step<STEPS.length-1){tick();go(step+1,1)}else if(dx>70&&step>0){tick();go(step-1,-1)}
+  else{inn.style.transition='transform 240ms var(--ease),opacity 240ms';inn.style.transform='';inn.style.opacity=''}};
+body.addEventListener('pointerup',swEnd,true);body.addEventListener('pointercancel',()=>{sw=null},true);
 bDel.addEventListener('click',()=>{if(draft&&draft.edit){const q=origin;alarms=alarms.filter(x=>x.id!==draft.id);store();
     closeSheet(q,()=>{if(q){q.classList.add('vanish');setTimeout(paintAll,700)}else paintAll()})}else closeSheet(origin)});
 sc.addEventListener('click',e=>{const q=e.target.closest('.sq');if(!q||sh.classList.contains('on')||ringing)return;

@@ -65,6 +65,10 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .body{position:relative;flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 var(--margin);min-height:0}
 .in{animation:enter var(--move) var(--ease) both}
 @keyframes enter{from{opacity:0;transform:translateY(28px)}}
+.in.from-r{animation-name:enter-r}.in.from-l{animation-name:enter-l}
+@keyframes enter-r{from{opacity:0;transform:translateX(120px)}}
+@keyframes enter-l{from{opacity:0;transform:translateX(-120px)}}
+.body{touch-action:pan-y}
 .acts{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);padding:0 var(--margin) 30px}
 .acts button{height:56px;font-size:17px;text-align:left;padding:0 14px;cursor:pointer;border-radius:0}
 .b-del{background:var(--paper);border:1.5px solid var(--ink);color:var(--ink)}
