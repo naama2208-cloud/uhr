@@ -54,8 +54,13 @@ function addDay(){const i=days.length,d=addDays(base,i%7),de=el('day',track);de.
   days.push({d,de,sqs,bands});track.style.height=days.length*DAYH+ROW+'px';paint(i)}
 function paint(i){const {d,sqs}=days[i],now=new Date();
   sqs.forEach(q=>{q.className='sq';q.innerHTML='';delete q.dataset.id;q.removeAttribute('aria-label')});
-  occ(d).forEach(a=>{const q=sqs[a.h];if(q.dataset.id){q.dataset.more=(+q.dataset.more||1)+1;q.querySelector('.more')||q.insertAdjacentHTML('beforeend','<span class="more">+</span>');return}
-    q.dataset.id=a.id;q.classList.add('al',a.days.length?'fixed':'temp');q.innerHTML=`<span class="t">${p2(a.h)}<br>${p2(a.m)}</span><span class="n">${esc(a.name)}</span>`;q.setAttribute('aria-label',`${p2(a.h)}:${p2(a.m)} ${a.name}`)});
+  const by={};occ(d).forEach(a=>(by[a.h]=by[a.h]||[]).push(a));
+  Object.entries(by).forEach(([h,list])=>{const q=sqs[h];q.dataset.id=list[0].id;
+    if(list.length===1){const a=list[0];q.classList.add('al',a.days.length?'fixed':'temp');q.innerHTML=`<span class="t">${p2(a.h)}<br>${p2(a.m)}</span><span class="n">${esc(a.name)}</span>`;q.setAttribute('aria-label',`${p2(a.h)}:${p2(a.m)} ${a.name}`);return}
+    // two or more in one hour: the square splits into bands, one per alarm, in time order
+    q.classList.add('al','multi');const hh=F/list.length;
+    q.innerHTML=list.map((a,k)=>`<div class="part ${a.days.length?'fixed':'temp'}${list.length>2?' thin':''}" data-id="${a.id}" style="top:${k*hh}px;height:${hh}px"><b>:${p2(a.m)}</b><span>${esc(a.name)}</span></div>`).join('');
+    q.setAttribute('aria-label',list.map(a=>`${p2(a.h)}:${p2(a.m)} ${a.name}`).join(', '))});
   if(i%7===0){const h=now.getHours(),q=sqs[h];q.classList.add('now');
     if(!q.dataset.id)q.insertAdjacentHTML('beforeend',`<span class="nt">${p2(h)}<br>${p2(now.getMinutes())}</span>`);
     q.insertAdjacentHTML('beforeend',`<i class="nb" style="width:${(now.getMinutes()+1)/60*100}%"></i>`)}}
@@ -95,7 +100,7 @@ sh.innerHTML=`<div class="sv">${VX.map((x,i)=>`<i style="left:${x}px;--d:${i*STE
 const dots=sh.querySelector('.dots'),lab=sh.querySelector('.lab'),body=sh.querySelector('.body'),bDel=sh.querySelector('.b-del'),bGo=sh.querySelector('.b-go');
 const LABELS=['time','name','sound','repeat'];
 let draft=null,step=0,origin=null;
-function openSheet(i,h,a){origin=sqAt(i,h);const d=days[i].d;
+function openSheet(i,h,a,from){origin=from||sqAt(i,h);const d=days[i].d;
   draft=a?{id:a.id,h:a.h,m:a.m,name:a.name,sound:a.sound,days:[...a.days],once:!a.days.length,date:a.date||ymd(d),edit:true}
          :{id:Date.now(),h,m:0,name:'',sound:'radar',days:[d.getDay()],once:true,date:ymd(d),edit:false};
   sh.classList.add('on');sh.style.transition='none';sh.style.clipPath=clip(rel(origin));void sh.offsetWidth;sh.style.transition='';sh.style.clipPath='inset(0px)';
@@ -166,8 +171,14 @@ const swEnd=e=>{if(!sw)return;const dx=(e.clientX-sw.x)/S,on=sw.on;sw=null;if(!o
 body.addEventListener('pointerup',swEnd,true);body.addEventListener('pointercancel',()=>{sw=null},true);
 bDel.addEventListener('click',()=>{if(draft&&draft.edit){const q=origin;alarms=alarms.filter(x=>x.id!==draft.id);store();
     closeSheet(q,()=>{if(q){q.classList.add('vanish');setTimeout(paintAll,700)}else paintAll()})}else closeSheet(origin)});
-sc.addEventListener('click',e=>{const q=e.target.closest('.sq');if(!q||sh.classList.contains('on')||ringing)return;
-  const i=+q.dataset.i,h=+q.dataset.h,a=q.dataset.id?alarms.find(x=>String(x.id)===q.dataset.id):null;openSheet(i,h,a)});
+sc.addEventListener('click',e=>{if(lpFired){lpFired=false;return}const q=e.target.closest('.sq');if(!q||sh.classList.contains('on')||ringing)return;
+  const pt=e.target.closest('.part'),id=pt?pt.dataset.id:q.dataset.id,i=+q.dataset.i,h=+q.dataset.h,a=id?alarms.find(x=>String(x.id)===id):null;openSheet(i,h,a,pt||q)});
+// press and hold a square: add another alarm in that same hour
+let lpT=null,lpFired=false;
+sc.addEventListener('pointerdown',e=>{const q=e.target.closest('.sq');if(!q)return;clearTimeout(lpT);
+  lpT=setTimeout(()=>{if(sh.classList.contains('on')||ringing)return;lpFired=true;buzz(20);openSheet(+q.dataset.i,+q.dataset.h,null,q)},550)});
+['pointerup','pointercancel','pointerleave'].forEach(t=>sc.addEventListener(t,()=>clearTimeout(lpT)));
+sc.addEventListener('scroll',()=>clearTimeout(lpT),{passive:true});
 // pinch: open on a square = open it; pinch closed on a step = back out
 let pz=null;const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
 ph.addEventListener('touchstart',e=>{if(e.touches.length===2)pz={d:dist(e.touches),x:(e.touches[0].clientX+e.touches[1].clientX)/2,y:(e.touches[0].clientY+e.touches[1].clientY)/2,done:false}},{passive:true});
@@ -197,7 +208,8 @@ function stopRing(snooze){const a=ringing;if(!a)return;clearInterval(rLoop);buzz
   store();rg.style.clipPath=clip(rel(q));
   setTimeout(()=>{rg.className='ring';ringing=null;
     // done is done: a once-alarm leaves its square — no list keeps it
-    if(q&&q.dataset.id&&!a.days.length){q.classList.add('vanish');setTimeout(()=>{paintAll();popSn()},700)}else{paintAll();popSn()}},MOVE);
+    const gone=q&&(q.querySelector(`.part[data-id="${a.id}"]`)||(q.dataset.id===String(a.id)?q:null));
+    if(gone&&!a.days.length){gone.classList.add('vanish');setTimeout(()=>{paintAll();popSn()},700)}else{paintAll();popSn()}},MOVE);
   function popSn(){if(!sn)return;const j=indexOf(sn),s=sqAt(j,sn.h);if(s){s.classList.add('pop');setTimeout(()=>s.classList.remove('pop'),700)}}}
 rg.querySelector('.b-go').addEventListener('click',()=>stopRing(false));
 rg.querySelector('.b-del').addEventListener('click',()=>stopRing(true));
@@ -222,9 +234,10 @@ function drawGrid(){const top=sc.scrollTop;let k=0;
   days.forEach(D=>D.bands.forEach(b=>{const y=parseFloat(D.de.style.top)+parseFloat(b.style.top)-top;b.style.setProperty('--d',(y>-80&&y<PH?(8*STEP+(k++)*STEP*1.5):0)+'ms')}));
   void sc.offsetWidth;sc.classList.remove('drawing')}
 function land(){const q=sqAt(0,new Date().getHours()),r=rel(q),n=new Date(),L=el('land',ph);L.innerHTML=`<span>${p2(n.getHours())}</span><span>${p2(n.getMinutes())}</span>`;
-  L.style.left=r.x+8+'px';L.style.top=r.y+9+'px';ph.classList.add('landing');
-  const k=(W-2*M)/L.offsetWidth;L.style.transition='none';L.style.transform=`translate(${M-(r.x+8)}px,${PH*.24-(r.y+9)}px) scale(${k})`;void L.offsetWidth;
-  L.style.transition='';setTimeout(()=>{L.style.transform='';drawGrid()},500);
+  ph.classList.add('landing');L.style.transition='none';const w0=L.offsetWidth,k=(W-2*M)/w0;
+  // set at full size (sharp), then scale down into the square
+  L.style.fontSize=31*k+'px';L.style.left=M+'px';L.style.top=Math.round(PH*.24)+'px';L.style.transform='none';void L.offsetWidth;
+  L.style.transition='';setTimeout(()=>{L.style.transform=`translate(${r.x+8-M}px,${r.y+9-Math.round(PH*.24)}px) scale(${1/k})`;drawGrid()},500);
   setTimeout(()=>{ph.classList.remove('landing');L.remove()},500+MOVE*1.4+60)}
 function splash(){const sp=el('splash',ph);sp.innerHTML='<div class="sw"><span class="u">u<i></i><i></i></span><span>h</span><span>r</span></div>';
   const sw=sp.firstChild,ls=[...sw.children],TOP=Math.round(PH*.36);sw.style.top=TOP+'px';
