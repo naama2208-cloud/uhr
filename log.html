@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ühr — my log</title>
+<link rel="stylesheet" href="under.css">
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* my log: every alarm i set, changed, heard, stopped or put off — kept on this phone, by day. material for the story. */
+:root{--line-o:.55}
+*{box-sizing:border-box}
+html,body{background:var(--paper);color:var(--ink);font-family:var(--font);margin:0}
+body{padding:40px max(16px,env(safe-area-inset-left,0px)) 80px max(16px,env(safe-area-inset-right,0px));text-transform:lowercase}
+.wrap{max-width:720px;margin:0 auto}
+h1{margin:0 0 6px;font:700 44px/1 var(--font)}
+.sub{color:var(--grey);font-size:15px;margin:0 0 28px}
+.sub a{color:var(--grey)}
+.sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:36px}
+.sum div{border-top:2px solid var(--ink);padding-top:8px;font-size:13px;color:var(--grey)}
+.sum b{display:block;font:700 40px/1 var(--font);color:var(--ink);font-variant-numeric:tabular-nums;margin-bottom:6px}
+@media (max-width:480px){.sum{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.day{border-top:1px solid color-mix(in srgb,var(--line) calc(var(--line-o)*100%),transparent);padding:18px 0 22px}
+.day h2{margin:0 0 12px;font:700 20px/1 var(--font);display:flex;justify-content:space-between;gap:12px}
+.day h2 span{font-weight:400;color:var(--grey);font-size:14px}
+.ev{display:grid;grid-template-columns:52px 18px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0;font-size:15px}
+.ev time{font-variant-numeric:tabular-nums;color:var(--grey)}
+.ev i{width:14px;height:14px;display:block}
+.ev .what{color:var(--grey);font-size:13px;text-align:right}
+.set i{background:none;box-shadow:inset 0 0 0 2px var(--orange)}
+.changed i{background:none;box-shadow:inset 0 0 0 2px var(--ink)}
+.rang i{background:var(--orange)}
+.stopped i{background:var(--ink)}
+.snoozed i{background:color-mix(in srgb,var(--orange) 40%,var(--paper))}
+.deleted i{background:none;box-shadow:inset 0 0 0 1px var(--grey)}
+.deleted span{text-decoration:line-through;color:var(--grey)}
+textarea{width:100%;min-height:64px;margin-top:10px;border:1px solid color-mix(in srgb,var(--ink) 25%,transparent);background:none;color:var(--ink);font:400 15px/1.45 var(--font);padding:10px;border-radius:0;resize:vertical;text-transform:none}
+textarea:focus{outline:2px solid var(--orange);outline-offset:0}
+.empty{color:var(--grey);font-size:16px;line-height:1.5;padding:24px 0}
+.tools{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.tools button{height:48px;padding:0 18px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);font:400 16px/1 var(--font);text-transform:lowercase;cursor:pointer;border-radius:0}
+.tools button.go{background:var(--orange);border-color:var(--orange);color:var(--paper);font-weight:700}
+.key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--grey);margin:-14px 0 28px}
+.key span{display:inline-flex;align-items:center;gap:6px}.key i{width:12px;height:12px;display:inline-block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>my log</h1>
+  <p class="sub">everything i did with ühr, kept on this phone. <a href="./">← app</a></p>
+  <div class="sum" id="sum"></div>
+  <div class="key"><span class="set"><i></i>set</span><span class="changed"><i></i>changed</span><span class="rang"><i></i>rang</span><span class="stopped"><i></i>stopped</span><span class="snoozed"><i></i>snoozed</span><span class="deleted"><i></i>deleted</span></div>
+  <div id="days"></div>
+  <div class="tools"><button class="go" id="copy" type="button">copy as text</button><button id="save" type="button">save file</button></div>
+  <p class="sub" id="msg" aria-live="polite"></p>
+</div>
+<script>
+const p2=n=>String(n).padStart(2,'0'),DAYS=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'],MON=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+const get=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}};
+const put=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const L=get('uhr5log',[]),notes=get('uhr5notes',{});
+const key=t=>{const d=new Date(t);return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())};
+const count=t=>L.filter(e=>e.type===t).length;
+document.getElementById('sum').innerHTML=[['set',count('set')],['rang',count('rang')],['snoozed',count('snoozed')],['days used',new Set(L.map(e=>key(e.t))).size]].map(([l,v])=>`<div><b>${v}</b>${l}</div>`).join('');
+const by={};L.forEach(e=>(by[key(e.t)]=by[key(e.t)]||[]).push(e));
+const ks=Object.keys(by).sort().reverse(),box=document.getElementById('days');
+if(!ks.length)box.innerHTML='<p class="empty">nothing yet. set an alarm in ühr and it shows up here, with the time you set it.</p>';
+ks.forEach(k=>{const d=new Date(k+'T00:00'),sec=document.createElement('section');sec.className='day';
+  sec.innerHTML=`<h2>${DAYS[d.getDay()]}<span>${d.getDate()} ${MON[d.getMonth()]}</span></h2>`+by[k].map(e=>{const t=new Date(e.t);
+    return`<div class="ev ${e.type}"><time>${p2(t.getHours())}:${p2(t.getMinutes())}</time><i></i><span>${esc(e.type)} · <b>${esc(e.name)}</b> ${esc(e.at)}</span><span class="what">${esc(e.repeat||'')}</span></div>`}).join('')+
+    `<textarea id="n-${k}" placeholder="how was today with ühr?">${esc(notes[k]||'')}</textarea>`;
+  box.appendChild(sec);sec.querySelector('textarea').addEventListener('input',ev=>{notes[k]=ev.target.value;put('uhr5notes',notes)})});
+function asText(){return ks.slice().reverse().map(k=>{const d=new Date(k+'T00:00');return`${DAYS[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}\n`+
+  by[k].map(e=>{const t=new Date(e.t);return`  ${p2(t.getHours())}:${p2(t.getMinutes())}  ${e.type}  ${e.name} ${e.at}${e.repeat?'  ('+e.repeat+')':''}`}).join('\n')+(notes[k]?`\n  note: ${notes[k]}`:'')}).join('\n\n')}
+const msg=document.getElementById('msg');
+document.getElementById('copy').onclick=async()=>{const t=asText()||'(empty)';try{await navigator.clipboard.writeText(t);msg.textContent='copied.'}catch(e){msg.textContent='could not copy here — use save file.'}};
+document.getElementById('save').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([asText()],{type:'text/plain'}));a.download='uhr-log.txt';a.click();msg.textContent='saved uhr-log.txt.'};
+</script>
+</body>
+</html>

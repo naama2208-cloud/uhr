@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ühr — the system, taken apart</title>
+<link rel="stylesheet" href="under.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css?v=6.0">
+<style>
+/* the system, taken apart: every token on the left; the app and its parts redraw from them as you move a slider */
+html,body{height:auto;overflow:auto}
+body{text-transform:none;padding:28px max(16px,env(safe-area-inset-left,0px)) 60px max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 402px;gap:48px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}.live{order:-1;justify-self:center}}
+h1{font:400 15px/1.3 var(--font);margin:0 0 28px;color:var(--grey);letter-spacing:.02em}
+h1 b{display:block;font:700 44px/1 var(--font);color:var(--ink);letter-spacing:0;margin-bottom:10px}
+h2{font:700 13px/1 var(--font);text-transform:uppercase;letter-spacing:.08em;color:var(--grey);margin:40px 0 14px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--line) calc(var(--line-o)*100%),transparent)}
+.tok{display:grid;grid-template-columns:120px minmax(0,1fr) 64px;gap:14px;align-items:center;padding:8px 0;font-size:14px}
+.tok code{font:400 13px/1 ui-monospace,Menlo,monospace;color:var(--grey)}
+.tok output{font-variant-numeric:tabular-nums;text-align:right}
+.tok input[type=range]{width:100%;accent-color:var(--orange)}
+.tok input[type=color]{width:48px;height:28px;border:1px solid var(--ink);padding:0;background:none}
+.row{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-end}
+.spec{display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--grey)}
+.spec .box{position:relative}
+.spec .sq{position:relative;left:auto;top:auto;cursor:default}
+.spec .sq:not(.al):not(.now){box-shadow:inset 0 0 0 1px var(--line)}
+.lines{position:relative;height:120px;width:100%;max-width:402px;background:var(--paper)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);width:100%;max-width:402px}
+.btns button{height:60px;font-size:var(--btn);border-radius:0}
+.sw{width:64px;height:64px;border:1px solid color-mix(in srgb,var(--ink) 20%,transparent)}
+.live{position:sticky;top:20px;width:402px;max-width:100%}
+.live iframe{display:block;width:402px;max-width:100%;height:760px;border:0;outline:1px solid color-mix(in srgb,var(--ink) 15%,transparent);background:var(--paper)}
+.live .z{display:flex;gap:8px;margin-top:12px}
+.live .z button{flex:1;height:40px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);font:400 14px/1 var(--font);cursor:pointer;border-radius:0}
+.live .z button.on{background:var(--ink);color:var(--paper)}
+.reset{margin-top:18px;background:none;border:0;padding:0;color:var(--grey);text-decoration:underline;cursor:pointer;font:400 14px/1 var(--font)}
+.back{color:var(--grey);font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<main>
+  <h1><b>the system, taken apart</b>every measure in ühr is a token. move one and the app on the right and every part below redraw from it. <a class="back" href="./">← app</a></h1>
+
+  <h2>space</h2>
+  <div class="tok"><code>--margin</code><input id="t-margin" type="range" min="10" max="36" step="1" data-v="--margin" data-u="px"><output></output></div>
+  <div class="tok"><code>--gap</code><input id="t-gap" type="range" min="6" max="40" step="1" data-v="--gap" data-u="px"><output></output></div>
+  <div class="tok"><code>square</code><span style="color:var(--grey)">= (402 − 2·margin − 3·gap) ÷ 4</span><output id="o-sq"></output></div>
+
+  <h2>line</h2>
+  <div class="tok"><code>--line-o</code><input id="t-lo" type="range" min="0.05" max="1" step="0.05" data-v="--line-o" data-u=""><output></output></div>
+
+  <h2>colour</h2>
+  <div class="tok"><code>--orange</code><input id="t-or" type="color" data-v="--orange" data-u=""><output></output></div>
+  <div class="tok"><code>--ink</code><input id="t-ink" type="color" data-v="--ink" data-u=""><output></output></div>
+  <div class="tok"><code>--paper</code><input id="t-paper" type="color" data-v="--paper" data-u=""><output></output></div>
+
+  <h2>type &amp; motion</h2>
+  <div class="tok"><code>--btn</code><input id="t-btn" type="range" min="14" max="26" step="1" data-v="--btn" data-u="px"><output></output></div>
+  <div class="tok"><code>--move</code><input id="t-move" type="range" min="200" max="1600" step="20" data-v="--move" data-u="ms"><output></output></div>
+
+  <h2>the parts</h2>
+  <div class="row" id="parts"></div>
+  <h2>buttons</h2>
+  <div class="btns"><button class="b-del" type="button">delete</button><button class="b-go" type="button">continue</button></div>
+  <h2>the grid</h2>
+  <div class="lines" id="lines"></div>
+  <h2>colour</h2>
+  <div class="row"><div class="spec"><div class="sw" style="background:var(--orange)"></div>orange</div><div class="spec"><div class="sw" style="background:var(--ink)"></div>ink</div><div class="spec"><div class="sw" style="background:var(--paper)"></div>paper</div></div>
+  <button class="reset" id="reset" type="button">back to the original tokens</button>
+</main>
+<aside class="live">
+  <iframe id="app" src="./?embed" title="ühr, live"></iframe>
+  <div class="z"><button type="button" data-z="2">2 a row</button><button type="button" data-z="4" class="on">4 a row</button><button type="button" data-z="8">8 a row</button></div>
+</aside>
+</div>
+<script>
+const R=document.documentElement,fr=document.getElementById('app'),ins=[...document.querySelectorAll('[data-v]')];
+const css=n=>getComputedStyle(R).getPropertyValue(n).trim();
+const ORIG={};ins.forEach(i=>ORIG[i.dataset.v]=css(i.dataset.v));
+const num=v=>parseFloat(v);
+function hex(c){const x=document.createElement('canvas').getContext('2d');x.fillStyle=c;return x.fillStyle}
+function fill(){ins.forEach(i=>{const v=css(i.dataset.v);i.value=i.type==='color'?hex(v):num(v);i.nextElementSibling.textContent=i.type==='color'?hex(v):num(v)+i.dataset.u})}
+function sq(){const M=num(css('--margin')),G=num(css('--gap'));return(402-2*M-3*G)/4}
+function parts(){const F=sq();document.getElementById('o-sq').textContent=Math.round(F)+'px';
+  const s=(cls,inner,label)=>`<div class="spec"><div class="box"><div class="sq ${cls}" style="width:${F}px;height:${F}px">${inner}</div></div>${label}</div>`;
+  document.getElementById('parts').innerHTML=
+    s('','','an hour')+s('now','<span class="nt"><b>19</b><b>40</b></span><i class="nb" style="width:66%"></i>','now')+
+    s('al temp','<span class="t"><b>21</b><b>00</b></span><span class="n">training</span>','once')+
+    s('al fixed','<span class="t"><b>20</b><b>00</b></span><span class="n">pill</span>','every week')+
+    s('al multi','<div class="part temp" style="top:0;height:50%"><b>:00</b><span>wake up</span></div><div class="part fixed" style="top:50%;height:50%"><b>:30</b><span>pill</span></div>','two in one hour');
+  const M=num(css('--margin')),G=num(css('--gap'));let l='';for(let c=0;c<4;c++){const x=M+c*(F+G);l+=`<i style="position:absolute;top:0;bottom:0;left:${x}px;width:1px;background:var(--line);opacity:var(--line-o)"></i><i style="position:absolute;top:0;bottom:0;left:${x+F}px;width:1px;background:var(--line);opacity:var(--line-o)"></i>`}
+  [20,20+F].forEach(y=>l+=`<i style="position:absolute;left:0;right:0;top:${y}px;height:1px;background:var(--line);opacity:var(--line-o)"></i>`);document.getElementById('lines').innerHTML=l}
+function push(){const d=fr.contentDocument;if(!d)return;ins.forEach(i=>d.documentElement.style.setProperty(i.dataset.v,css(i.dataset.v)));try{fr.contentWindow.uhr&&fr.contentWindow.uhr.relayout()}catch(e){}}
+ins.forEach(i=>i.addEventListener('input',()=>{R.style.setProperty(i.dataset.v,i.type==='color'?i.value:i.value+i.dataset.u);fill();parts();push()}));
+document.getElementById('reset').onclick=()=>{ins.forEach(i=>R.style.setProperty(i.dataset.v,ORIG[i.dataset.v]));fill();parts();push()};
+document.querySelectorAll('.z button').forEach(b=>b.onclick=()=>{try{fr.contentWindow.uhr.zoom(+b.dataset.z)}catch(e){}document.querySelectorAll('.z button').forEach(x=>x.classList.toggle('on',x===b))});
+fr.addEventListener('load',push);fill();parts();
+</script>
+</body>
+</html>

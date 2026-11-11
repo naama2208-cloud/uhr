@@ -1,55 +1,67 @@
-/* ühr v5 — one thing at a time.
-   home: an endless grid of hours, scrolled vertically (a day = its name + six bands of four squares).
-   a square opens into a five-step flow; an alarm rings inside its own square, the grid stays. */
+/* ühr v6 — a dynamic grid.
+   every size, colour and speed here comes from tokens.css; the grid itself is laid out in app.js from the same tokens.
+   type: helvetica throughout (the logo alone is under). spacing is normal — no tightened tracking. */
+:root{--line-o:.55;--btn:19px}
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);text-transform:lowercase;-webkit-font-smoothing:antialiased;overflow:hidden}
 .page{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
 #app{position:relative;flex:none}
 .phone{position:absolute;left:0;top:0;width:402px;transform-origin:0 0;background:var(--paper);overflow:hidden;outline:1px solid color-mix(in srgb,var(--ink) 15%,transparent);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-.demo{display:flex;gap:18px;font-size:13px}
+.demo{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;font-size:13px;padding:0 16px}
 .demo a{color:var(--grey);text-decoration:none;cursor:pointer}
 .demo a:hover,.demo a:focus-visible{color:var(--orange)}
 @media (max-width:520px){.page{justify-content:flex-start;gap:0}.phone{outline:0}.demo{display:none}}
+.embed .demo{display:none}.embed .page{justify-content:flex-start}.embed .phone{outline:0}
 [hidden]{display:none!important}
 button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-color:transparent}
 :focus-visible{outline:2px solid var(--orange);outline-offset:2px}
 
-/* ---------- home: the endless grid ---------- */
+/* ---------- home: the week, scrolled forever ---------- */
 .scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;touch-action:pan-y;overscroll-behavior:contain}
+.scroll.held{overflow:hidden}
 .scroll::-webkit-scrollbar{display:none}
-.track{position:relative;width:402px}
+.track{position:relative;width:402px;transform-origin:0 0}
 .vl{position:absolute;inset:0;pointer-events:none;z-index:2}
-.vl i{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.55;transform-origin:top;transition:transform var(--fall) var(--gravity) var(--d,0ms)}
+.vl i{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:var(--line-o);transform-origin:top;transition:transform var(--fall) var(--gravity) var(--d,0ms),opacity var(--quick)}
+.vl.glide i{transition:left var(--move) var(--ease),opacity var(--move) var(--ease)}
 .drawing .vl i{transform:scaleY(0);transition:none}
 .day{position:absolute;left:0;width:402px}
-.dh{position:absolute;left:var(--margin);right:var(--margin);top:16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
-.dh b{font-size:22px;font-weight:700;letter-spacing:-.01em}
-.dh span{font-size:15px;color:var(--grey);font-variant-numeric:tabular-nums}
-.band{position:absolute;left:0;width:402px;height:72px;pointer-events:none}
-.band::before,.band::after{content:"";position:absolute;left:0;right:0;height:1px;background:var(--line);opacity:.55;transform-origin:left;transition:transform var(--fall) var(--gravity) var(--d,0ms)}
+.dh{position:absolute;left:var(--margin);right:var(--margin);top:18px;display:flex;align-items:baseline}
+.dh b{font-size:22px;font-weight:700}
+.z8 .dh{top:12px}.z8 .dh b{font-size:17px}
+.z2 .dh b{font-size:26px}
+.band{position:absolute;left:0;width:402px;pointer-events:none}
+.band::before,.band::after{content:"";position:absolute;left:0;right:0;height:1px;background:var(--line);opacity:var(--line-o);transform-origin:left;transition:transform var(--fall) var(--gravity) var(--d,0ms)}
 .band::before{top:0}
 .band::after{bottom:-1px;transform-origin:right}
 .drawing .band::before,.drawing .band::after{transform:scaleX(0);transition:none}
-.sq{position:absolute;width:72px;height:72px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sq{position:absolute;cursor:pointer;-webkit-tap-highlight-color:transparent;overflow:hidden}
+.sq.hot{z-index:6}
 .sq.al{color:var(--paper)}
 .sq.temp{background:var(--orange)}
 .sq.fixed{background:var(--ink)}
-.sq .t{position:absolute;left:6px;top:7px;font:700 26px/.84 var(--font);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.sq .n{position:absolute;left:6px;right:4px;bottom:6px;font-size:13px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* the figures in a square scale with the zoom level */
+.sq .t,.sq .nt{position:absolute;left:7px;top:8px;font:700 var(--tf,25px)/.9 var(--font);font-variant-numeric:tabular-nums}
+.sq .t b,.sq .nt b{display:block;font-weight:700}
+.sq .n{position:absolute;left:7px;right:5px;bottom:7px;font-size:var(--nf,13px);line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.z2{--tf:58px;--nf:18px}.z2 .sq .t,.z2 .sq .nt{left:14px;top:14px}.z2 .sq .n{left:14px;bottom:14px}
+.z8{--tf:14px}.z8 .sq .t,.z8 .sq .nt{left:4px;top:5px}.z8 .sq .t b+b,.z8 .sq .nt b+b,.z8 .sq .n{display:none}
 .sq.multi{color:var(--paper)}
-.part{position:absolute;left:0;right:0;display:flex;align-items:center;gap:5px;padding:0 6px;overflow:hidden;white-space:nowrap;font-size:13px}
+.part{position:absolute;left:0;right:0;display:flex;align-items:center;gap:6px;padding:0 7px;overflow:hidden;white-space:nowrap;font-size:13px}
 .part+.part{box-shadow:inset 0 2px 0 var(--paper)}
 .part.temp{background:var(--orange)}.part.fixed{background:var(--ink)}
-.part b{font:700 16px/1 var(--font);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.part b{font:700 16px/1 var(--font);font-variant-numeric:tabular-nums}
 .part span{overflow:hidden;text-overflow:ellipsis}
 .part.thin b{font-size:13px}.part.thin span{font-size:11px}
+.z2 .part{font-size:17px;padding:0 14px}.z2 .part b{font-size:24px}
+.z8 .part *{display:none}
 .part.vanish{animation:vanish 700ms var(--ease) both}
 /* now: the clearest thing on the screen — a thick orange frame, the time filling it, the minutes filling its floor */
 .sq.now{background:color-mix(in srgb,var(--orange) 12%,var(--paper));box-shadow:inset 0 0 0 3px var(--orange);z-index:3}
 .sq.now.temp{background:var(--orange);box-shadow:inset 0 0 0 3px var(--ink)}
 .sq.now.fixed{box-shadow:inset 0 0 0 3px var(--orange)}
-.sq .nt{position:absolute;left:8px;top:9px;font:700 31px/.84 var(--font);letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
+.sq .nt{color:var(--ink)}
 .sq .nb{position:absolute;left:0;bottom:0;height:5px;background:var(--orange)}
 .landing .sq.now .nt{opacity:0}
 .sq.pop{animation:pop 640ms var(--ease) both}
@@ -57,11 +69,12 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .sq.vanish{animation:vanish 700ms var(--ease) both}
 @keyframes vanish{to{transform:scale(.2);opacity:0}}
 
-/* ---------- create: one step at a time ---------- */
-.sheet{position:absolute;inset:0;z-index:10;background:var(--paper);display:flex;flex-direction:column;visibility:hidden;transition:clip-path var(--move) var(--ease)}
-.sheet.on{visibility:visible}
+/* ---------- create: the stretched hour, one step at a time ---------- */
+.sheet,.ring{position:absolute;inset:0;display:flex;flex-direction:column;visibility:hidden;opacity:0;transition:opacity 200ms ease,visibility 0s linear 200ms}
+.sheet.on,.ring.on{visibility:visible;opacity:1;transition:opacity 200ms ease,visibility 0s}
+.sheet{z-index:10;background:var(--paper)}
 .sv{position:absolute;inset:0;pointer-events:none}
-.sv i{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.3;transform-origin:top;transition:transform var(--fall) var(--gravity) var(--d,0ms)}
+.sv i{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:calc(var(--line-o) * .55);transform-origin:top;transition:transform var(--fall) var(--gravity) var(--d,0ms)}
 .fall .sv i{transform:scaleY(0);transition:none}
 .top{position:relative;padding:46px var(--margin) 0;display:flex;align-items:center;gap:14px}
 .dots{display:flex;gap:8px}
@@ -69,58 +82,58 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .dots .done{background:var(--ink)}
 .dots .cur{background:var(--orange);border-color:var(--orange)}
 .lab{margin-left:auto;font-size:15px;color:var(--grey)}
-.body{position:relative;flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 var(--margin);min-height:0}
+.body{position:relative;flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 var(--margin);min-height:0;touch-action:pan-y}
 .in{animation:enter var(--move) var(--ease) both}
 @keyframes enter{from{opacity:0;transform:translateY(28px)}}
 .in.from-r{animation-name:enter-r}.in.from-l{animation-name:enter-l}
 @keyframes enter-r{from{opacity:0;transform:translateX(120px)}}
 @keyframes enter-l{from{opacity:0;transform:translateX(-120px)}}
-.body{touch-action:pan-y}
 .acts{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);padding:0 var(--margin) 30px}
-.acts button{height:56px;font-size:17px;text-align:left;padding:0 14px;cursor:pointer;border-radius:0}
+.acts button{height:60px;font-size:var(--btn);text-align:center;padding:0 10px;cursor:pointer;border-radius:0}
 .b-del{background:var(--paper);border:1.5px solid var(--ink);color:var(--ink)}
-.b-go{background:var(--orange);border:0;color:var(--paper)}
-.cap{font:700 30px/1 var(--font);color:var(--grey);font-variant-numeric:tabular-nums;letter-spacing:-.02em;margin-bottom:6px}
+.b-go{background:var(--orange);border:0;color:var(--paper);font-weight:700}
+.cap{font:700 30px/1 var(--font);color:var(--grey);font-variant-numeric:tabular-nums;margin-bottom:8px}
 .hint{font-size:15px;color:var(--grey);margin:20px 0 0}
 .wheel{display:flex;flex-direction:column;align-items:flex-start;touch-action:none;cursor:ns-resize;outline:0}
-.wheel span{font:700 64px/1 var(--font);color:color-mix(in srgb,var(--ink) 20%,transparent);font-variant-numeric:tabular-nums;letter-spacing:-.03em;margin-left:4px;cursor:pointer}
-.wheel b{font:700 236px/.8 var(--font);letter-spacing:-.045em;font-variant-numeric:tabular-nums;margin:16px 0 20px -10px;transition:transform 90ms}
+.wheel span{font:700 64px/1 var(--font);color:color-mix(in srgb,var(--ink) 20%,transparent);font-variant-numeric:tabular-nums;margin-left:4px;cursor:pointer}
+.wheel b{font:700 236px/.82 var(--font);letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:16px 0 20px -8px;transition:transform 90ms}
 .wheel b.kick{transform:translateY(var(--k,0))}
 .wheel:focus-visible b{color:var(--orange)}
 .pair{display:flex;align-items:center;gap:6px}
-.pair .wheel b{font-size:134px;margin:12px 0 14px -5px}
-.pair .wheel span{font-size:44px}
-.colon{display:flex;flex-direction:column;gap:34px;margin:0 6px 0 2px;padding-top:6px}
+.pair .wheel b{font-size:128px;margin:12px 0 14px -4px}
+.pair .wheel span{font-size:42px}
+.colon{display:flex;flex-direction:column;gap:32px;margin:0 6px 0 2px;padding-top:6px}
 .colon i{width:16px;height:16px;border-radius:50%;background:var(--orange)}
 .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
 .chip{height:44px;padding:0 13px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);font-size:16px;cursor:pointer;border-radius:0}
 .chip.on{background:var(--ink);color:var(--paper)}
 .chip.or{border-color:var(--orange);color:var(--orange)}
 .chip.sqd{width:44px;padding:0;text-align:center}
-.nm{width:100%;border:0;border-bottom:3px solid var(--ink);background:none;font:700 var(--fs,64px)/1.05 var(--font);letter-spacing:-.03em;color:var(--ink);padding:0 0 8px;outline:0;border-radius:0;text-transform:lowercase}
+.nm{width:100%;border:0;border-bottom:3px solid var(--ink);background:none;font:700 var(--fs,64px)/1.08 var(--font);color:var(--ink);padding:0 0 8px;outline:0;border-radius:0;text-transform:lowercase}
 .nm::placeholder{color:color-mix(in srgb,var(--ink) 22%,transparent)}
 .nm:focus{border-color:var(--orange)}
-/* the name, huge — the sound plays through its letters */
-.big{font:700 var(--fs,96px)/.95 var(--font);letter-spacing:-.035em;transform-origin:0 50%}
+/* the name, huge — the sound moves through its letters, each sound its own way */
+.big{font:700 var(--fs,96px)/1 var(--font);transform-origin:0 50%}
 .big i{display:inline-block;font-style:normal;white-space:pre}
-.an-radar{animation:radar 560ms linear}
-@keyframes radar{0%,25%,50%,75%,100%{transform:none}12%,37%,62%,87%{transform:scale(1.06)}}
-.an-chime i{animation:chime 1000ms var(--ease) both;animation-delay:calc(var(--i) * 60ms)}
-@keyframes chime{40%{transform:translateY(-.18em)}100%{transform:none}}
-.an-pulse{animation:pulse 1100ms ease-in-out}
-@keyframes pulse{25%,75%{letter-spacing:.03em;opacity:.65}0%,50%,100%{letter-spacing:-.035em;opacity:1}}
+.an-rise i{animation:rise 1100ms var(--ease) both;animation-delay:calc(var(--i) * 70ms)}
+@keyframes rise{40%{transform:translateY(-.2em)}100%{transform:none}}
+.an-drop i{animation:drop 900ms var(--gravity) both;animation-delay:calc(var(--i) * 45ms)}
+@keyframes drop{0%{transform:translateY(-.35em);opacity:0}55%{transform:translateY(.06em);opacity:1}100%{transform:none}}
+.an-glass{animation:glass 1600ms ease-in-out}
+@keyframes glass{20%{opacity:.35}60%{opacity:1;letter-spacing:.04em}100%{letter-spacing:0}}
+.an-tick i{animation:tickk 800ms steps(1) both;animation-delay:calc(var(--i) * 90ms)}
+@keyframes tickk{0%{opacity:.15}30%{opacity:1}100%{opacity:1}}
 
-/* ---------- ring: the alarm's own square grows; the grid stays on top of it ---------- */
-.ring{position:absolute;inset:0;z-index:20;visibility:hidden;display:flex;flex-direction:column;background:var(--orange);color:var(--ink);transition:clip-path var(--move) var(--ease)}
-.ring.on{visibility:visible}
+/* ---------- ring: the alarm's square, stretched to the screen; the grid stays on it ---------- */
+.ring{z-index:20;background:var(--orange);color:var(--ink)}
 .ring.fixed{background:var(--ink);color:var(--paper)}
 .ring .sv i{background:var(--ink);opacity:.25}
 .ring.fixed .sv i{background:var(--orange);opacity:.45}
 .ring .rh{position:absolute;inset:0;pointer-events:none}
 .ring .rh i{position:absolute;left:0;right:0;height:1px;background:var(--ink);opacity:.25}
 .ring.fixed .rh i{background:var(--orange);opacity:.45}
-.rtime{position:relative;padding:54px var(--margin) 0;font:700 64px/1 var(--font);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.cd{display:inline-block;width:.28em;height:.72em;vertical-align:baseline;background:radial-gradient(circle closest-side,currentColor 92%,transparent) 50% 18%/.13em .13em no-repeat,radial-gradient(circle closest-side,currentColor 92%,transparent) 50% 100%/.13em .13em no-repeat}
+.rtime{position:relative;padding:54px var(--margin) 0;font:700 64px/1 var(--font);font-variant-numeric:tabular-nums}
+.cd{display:inline-block;width:.3em;height:.72em;vertical-align:baseline;background:radial-gradient(circle closest-side,currentColor 92%,transparent) 50% 18%/.13em .13em no-repeat,radial-gradient(circle closest-side,currentColor 92%,transparent) 50% 100%/.13em .13em no-repeat}
 .rname{position:relative;flex:1;display:flex;align-items:center;padding:0 var(--margin);min-height:0}
 .ring .acts .b-del{background:transparent;border-color:currentColor;color:inherit}
 .ring .acts .b-go{background:var(--ink);color:var(--orange)}
@@ -132,10 +145,10 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .splash .sw{position:absolute;left:0;right:0;display:flex;justify-content:center;font-family:"under",var(--font);font-size:var(--t-splash);line-height:1;font-weight:100;color:var(--ink)}
 .splash .sw span{display:block;position:relative}
 .splash .u i{position:absolute;border-radius:50%;background:var(--orange)}
-.splash .gv{position:absolute;width:1px;background:var(--line);opacity:.55}
-.splash .gh{position:absolute;left:0;right:0;height:1px;background:var(--line);opacity:.55}
+.splash .gv{position:absolute;width:1px;background:var(--line);opacity:var(--line-o)}
+.splash .gh{position:absolute;left:0;right:0;height:1px;background:var(--line);opacity:var(--line-o)}
 .splash:not(.ready) .gv,.splash:not(.ready) .gh,.splash:not(.ready) .u i{visibility:hidden}
-.land{position:absolute;z-index:25;font:700 31px/.84 var(--font);letter-spacing:-.02em;color:var(--ink);transform-origin:0 0;pointer-events:none;font-variant-numeric:tabular-nums;transition:transform calc(var(--move) * 1.4) var(--ease)}
+.land{position:absolute;z-index:25;font:700 var(--tf,25px)/.9 var(--font);color:var(--ink);transform-origin:0 0;pointer-events:none;font-variant-numeric:tabular-nums;transition:transform calc(var(--move) * 1.4) var(--ease)}
 .land span{display:block}
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:1ms!important;transition-duration:1ms!important}}
