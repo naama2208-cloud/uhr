@@ -116,8 +116,13 @@ ph.addEventListener('touchmove',e=>{if(!pz||e.touches.length!==2)return;e.preven
 ph.addEventListener('touchend',e=>{if(!pz||e.touches.length>=2)return;const {k,c,done}=pz;pz=null;if(done||sh.classList.contains('on'))return;
   // pinch open past the largest squares = open that hour
   if(k>1.2&&N===2){track.style.transform='';const q=document.elementsFromPoint(...client(c)).find(n=>n.classList&&n.classList.contains('sq'));if(q)q.click();return}
-  if(k>1.18)zoomStep(-1,c.y);else if(k<.85)zoomStep(1,c.y);
-  else{track.animate([{transform:track.style.transform},{transform:'none'}],{duration:240,easing:EASE});track.style.transform=''}});
+  // zoom only when a level exists that way; otherwise the grid always glides back to its true size
+  const j=LEVELS.indexOf(N)+(k>1.18?-1:k<.85?1:0);
+  if(j!==LEVELS.indexOf(N)&&j>=0&&j<LEVELS.length&&!busy())zoomTo(LEVELS[j],c.y);else unpinch()});
+ph.addEventListener('touchcancel',()=>{pz=null;unpinch()});
+function unpinch(){const t=track.style.transform;if(!t)return;track.style.transform='';track.animate([{transform:t},{transform:'none'}],{duration:240,easing:EASE})}
+// the browser's own page zoom fights ours and breaks the proportions — keep it off
+['gesturestart','gesturechange'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
 const client=p=>{const b=ph.getBoundingClientRect();return[b.left+p.x*S,b.top+p.y*S]};
 // trackpad pinch on a laptop (ctrl + wheel) and + / − keys do the same
 let wacc=0,wT;sc.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();wacc+=e.deltaY;clearTimeout(wT);wT=setTimeout(()=>wacc=0,200);
