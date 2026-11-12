@@ -189,7 +189,7 @@ async function openSheet(i,h,a,from,pre){if(opening||sh.classList.contains('on')
         :a?{id:a.id,h:a.h,m:a.m,name:a.name,sound:snd(a.sound),days:[...a.days],once:!a.days.length,date:a.date||ymd(d),edit:true,shared:!!a.shared}
          :{id:Date.now(),h,m:0,name:'',sound:'rise',days:[d.getDay()],once:true,date:ymd(d),edit:false};
   buzz(10);if(!pre)tipDone('tap');svLines();await stretchOpen(origin.closest('.sq'));acts.classList.toggle('three',draft.edit);step=-1;go(pre?LABELS.length-1:0,0);sh.classList.add('on');opening=false;
-  if(pre){const t=el('tip from',sh);t.dataset.k='from';t.innerHTML='<b>someone shared this with you.</b><br>swipe ← to add it to your week.'}else tipSwipe()}
+  if(pre){const t=el('tip from',sh);t.dataset.k='from';t.innerHTML=`<b>${esc(pre.from||'someone')} shared this with you.</b><br>swipe ← to add it to your week.`}else tipSwipe()}
 async function closeSheet(target,after){if(!sh.classList.contains('on'))return;sh.querySelectorAll('.tip.from').forEach(t=>t.remove());await stretchClose(target||origin.closest('.sq'),sh);body.innerHTML='';after&&after()}
 function go(n,dir){if(n>0)tipDone('swipe');const from=dir===undefined?(n>step?1:n<step?-1:0):dir;step=n;sh.classList.add('fall');void sh.offsetWidth;sh.classList.remove('fall');
   dots.innerHTML=LABELS.map((l,k)=>`<button type="button" aria-label="${l}" class="${k<n?'done':k===n?'cur':''}"></button>`).join('');
@@ -244,19 +244,19 @@ function commit(){const d=effDate(),a={id:draft.id,h:draft.h,m:draft.m,name:(dra
   logEv(draft.edit?'changed':'set',a);
   alarms=alarms.filter(x=>x.id!==a.id);alarms.push(a);store();paintAll();buzz([10,40,10]);
   const fresh=draft.shared&&!draft.edit&&!tips.now;const i=indexOf(a);held.forEach(x=>x.cancel());held=[];reveal(i,a.h);const q=sqAt(i,a.h);
-  closeSheet(q,()=>{if(q){q.classList.add('pop');setTimeout(()=>q.classList.remove('pop'),700)}if(fresh)setTimeout(()=>{sc.scrollTo({top:Math.max(0,yOf(0,new Date().getHours())-Math.round(PH*.3)),behavior:reduce?'auto':'smooth'});setTimeout(tipNow,700)},1400);else setTimeout(tipPinch,900)})}
+  closeSheet(q,()=>{if(q){q.classList.add('pop');setTimeout(()=>q.classList.remove('pop'),700)}if(fresh)setTimeout(()=>{sc.scrollTo({top:Math.max(0,yOf(0,new Date().getHours())-Math.round(PH*.3)),behavior:reduce?'auto':'smooth'});setTimeout(()=>askName(tipNow),700)},1400);else setTimeout(tipPinch,900)})}
 bGo.addEventListener('click',next);
 // ---------- share: the alarm travels inside a link; the friend opens it and lands on the filled-in hour ----------
 const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const dec=t=>JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g,'+').replace(/_/g,'/')))));
 bSh.addEventListener('click',async()=>{const a=alarms.find(x=>x.id===draft.id);if(!a)return;
-  const url=location.origin+location.pathname+'#add='+enc({h:a.h,m:a.m,n:a.name,s:a.sound,d:a.days,t:a.date||ymd(effDate())});
+  const url=location.origin+location.pathname+'#add='+enc({h:a.h,m:a.m,n:a.name,s:a.sound,d:a.days,t:a.date||ymd(effDate()),f:me});
   const text=`${a.name} · ${p2(a.h)}:${p2(a.m)} — add it to your ühr`;logEv('shared',a);buzz(10);
   try{if(navigator.share){await navigator.share({title:'ühr',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
   try{await navigator.clipboard.writeText(text+'\n'+url);bSh.textContent='copied';setTimeout(()=>bSh.textContent='share',1600)}catch(e){prompt('copy this link',url)}});
 function takeShared(){const m=location.hash.match(/^#add=([\w-]+)/);if(!m)return false;history.replaceState(null,'',location.pathname+location.search);
   let o;try{o=dec(m[1])}catch(e){return false}if(!(o.h>=0&&o.h<24&&o.m>=0&&o.m<60))return false;
-  const pre={h:o.h|0,m:o.m|0,name:String(o.n||'').slice(0,16),sound:snd(o.s),days:Array.isArray(o.d)&&o.d.length?o.d.filter(x=>x>=0&&x<7):[],date:o.t||ymd(new Date())};
+  const pre={h:o.h|0,m:o.m|0,name:String(o.n||'').slice(0,16),sound:snd(o.s),days:Array.isArray(o.d)&&o.d.length?o.d.filter(x=>x>=0&&x<7):[],date:o.t||ymd(new Date()),from:String(o.f||'').slice(0,16)};
   pre.once=!pre.days.length;if(pre.once){pre.days=[parse(pre.date).getDay()];}
   const i=pre.once?Math.max(0,Math.round((parse(pre.date)-base)/864e5)):indexOf({days:pre.days,h:pre.h,m:pre.m});
   setTimeout(()=>{reveal(i,pre.h);openSheet(i,pre.h,null,sqAt(i,pre.h),pre)},reduce?300:THICK+1200);return true}
@@ -365,7 +365,17 @@ function tipTap(){if(seen('tap')){setTimeout(tipPinch,600);return}if(busy()){set
 function tipSwipe(){if(seen('swipe'))return;const t=el('tip swipe',sh);t.dataset.k='swipe';t.innerHTML='<i></i><b>swipe</b> to continue';}
 function tipPinch(){if(seen('pinch')||busy())return;const t=el('tip pinch',ph);t.dataset.k='pinch';t.innerHTML='<span class="pd"><i></i><i></i></span><span><b>two fingers</b><br>apart · bigger hours<br>together · the whole week</span>';
   setTimeout(()=>{const off=()=>{removeEventListener('pointerdown',off,true);if(!tips.pinch){t.classList.add('out');setTimeout(()=>t.remove(),300)}};addEventListener('pointerdown',off,true)},600)}
-if(!takeShared()&&!EMBED)setTimeout(tipNow,reduce?400:THICK+1000+500+MOVE*1.4+400);
+// ---------- who you are: asked once, kept on this phone, travels with what you share ----------
+const ME='uhr5me';let me='';try{me=localStorage.getItem(ME)||''}catch(e){}
+function askName(then){if(me||EMBED){then&&then();return}
+  const w=el('sheet who on',ph);w.innerHTML=`<div class="top"><div class="lab">hello</div></div><div class="body"><div class="in">
+    <input class="nm" dir="auto" maxlength="16" placeholder="your name" autocomplete="off" aria-label="your name"><p class="hint">so friends know who shared an ühr with them.</p></div></div>
+    <div class="acts"><button type="button" class="b-go">continue</button></div>`;
+  const nm=w.querySelector('.nm'),go=()=>{const v=nm.value.trim();if(!v){nm.focus();buzz([20,40,20]);return}
+    me=v;try{localStorage.setItem(ME,me)}catch(e){}tick();w.classList.remove('on');setTimeout(()=>{w.remove();then&&then()},260)};
+  w.querySelector('.b-go').onclick=go;nm.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go()}});
+  setTimeout(()=>{try{nm.focus({preventScroll:true})}catch(e){}},300)}
+if(!takeShared()&&!EMBED)setTimeout(()=>askName(tipNow),reduce?400:THICK+1000+500+MOVE*1.4+400);
 
 addEventListener('resize',()=>{fit();if(!busy())layoutAll()});
 // presenting + the live system page
