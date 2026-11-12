@@ -73,7 +73,7 @@ function paint(i){const {d,sqs}=days[i],now=new Date();
     if(list.length===1){const a=list[0];q.classList.add('al',a.days.length?'fixed':'temp');q.innerHTML=`<span class="t"><b>${p2(a.h)}</b><b>${p2(a.m)}</b></span><span class="n">${esc(a.name)}</span>`;q.setAttribute('aria-label',`${p2(a.h)}:${p2(a.m)} ${a.name}`);return}
     // two or more in one hour: the square splits into bands, one per alarm, in time order
     q.classList.add('al','multi');const k=100/list.length;
-    q.innerHTML=list.map((a,j)=>`<div class="part ${a.days.length?'fixed':'temp'}${list.length>2?' thin':''}" data-id="${a.id}" style="top:${j*k}%;height:${k}%"><b>:${p2(a.m)}</b><span>${esc(a.name)}</span></div>`).join('');
+    q.innerHTML=list.map((a,j)=>`<div class="part ${a.days.length?'fixed':'temp'}${list.length>2?' thin':''}" data-id="${a.id}" style="top:${j*k}%;height:${k}%"><b><span class="cd"></span>${p2(a.m)}</b><span>${esc(a.name)}</span></div>`).join('');
     q.setAttribute('aria-label',list.map(a=>`${p2(a.h)}:${p2(a.m)} ${a.name}`).join(', '))});
   if(i%7===0){const h=now.getHours(),q=sqs[h];q.classList.add('now');
     if(!q.dataset.id)q.insertAdjacentHTML('beforeend',`<span class="nt"><b>${p2(h)}</b><b>${p2(now.getMinutes())}</b></span>`);
@@ -204,7 +204,9 @@ function wheel(inn,{get,set,fmt=p2,step:st=1,mod,onchange}){const w=el('wheel',i
   let wa=0;w.addEventListener('wheel',e=>{e.preventDefault();wa+=e.deltaY;if(Math.abs(wa)>30){bump(wa>0?1:-1);wa=0}},{passive:false});
   w.addEventListener('keydown',e=>{if(e.key==='ArrowUp'){e.preventDefault();bump(-1)}if(e.key==='ArrowDown'){e.preventDefault();bump(1)}});
   draw();return draw}
-const chip=(p,txt,cls='')=>{const b=el('chip '+cls,p,'button');b.type='button';b.textContent=txt;return b};
+const chip=(p,txt,cls='')=>{const b=el('chip '+cls,p,'button');b.type='button';if(txt[0]===':')b.innerHTML='<span class="cd"></span>'+esc(txt.slice(1));else b.textContent=txt;return b};
+// the colon is always two circles, never the typed ':'
+const hm=(h,m)=>p2(h)+'<span class="cd"></span>'+p2(m);
 const STEPS=[
   inn=>{const pr=el('pair',inn),note=el('hint',inn,'p');const upd=()=>note.textContent=dayWord(effDate());
     const dh=wheel(pr,{get:()=>draft.h,set:v=>draft.h=v,mod:24,onchange:upd});pr.firstChild.setAttribute('aria-label','hour');
@@ -214,17 +216,17 @@ const STEPS=[
     [['in 1 minute','soon'],['00',0],['15',15],['30',30],['45',45]].forEach(([t,v])=>{const b=chip(ch,v==='soon'?t:':'+t,v==='soon'?'or':'');
       b.onclick=()=>{if(v==='soon'){const n=new Date(Date.now()+60000);draft.h=n.getHours();draft.m=n.getMinutes();draft.date=ymd(n);draft.once=true}else draft.m=v;dh();dm();tick()}});
     el('hint',inn,'p').textContent='drag each number up or down'},
-  inn=>{el('cap',inn).textContent=p2(draft.h)+':'+p2(draft.m);const nm=el('nm',inn,'input');nm.id='uhr-name';nm.maxLength=16;nm.placeholder='name it';nm.autocomplete='off';nm.value=draft.name;
+  inn=>{el('cap',inn).innerHTML=hm(draft.h,draft.m);const nm=el('nm',inn,'input');nm.id='uhr-name';nm.maxLength=16;nm.placeholder='name it';nm.autocomplete='off';nm.value=draft.name;
     nm.setAttribute('aria-label','name');const fitIn=()=>nm.style.setProperty('--fs',Math.max(36,Math.min(72,360/(Math.max(nm.value.length,6)*.58)))+'px');fitIn();
     nm.addEventListener('input',()=>{draft.name=nm.value;fitIn()});nm.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();next()}});
     el('hint',inn,'p').textContent='one or two words';setTimeout(()=>{try{nm.focus({preventScroll:true})}catch(e){}},300)},
-  inn=>{el('cap',inn).textContent=p2(draft.h)+':'+p2(draft.m);const big=el('big',inn);setName(big,draft.name);
+  inn=>{el('cap',inn).innerHTML=hm(draft.h,draft.m);const big=el('big',inn);setName(big,draft.name);
     const ch=el('chips',inn);SOUNDS.forEach(s=>{const b=chip(ch,s,draft.sound===s?'on':'');
       b.onclick=()=>{draft.sound=s;[...ch.children].forEach(x=>x.classList.toggle('on',x===b));play(s,.9);animName(big,s)}});
     el('hint',inn,'p').textContent='tap to hear it';setTimeout(()=>{play(draft.sound,.6);animName(big,draft.sound)},420)},
   inn=>{const cap=el('cap',inn),big=el('big',inn);setName(big,draft.name);big.style.setProperty('--fs',Math.min(72,parseFloat(big.style.getPropertyValue('--fs')))+'px');
     const ch=el('chips',inn),dch=el('chips',inn),note=el('hint',inn,'p');
-    const draw=()=>{cap.textContent=p2(draft.h)+':'+p2(draft.m);note.textContent=draft.once?dayWord(effDate()):'every '+(draft.days.length===7?'day':draft.days.map(d=>DS[d]).join(' '));
+    const draw=()=>{cap.innerHTML=hm(draft.h,draft.m);note.textContent=draft.once?dayWord(effDate()):'every '+(draft.days.length===7?'day':draft.days.map(d=>DS[d]).join(' '));
       [...ch.children].forEach((b,k)=>b.classList.toggle('on',k===(draft.once?0:1)));dch.hidden=draft.once;[...dch.children].forEach((b,k)=>b.classList.toggle('on',draft.days.includes(k)))};
     ['once','every week'].forEach((t,k)=>{chip(ch,t).onclick=()=>{draft.once=!k;if(!draft.days.length)draft.days=[effDate().getDay()];draw();tick()}});
     DS.forEach((t,k)=>{chip(dch,t,'sqd').onclick=()=>{const i=draft.days.indexOf(k);i<0?draft.days.push(k):draft.days.length>1&&draft.days.splice(i,1);draft.days.sort();draw();tick()}});
