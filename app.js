@@ -28,7 +28,8 @@ function sample(){const n=new Date(),t=day0(n),h=(n.getHours()+2)%24,dt=h<n.getH
   return[{id:1,h,m:0,name:'training',sound:'drop',days:[],date:ymd(dt)},{id:2,h:20,m:0,name:'pill',sound:'glass',days:[0,1,2,3,4,5,6],date:null},
     {id:3,h:7,m:0,name:'wake up',sound:'rise',days:[],date:ymd(addDays(t,1))},{id:4,h:18,m:30,name:'babysitter',sound:'tick',days:[],date:ymd(addDays(t,3))}]}
 let alarms=null;try{alarms=JSON.parse(localStorage.getItem(KEY))}catch(e){}
-if(!Array.isArray(alarms))alarms=sample();
+// first visit: demo alarms — but a friend arriving from a shared link starts empty, so she sees only what was shared
+if(!Array.isArray(alarms))alarms=/^#add=/.test(location.hash)?[]:sample();
 const store=()=>{try{localStorage.setItem(KEY,JSON.stringify(alarms))}catch(e){}};
 function logEv(type,a,extra){if(EMBED)return;try{const L=JSON.parse(localStorage.getItem(LOG)||'[]');
   L.push({t:Date.now(),type,name:a?a.name:'',at:a?p2(a.h)+':'+p2(a.m):'',repeat:a?(a.days&&a.days.length?a.days.map(d=>DS[d]).join(' '):'once'):'',...(extra||{})});
