@@ -70,10 +70,10 @@ function paint(i){const {d,sqs}=days[i],now=new Date();
   sqs.forEach(q=>{q.className='sq';q.innerHTML='';delete q.dataset.id;q.removeAttribute('aria-label')});
   const by={};occ(d).forEach(a=>(by[a.h]=by[a.h]||[]).push(a));
   Object.entries(by).forEach(([h,list])=>{const q=sqs[h];q.dataset.id=list[0].id;
-    if(list.length===1){const a=list[0];q.classList.add('al',a.days.length?'fixed':'temp');q.innerHTML=`<span class="t"><b>${p2(a.h)}</b><b>${p2(a.m)}</b></span><span class="n">${esc(a.name)}</span>`;q.setAttribute('aria-label',`${p2(a.h)}:${p2(a.m)} ${a.name}`);return}
+    if(list.length===1){const a=list[0];q.classList.add('al',a.days.length?'fixed':'temp');q.innerHTML=`<span class="t"><b>${p2(a.h)}</b><b>${p2(a.m)}</b></span><span class="n">${esc(a.name)}</span>${a.shared?'<i class="sm"></i>':''}`;q.setAttribute('aria-label',`${p2(a.h)}:${p2(a.m)} ${a.name}`);return}
     // two or more in one hour: the square splits into bands, one per alarm, in time order
     q.classList.add('al','multi');const k=100/list.length;
-    q.innerHTML=list.map((a,j)=>`<div class="part ${a.days.length?'fixed':'temp'}${list.length>2?' thin':''}" data-id="${a.id}" style="top:${j*k}%;height:${k}%"><b><span class="cd"></span>${p2(a.m)}</b><span>${esc(a.name)}</span></div>`).join('');
+    q.innerHTML=list.map((a,j)=>`<div class="part ${a.days.length?'fixed':'temp'}${list.length>2?' thin':''}" data-id="${a.id}" style="top:${j*k}%;height:${k}%"><b><span class="cd"></span>${p2(a.m)}</b><span>${esc(a.name)}</span>${a.shared?'<i class="sm"></i>':''}</div>`).join('');
     q.setAttribute('aria-label',list.map(a=>`${p2(a.h)}:${p2(a.m)} ${a.name}`).join(', '))});
   if(i%7===0){const h=now.getHours(),q=sqs[h];q.classList.add('now');
     if(!q.dataset.id)q.insertAdjacentHTML('beforeend',`<span class="nt"><b>${p2(h)}</b><b>${p2(now.getMinutes())}</b></span>`);
@@ -166,7 +166,7 @@ const SOUNDS=Object.keys(SND),OLD={radar:'tick',chime:'glass',pulse:'drop'},snd=
 const play=(s,v=1)=>{const c=ctx();if(!c)return;try{SND[snd(s)](c.currentTime+.03,v)}catch(e){}};
 const tick=()=>{const c=ctx();if(c)try{click(c.currentTime,.25)}catch(e){};buzz(6)};
 ph.addEventListener('pointerdown',ctx,{passive:true});
-function setName(e,s,max=360){const txt=s||'ühr';e.innerHTML=[...txt].map((ch,i)=>`<i style="--i:${i}">${ch===' '?' ':esc(ch)}</i>`).join('');
+function setName(e,s,max=360){const txt=s||'ühr';e.dir=/[\u0590-\u05FF\u0600-\u06FF]/.test(txt)?'rtl':'ltr';e.innerHTML=[...txt].map((ch,i)=>`<i style="--i:${i}">${ch===' '?' ':esc(ch)}</i>`).join('');
   const longest=Math.max(...txt.split(' ').map(w=>w.length),1);e.style.setProperty('--fs',Math.max(40,Math.min(112,max/(longest*.6)))+'px')}
 function animName(e,s){e.classList.remove(...SOUNDS.map(k=>'an-'+k));void e.offsetWidth;e.classList.add('an-'+snd(s))}
 
@@ -174,15 +174,16 @@ function animName(e,s){e.classList.remove(...SOUNDS.map(k=>'an-'+k));void e.offs
 const sh=el('sheet',ph);
 sh.innerHTML=`<div class="sv"></div>
 <div class="top"><div class="dots"></div><div class="lab"></div></div><div class="body"></div>
-<div class="acts"><button type="button" class="b-del">delete</button><button type="button" class="b-go">continue</button></div>`;
-const sv=sh.querySelector('.sv'),dots=sh.querySelector('.dots'),lab=sh.querySelector('.lab'),body=sh.querySelector('.body'),bDel=sh.querySelector('.b-del'),bGo=sh.querySelector('.b-go');
+<div class="acts"><button type="button" class="b-del">delete</button><button type="button" class="b-sh">share</button><button type="button" class="b-go">continue</button></div>`;
+const sv=sh.querySelector('.sv'),dots=sh.querySelector('.dots'),lab=sh.querySelector('.lab'),body=sh.querySelector('.body'),bDel=sh.querySelector('.b-del'),bGo=sh.querySelector('.b-go'),bSh=sh.querySelector('.b-sh'),acts=sh.querySelector('.acts');
 const svLines=()=>{const l=lay(4);sv.innerHTML=[0,1,2,3].flatMap(c=>[l.x(c),l.x(c)+l.F]).map((x,i)=>`<i style="left:${x}px;--d:${i*STEP}ms"></i>`).join('')};
 const LABELS=['time','name','sound','repeat'];
 let draft=null,step=0,origin=null,opening=false;
-async function openSheet(i,h,a,from){if(opening||sh.classList.contains('on'))return;opening=true;origin=from||sqAt(i,h);const d=days[i].d;
-  draft=a?{id:a.id,h:a.h,m:a.m,name:a.name,sound:snd(a.sound),days:[...a.days],once:!a.days.length,date:a.date||ymd(d),edit:true}
+async function openSheet(i,h,a,from,pre){if(opening||sh.classList.contains('on'))return;opening=true;origin=from||sqAt(i,h);const d=days[i].d;
+  draft=pre?{id:Date.now(),...pre,edit:false,shared:true}
+        :a?{id:a.id,h:a.h,m:a.m,name:a.name,sound:snd(a.sound),days:[...a.days],once:!a.days.length,date:a.date||ymd(d),edit:true,shared:!!a.shared}
          :{id:Date.now(),h,m:0,name:'',sound:'rise',days:[d.getDay()],once:true,date:ymd(d),edit:false};
-  buzz(10);tipDone('tap');svLines();await stretchOpen(origin.closest('.sq'));step=-1;go(0,0);sh.classList.add('on');opening=false;tipSwipe()}
+  buzz(10);tipDone('tap');svLines();await stretchOpen(origin.closest('.sq'));acts.classList.toggle('three',draft.edit);step=-1;go(pre?LABELS.length-1:0,0);sh.classList.add('on');opening=false;tipSwipe()}
 async function closeSheet(target,after){if(!sh.classList.contains('on'))return;await stretchClose(target||origin.closest('.sq'),sh);body.innerHTML='';after&&after()}
 function go(n,dir){if(n>0)tipDone('swipe');const from=dir===undefined?(n>step?1:n<step?-1:0):dir;step=n;sh.classList.add('fall');void sh.offsetWidth;sh.classList.remove('fall');
   dots.innerHTML=LABELS.map((l,k)=>`<button type="button" aria-label="${l}" class="${k<n?'done':k===n?'cur':''}"></button>`).join('');
@@ -233,12 +234,26 @@ const STEPS=[
     draw()}];
 function next(){if(step<STEPS.length-1){go(step+1);return}commit()}
 function commit(){const d=effDate(),a={id:draft.id,h:draft.h,m:draft.m,name:(draft.name.trim()||'ühr').split(/\s+/).slice(0,2).join(' '),sound:draft.sound,
-    days:draft.once?[]:[...draft.days],date:draft.once?ymd(d):null};
+    days:draft.once?[]:[...draft.days],date:draft.once?ymd(d):null,...(draft.shared?{shared:true}:{})};
   logEv(draft.edit?'changed':'set',a);
   alarms=alarms.filter(x=>x.id!==a.id);alarms.push(a);store();paintAll();buzz([10,40,10]);
   const i=indexOf(a);held.forEach(x=>x.cancel());held=[];reveal(i,a.h);const q=sqAt(i,a.h);
   closeSheet(q,()=>{if(q){q.classList.add('pop');setTimeout(()=>q.classList.remove('pop'),700)}setTimeout(tipPinch,900)})}
 bGo.addEventListener('click',next);
+// ---------- share: the alarm travels inside a link; the friend opens it and lands on the filled-in hour ----------
+const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const dec=t=>JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g,'+').replace(/_/g,'/')))));
+bSh.addEventListener('click',async()=>{const a=alarms.find(x=>x.id===draft.id);if(!a)return;
+  const url=location.origin+location.pathname+'#add='+enc({h:a.h,m:a.m,n:a.name,s:a.sound,d:a.days,t:a.date||ymd(effDate())});
+  const text=`${a.name} · ${p2(a.h)}:${p2(a.m)} — add it to your ühr`;logEv('shared',a);buzz(10);
+  try{if(navigator.share){await navigator.share({title:'ühr',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(text+'\n'+url);bSh.textContent='copied';setTimeout(()=>bSh.textContent='share',1600)}catch(e){prompt('copy this link',url)}});
+function takeShared(){const m=location.hash.match(/^#add=([\w-]+)/);if(!m)return false;history.replaceState(null,'',location.pathname+location.search);
+  let o;try{o=dec(m[1])}catch(e){return false}if(!(o.h>=0&&o.h<24&&o.m>=0&&o.m<60))return false;
+  const pre={h:o.h|0,m:o.m|0,name:String(o.n||'').slice(0,16),sound:snd(o.s),days:Array.isArray(o.d)&&o.d.length?o.d.filter(x=>x>=0&&x<7):[],date:o.t||ymd(new Date())};
+  pre.once=!pre.days.length;if(pre.once){pre.days=[parse(pre.date).getDay()];}
+  const i=pre.once?Math.max(0,Math.round((parse(pre.date)-base)/864e5)):indexOf({days:pre.days,h:pre.h,m:pre.m});
+  setTimeout(()=>{reveal(i,pre.h);openSheet(i,pre.h,null,sqAt(i,pre.h),pre)},reduce?300:THICK+1200);return true}
 // carousel: swipe left = confirm and go on (on the last step it sets the alarm); swipe right = back, to change something
 let sw=null;
 body.addEventListener('pointerdown',e=>{sw={x:e.clientX,y:e.clientY,on:false}},true);
@@ -344,7 +359,7 @@ function tipTap(){if(seen('tap'))return;if(busy()){setTimeout(tipTap,800);return
 function tipSwipe(){if(seen('swipe'))return;const t=el('tip swipe',sh);t.dataset.k='swipe';t.innerHTML='<i></i><b>swipe</b> to continue';}
 function tipPinch(){if(seen('pinch')||busy())return;const t=el('tip pinch',ph);t.dataset.k='pinch';t.innerHTML='<span class="pd"><i></i><i></i></span><b>pinch</b> to see the whole week';
   setTimeout(()=>{const off=()=>{removeEventListener('pointerdown',off,true);if(!tips.pinch){t.classList.add('out');setTimeout(()=>t.remove(),300)}};addEventListener('pointerdown',off,true)},600)}
-if(!EMBED)setTimeout(tipNow,reduce?400:THICK+1000+500+MOVE*1.4+400);
+if(!takeShared()&&!EMBED)setTimeout(tipNow,reduce?400:THICK+1000+500+MOVE*1.4+400);
 
 addEventListener('resize',()=>{fit();if(!busy())layoutAll()});
 // presenting + the live system page

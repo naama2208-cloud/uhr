@@ -115,6 +115,12 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .acts button{height:60px;font-size:var(--btn);text-align:center;padding:0 10px;cursor:pointer;border-radius:0}
 .b-del{background:var(--paper);border:1.5px solid var(--ink);color:var(--ink)}
 .b-go{background:var(--orange);border:0;color:var(--paper);font-weight:700}
+.b-sh{display:none;background:var(--paper);border:1.5px solid var(--orange);color:var(--orange)}
+.acts.three{grid-template-columns:1fr 1fr 1fr;gap:calc(var(--gap)/2)}.acts.three .b-sh{display:block}
+/* came from a friend: a small open ring in the corner of the square */
+.sq .sm{position:absolute;right:8px;top:8px;width:9px;height:9px;border-radius:50%;border:2px solid currentColor}
+.part .sm{top:50%;margin-top:-6px}.part:has(.sm){padding-right:22px}
+.z8 .sq .sm{display:none}
 .cap{font:700 30px/1 var(--font);color:var(--grey);font-variant-numeric:tabular-nums;margin-bottom:8px}
 .hint{font-size:15px;color:var(--grey);margin:20px 0 0}
 .wheel{display:flex;flex-direction:column;align-items:flex-start;touch-action:none;cursor:ns-resize;outline:0}
