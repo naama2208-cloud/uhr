@@ -188,14 +188,16 @@ async function openSheet(i,h,a,from,pre){if(opening||sh.classList.contains('on')
   draft=pre?{id:Date.now(),...pre,edit:false,shared:true}
         :a?{id:a.id,h:a.h,m:a.m,name:a.name,sound:snd(a.sound),days:[...a.days],once:!a.days.length,date:a.date||ymd(d),edit:true,shared:!!a.shared}
          :{id:Date.now(),h,m:0,name:'',sound:'rise',days:[d.getDay()],once:true,date:ymd(d),edit:false};
-  buzz(10);if(!pre)tipDone('tap');svLines();await stretchOpen(origin.closest('.sq'));acts.classList.toggle('three',draft.edit);step=-1;go(pre?LABELS.length-1:0,0);sh.classList.add('on');opening=false;
+  buzz(10);if(!pre)tipDone('tap');svLines();await stretchOpen(origin.closest('.sq'));step=-1;go(pre?LABELS.length-1:0,0);sh.classList.add('on');opening=false;
   if(pre){const t=el('tip from',sh);t.dataset.k='from';t.innerHTML=`<b>${esc(pre.from||'someone')} shared this with you.</b><br>swipe ← to add it to your week.`}else tipSwipe()}
 async function closeSheet(target,after){if(!sh.classList.contains('on'))return;sh.querySelectorAll('.tip.from').forEach(t=>t.remove());await stretchClose(target||origin.closest('.sq'),sh);body.innerHTML='';after&&after()}
 function go(n,dir){if(n>0)tipDone('swipe');const from=dir===undefined?(n>step?1:n<step?-1:0):dir;step=n;sh.classList.add('fall');void sh.offsetWidth;sh.classList.remove('fall');
   dots.innerHTML=LABELS.map((l,k)=>`<button type="button" aria-label="${l}" class="${k<n?'done':k===n?'cur':''}"></button>`).join('');
   [...dots.children].forEach((b,k)=>b.onclick=()=>{if(k!==step)go(k)});
   lab.textContent=n===LABELS.length-1?'swipe ← to set':LABELS[n];body.innerHTML='';const inn=el('in'+(from>0?' from-r':from<0?' from-l':''),body);STEPS[n](inn);
-  bGo.textContent=n===LABELS.length-1?'set':'continue'}
+  bGo.textContent=n===LABELS.length-1?'set':'continue';
+  // share sits beside set on the last step, and always on an alarm that already exists
+  acts.classList.toggle('three',draft.edit||(n===LABELS.length-1&&!draft.shared))}
 const effDate=()=>{let d=parse(draft.date);if(draft.once&&at(d,draft.h,draft.m)<=new Date())d=addDays(d,1);return d};
 const dayWord=d=>{const k=Math.round((day0(d)-day0(new Date()))/864e5);return k===0?'today':DAYS[d.getDay()]};
 function wheel(inn,{get,set,fmt=p2,step:st=1,mod,onchange}){const w=el('wheel',inn);w.tabIndex=0;w.setAttribute('role','spinbutton');
@@ -244,16 +246,19 @@ function commit(){const d=effDate(),a={id:draft.id,h:draft.h,m:draft.m,name:(dra
   logEv(draft.edit?'changed':'set',a);
   alarms=alarms.filter(x=>x.id!==a.id);alarms.push(a);store();paintAll();buzz([10,40,10]);
   const fresh=draft.shared&&!draft.edit&&!tips.now;const i=indexOf(a);held.forEach(x=>x.cancel());held=[];reveal(i,a.h);const q=sqAt(i,a.h);
-  closeSheet(q,()=>{if(q){q.classList.add('pop');setTimeout(()=>q.classList.remove('pop'),700)}if(fresh)setTimeout(()=>{sc.scrollTo({top:Math.max(0,yOf(0,new Date().getHours())-Math.round(PH*.3)),behavior:reduce?'auto':'smooth'});setTimeout(()=>askName(tipNow),700)},1400);else setTimeout(tipPinch,900)})}
+  closeSheet(q,()=>{if(q){q.classList.add('pop');setTimeout(()=>q.classList.remove('pop'),700)}if(fresh)setTimeout(()=>{sc.scrollTo({top:Math.max(0,yOf(0,new Date().getHours())-Math.round(PH*.3)),behavior:reduce?'auto':'smooth'});setTimeout(()=>askName(tipNow),700)},1400);else setTimeout(tipPinch,900)});return a}
 bGo.addEventListener('click',next);
 // ---------- share: the alarm travels inside a link; the friend opens it and lands on the filled-in hour ----------
 const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const dec=t=>JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g,'+').replace(/_/g,'/')))));
-bSh.addEventListener('click',async()=>{const a=alarms.find(x=>x.id===draft.id);if(!a)return;
-  const url=location.origin+location.pathname+'#add='+enc({h:a.h,m:a.m,n:a.name,s:a.sound,d:a.days,t:a.date||ymd(effDate()),f:me});
+// new alarm on its last step: share = set it, then send it on
+bSh.addEventListener('click',()=>{const a=draft.edit?alarms.find(x=>x.id===draft.id):commit();if(a)shareAlarm(a,!draft.edit)});
+async function shareAlarm(a,closing){
+  const url=location.origin+location.pathname+'#add='+enc({h:a.h,m:a.m,n:a.name,s:a.sound,d:a.days,t:a.date||ymd(new Date()),f:me});
   const text=`${a.name} · ${p2(a.h)}:${p2(a.m)} — add it to your ühr`;logEv('shared',a);buzz(10);
   try{if(navigator.share){await navigator.share({title:'ühr',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
-  try{await navigator.clipboard.writeText(text+'\n'+url);bSh.textContent='copied';setTimeout(()=>bSh.textContent='share',1600)}catch(e){prompt('copy this link',url)}});
+  if(closing){prompt('copy this link',url);return}
+  try{await navigator.clipboard.writeText(text+'\n'+url);bSh.textContent='copied';setTimeout(()=>bSh.textContent='share',1600)}catch(e){prompt('copy this link',url)}}
 function takeShared(){const m=location.hash.match(/^#add=([\w-]+)/);if(!m)return false;history.replaceState(null,'',location.pathname+location.search);
   let o;try{o=dec(m[1])}catch(e){return false}if(!(o.h>=0&&o.h<24&&o.m>=0&&o.m<60))return false;
   const pre={h:o.h|0,m:o.m|0,name:String(o.n||'').slice(0,16),sound:snd(o.s),days:Array.isArray(o.d)&&o.d.length?o.d.filter(x=>x>=0&&x<7):[],date:o.t||ymd(new Date()),from:String(o.f||'').slice(0,16)};
