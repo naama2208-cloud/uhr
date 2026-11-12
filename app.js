@@ -28,8 +28,10 @@ function sample(){const n=new Date(),t=day0(n),h=(n.getHours()+2)%24,dt=h<n.getH
   return[{id:1,h,m:0,name:'training',sound:'drop',days:[],date:ymd(dt)},{id:2,h:20,m:0,name:'pill',sound:'glass',days:[0,1,2,3,4,5,6],date:null},
     {id:3,h:7,m:0,name:'wake up',sound:'rise',days:[],date:ymd(addDays(t,1))},{id:4,h:18,m:30,name:'babysitter',sound:'tick',days:[],date:ymd(addDays(t,3))}]}
 let alarms=null;try{alarms=JSON.parse(localStorage.getItem(KEY))}catch(e){}
-// first visit: demo alarms — but a friend arriving from a shared link starts empty, so she sees only what was shared
 if(!Array.isArray(alarms))alarms=[];
+// once: clear the old example alarms that earlier versions saved on every phone (ids 1–4); real alarms stay
+if(!localStorage.getItem('uhr5clean')){const EX={1:'training',2:'pill',3:'wake up',4:'babysitter'};
+  alarms=alarms.filter(a=>EX[a.id]!==a.name);try{localStorage.setItem(KEY,JSON.stringify(alarms));localStorage.setItem('uhr5clean','1')}catch(e){}}
 // everyone starts with an empty week; #demo fills in example alarms for presenting
 if(location.hash==='#demo'){alarms=sample();try{localStorage.setItem(KEY,JSON.stringify(alarms))}catch(e){}history.replaceState(null,'',location.pathname+location.search)}
 const store=()=>{try{localStorage.setItem(KEY,JSON.stringify(alarms))}catch(e){}};
