@@ -354,11 +354,11 @@ function tipNow(){if(seen('now')){tipTap();return}const q=sqAt(0,new Date().getH
   // the tap that dismisses the hint only dismisses it — it doesn't also open a square
   const done=()=>{removeEventListener('pointerdown',done,true);lpFired=true;setTimeout(()=>lpFired=false,600);q.classList.remove('pulse');tipDone('now')};
   setTimeout(()=>addEventListener('pointerdown',done,true),400);setTimeout(()=>{if(!tips.now)done()},7000)}
-function tipTap(){if(seen('tap'))return;if(busy()){setTimeout(tipTap,800);return}const h0=new Date().getHours();let i=0,h=h0+2;if(h>23){i=1;h-=24}
+function tipTap(){if(seen('tap')){setTimeout(tipPinch,600);return}if(busy()){setTimeout(tipTap,800);return}const h0=new Date().getHours();let i=0,h=h0+2;if(h>23){i=1;h-=24}
   while(sqAt(i,h)&&sqAt(i,h).dataset.id){h++;if(h>23){i++;h=0}}
   beck={i,h};const q=sqAt(i,h);q.classList.add('beckon');tipAt('tap','<b>tap an hour</b> to set an ühr.',q)}
 function tipSwipe(){if(seen('swipe'))return;const t=el('tip swipe',sh);t.dataset.k='swipe';t.innerHTML='<i></i><b>swipe</b> to continue';}
-function tipPinch(){if(seen('pinch')||busy())return;const t=el('tip pinch',ph);t.dataset.k='pinch';t.innerHTML='<span class="pd"><i></i><i></i></span><b>pinch</b> to see the whole week';
+function tipPinch(){if(seen('pinch')||busy())return;const t=el('tip pinch',ph);t.dataset.k='pinch';t.innerHTML='<span class="pd"><i></i><i></i></span><span><b>two fingers</b><br>apart · bigger hours<br>together · the whole week</span>';
   setTimeout(()=>{const off=()=>{removeEventListener('pointerdown',off,true);if(!tips.pinch){t.classList.add('out');setTimeout(()=>t.remove(),300)}};addEventListener('pointerdown',off,true)},600)}
 if(!takeShared()&&!EMBED)setTimeout(tipNow,reduce?400:THICK+1000+500+MOVE*1.4+400);
 

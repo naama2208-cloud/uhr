@@ -12,3 +12,6 @@
 --quick:300ms;--thicken:1500ms;--breath:1000ms;--ring:2000ms}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#221D1A;--ink:#F3F1EC}}
 :root[data-theme="dark"]{--paper:#221D1A;--ink:#F3F1EC}
+
+/* the colon is always two circles */
+.cd{display:inline-block;width:.3em;height:.72em;vertical-align:baseline;background:radial-gradient(circle closest-side,currentColor 92%,transparent) 50% 18%/.13em .13em no-repeat,radial-gradient(circle closest-side,currentColor 92%,transparent) 50% 100%/.13em .13em no-repeat}

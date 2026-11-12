@@ -68,7 +68,7 @@ const ks=Object.keys(by).sort().reverse(),box=document.getElementById('days');
 if(!ks.length)box.innerHTML='<p class="empty">nothing yet. set an alarm in ühr and it shows up here, with the time you set it.</p>';
 ks.forEach(k=>{const d=new Date(k+'T00:00'),sec=document.createElement('section');sec.className='day';
   sec.innerHTML=`<h2>${DAYS[d.getDay()]}<span>${d.getDate()} ${MON[d.getMonth()]}</span></h2>`+by[k].map(e=>{const t=new Date(e.t);
-    return`<div class="ev ${e.type}"><time>${p2(t.getHours())}:${p2(t.getMinutes())}</time><i></i><span>${esc(e.type)} · <b>${esc(e.name)}</b> ${esc(e.at)}</span><span class="what">${esc(e.repeat||'')}</span></div>`}).join('')+
+    return`<div class="ev ${e.type}"><time>${p2(t.getHours())}<span class="cd"></span>${p2(t.getMinutes())}</time><i></i><span>${esc(e.type)} · <b>${esc(e.name)}</b> ${esc(e.at).replace(':','<span class="cd"></span>')}</span><span class="what">${esc(e.repeat||'')}</span></div>`}).join('')+
     `<textarea id="n-${k}" placeholder="how was today with ühr?">${esc(notes[k]||'')}</textarea>`;
   box.appendChild(sec);sec.querySelector('textarea').addEventListener('input',ev=>{notes[k]=ev.target.value;put('uhr5notes',notes)})});
 function asText(){return ks.slice().reverse().map(k=>{const d=new Date(k+'T00:00');return`${DAYS[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}\n`+

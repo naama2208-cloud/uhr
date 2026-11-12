@@ -83,7 +83,7 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .tip.swipe i{width:26px;height:2px;background:var(--orange);position:relative;animation:swipe 1.3s var(--ease) infinite}
 .tip.swipe i::before{content:"";position:absolute;left:-1px;top:-5px;width:10px;height:10px;border-left:2px solid var(--orange);border-bottom:2px solid var(--orange);transform:rotate(45deg)}
 @keyframes swipe{0%{transform:translateX(18px);opacity:0}30%{opacity:1}100%{transform:translateX(-14px);opacity:0}}
-.tip.pinch{left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:12px;width:auto;white-space:nowrap;animation:fadein 420ms ease both}
+.tip.pinch{left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:12px;width:auto;white-space:nowrap;line-height:1.4;animation:fadein 420ms ease both}
 .tip.pinch.out{animation:tipout 280ms ease both}
 @keyframes fadein{from{opacity:0}}
 .pd{position:relative;width:44px;height:28px}
