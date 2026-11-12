@@ -77,7 +77,9 @@ function paint(i){const {d,sqs}=days[i],now=new Date();
     q.setAttribute('aria-label',list.map(a=>`${p2(a.h)}:${p2(a.m)} ${a.name}`).join(', '))});
   if(i%7===0){const h=now.getHours(),q=sqs[h];q.classList.add('now');
     if(!q.dataset.id)q.insertAdjacentHTML('beforeend',`<span class="nt"><b>${p2(h)}</b><b>${p2(now.getMinutes())}</b></span>`);
-    q.insertAdjacentHTML('beforeend',`<i class="nb" style="width:${(now.getMinutes()+1)/60*100}%"></i>`)}}
+    q.insertAdjacentHTML('beforeend',`<i class="nb" style="width:${(now.getMinutes()+1)/60*100}%"></i>`)}
+  if(beck&&beck.i===i)sqs[beck.h].classList.add('beckon')}
+let beck=null;
 const paintAll=()=>days.forEach((_,i)=>paint(i));
 function rebuild(){track.innerHTML='';days=[];base=day0(new Date());for(let k=0;k<14;k++)addDay();setVL();zclass()}
 rebuild();
@@ -91,7 +93,7 @@ function reveal(i,h){while(i+1>=days.length)addDay();sc.scrollTop=Math.max(0,yOf
 const nearby=()=>{const i0=Math.floor(sc.scrollTop/Lc.dayH);return days.slice(Math.max(0,i0-1),i0+3)};
 
 // ---------- zoom: pinch between 2 · 4 · 8 squares a row; everything glides to its new place (flip) ----------
-function zoomTo(n,anchorY){if(n===N||busy())return;const Ds=nearby();
+function zoomTo(n,anchorY){if(n===N||busy())return;tipDone('pinch');const Ds=nearby();
   const els=Ds.flatMap(D=>[...D.sqs,D.hd]);const old=new Map(els.map(e=>[e,e.getBoundingClientRect()]));
   const ay=anchorY==null?PH/2:anchorY;
   const anchor=Ds.flatMap(D=>D.sqs).map(q=>[q,rel(q)]).filter(([,r])=>r.y<=ay+r.h).sort((a,b)=>Math.abs(a[1].y+a[1].h/2-ay)-Math.abs(b[1].y+b[1].h/2-ay))[0];
@@ -175,9 +177,9 @@ let draft=null,step=0,origin=null,opening=false;
 async function openSheet(i,h,a,from){if(opening||sh.classList.contains('on'))return;opening=true;origin=from||sqAt(i,h);const d=days[i].d;
   draft=a?{id:a.id,h:a.h,m:a.m,name:a.name,sound:snd(a.sound),days:[...a.days],once:!a.days.length,date:a.date||ymd(d),edit:true}
          :{id:Date.now(),h,m:0,name:'',sound:'rise',days:[d.getDay()],once:true,date:ymd(d),edit:false};
-  buzz(10);svLines();await stretchOpen(origin.closest('.sq'));step=-1;go(0,0);sh.classList.add('on');opening=false}
+  buzz(10);tipDone('tap');svLines();await stretchOpen(origin.closest('.sq'));step=-1;go(0,0);sh.classList.add('on');opening=false;tipSwipe()}
 async function closeSheet(target,after){if(!sh.classList.contains('on'))return;await stretchClose(target||origin.closest('.sq'),sh);body.innerHTML='';after&&after()}
-function go(n,dir){const from=dir===undefined?(n>step?1:n<step?-1:0):dir;step=n;sh.classList.add('fall');void sh.offsetWidth;sh.classList.remove('fall');
+function go(n,dir){if(n>0)tipDone('swipe');const from=dir===undefined?(n>step?1:n<step?-1:0):dir;step=n;sh.classList.add('fall');void sh.offsetWidth;sh.classList.remove('fall');
   dots.innerHTML=LABELS.map((l,k)=>`<button type="button" aria-label="${l}" class="${k<n?'done':k===n?'cur':''}"></button>`).join('');
   [...dots.children].forEach((b,k)=>b.onclick=()=>{if(k!==step)go(k)});
   lab.textContent=n===LABELS.length-1?'swipe ← to set':LABELS[n];body.innerHTML='';const inn=el('in'+(from>0?' from-r':from<0?' from-l':''),body);STEPS[n](inn);
@@ -228,7 +230,7 @@ function commit(){const d=effDate(),a={id:draft.id,h:draft.h,m:draft.m,name:(dra
   logEv(draft.edit?'changed':'set',a);
   alarms=alarms.filter(x=>x.id!==a.id);alarms.push(a);store();paintAll();buzz([10,40,10]);
   const i=indexOf(a);held.forEach(x=>x.cancel());held=[];reveal(i,a.h);const q=sqAt(i,a.h);
-  closeSheet(q,()=>{if(q){q.classList.add('pop');setTimeout(()=>q.classList.remove('pop'),700)}})}
+  closeSheet(q,()=>{if(q){q.classList.add('pop');setTimeout(()=>q.classList.remove('pop'),700)}setTimeout(tipPinch,900)})}
 bGo.addEventListener('click',next);
 // carousel: swipe left = confirm and go on (on the last step it sets the alarm); swipe right = back, to change something
 let sw=null;
@@ -315,11 +317,34 @@ function splash(){const sp=el('splash',ph);sp.innerHTML='<div class="sw"><span c
   (document.fonts&&document.fonts.load?document.fonts.load(`100 ${TSPL}px under`).then(()=>document.fonts.ready):Promise.resolve()).then(go2,go2)}
 if(reduce||EMBED){sc.classList.remove('drawing')}else splash();
 
+// ---------- first time: the app teaches by doing — one hint at a time, each gone for good once done ----------
+const TIPS='uhr5tips';let tips={};try{tips=JSON.parse(localStorage.getItem(TIPS))||{}}catch(e){}
+const seen=k=>EMBED||tips[k];
+function tipDone(k){if(tips[k]||EMBED)return;tips[k]=1;try{localStorage.setItem(TIPS,JSON.stringify(tips))}catch(e){}
+  document.querySelectorAll(`.tip[data-k="${k}"]`).forEach(t=>{t.classList.add('out');setTimeout(()=>t.remove(),300)});
+  if(k==='tap'&&beck){const q=sqAt(beck.i,beck.h);beck=null;q&&q.classList.remove('beckon')}
+  if(k==='now')setTimeout(tipTap,350)}
+function tipAt(k,html,q,parent){const t=el('tip',parent||q.closest('.day'));t.dataset.k=k;t.innerHTML=html;
+  const x=Math.min(Math.max(parseFloat(q.style.left)-4,8),W-246),y=parseFloat(q.style.top)+Lc.F+10;t.style.left=x+'px';t.style.top=y+'px';return t}
+function tipNow(){if(seen('now')){tipTap();return}const q=sqAt(0,new Date().getHours());q.classList.add('pulse');
+  tipAt('now','every square is an hour.<br><b>this one is now.</b>',q);
+  // the tap that dismisses the hint only dismisses it — it doesn't also open a square
+  const done=()=>{removeEventListener('pointerdown',done,true);lpFired=true;setTimeout(()=>lpFired=false,600);q.classList.remove('pulse');tipDone('now')};
+  setTimeout(()=>addEventListener('pointerdown',done,true),400);setTimeout(()=>{if(!tips.now)done()},7000)}
+function tipTap(){if(seen('tap'))return;if(busy()){setTimeout(tipTap,800);return}const h0=new Date().getHours();let i=0,h=h0+2;if(h>23){i=1;h-=24}
+  while(sqAt(i,h)&&sqAt(i,h).dataset.id){h++;if(h>23){i++;h=0}}
+  beck={i,h};const q=sqAt(i,h);q.classList.add('beckon');tipAt('tap','<b>tap an hour</b> to set an ühr.',q)}
+function tipSwipe(){if(seen('swipe'))return;const t=el('tip swipe',sh);t.dataset.k='swipe';t.innerHTML='<i></i><b>swipe</b> to continue';}
+function tipPinch(){if(seen('pinch')||busy())return;const t=el('tip pinch',ph);t.dataset.k='pinch';t.innerHTML='<span class="pd"><i></i><i></i></span><b>pinch</b> to see the whole week';
+  setTimeout(()=>{const off=()=>{removeEventListener('pointerdown',off,true);if(!tips.pinch){t.classList.add('out');setTimeout(()=>t.remove(),300)}};addEventListener('pointerdown',off,true)},600)}
+if(!EMBED)setTimeout(tipNow,reduce?400:THICK+1000+500+MOVE*1.4+400);
+
 addEventListener('resize',()=>{fit();if(!busy())layoutAll()});
 // presenting + the live system page
 window.uhr={ring:()=>{const n=new Date(),a=alarms.slice().sort((x,y)=>(indexOf(x)*1440+x.h*60+x.m)-(indexOf(y)*1440+y.h*60+y.m))[0];
     ring(a?{...a,id:-1,h:n.getHours(),m:n.getMinutes()}:{id:-1,h:n.getHours(),m:n.getMinutes(),name:'ühr',sound:'rise',days:[]})},
   reset:()=>{alarms=sample();store();paintAll()},
+  first:()=>{alarms=[];store();try{localStorage.removeItem(TIPS)}catch(e){}location.reload()},
   zoom:n=>zoomTo(n),
   relayout:()=>{MOVE=V('--move')||640;const y=sc.scrollTop/Lc.dayH;Lc=lay();layoutAll();sc.scrollTop=y*Lc.dayH}};
 if(location.hash==='#ring')setTimeout(()=>window.uhr.ring(),reduce?300:THICK+3200);
