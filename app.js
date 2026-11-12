@@ -29,7 +29,9 @@ function sample(){const n=new Date(),t=day0(n),h=(n.getHours()+2)%24,dt=h<n.getH
     {id:3,h:7,m:0,name:'wake up',sound:'rise',days:[],date:ymd(addDays(t,1))},{id:4,h:18,m:30,name:'babysitter',sound:'tick',days:[],date:ymd(addDays(t,3))}]}
 let alarms=null;try{alarms=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 // first visit: demo alarms — but a friend arriving from a shared link starts empty, so she sees only what was shared
-if(!Array.isArray(alarms))alarms=/^#add=/.test(location.hash)?[]:sample();
+if(!Array.isArray(alarms))alarms=[];
+// everyone starts with an empty week; #demo fills in example alarms for presenting
+if(location.hash==='#demo'){alarms=sample();try{localStorage.setItem(KEY,JSON.stringify(alarms))}catch(e){}history.replaceState(null,'',location.pathname+location.search)}
 const store=()=>{try{localStorage.setItem(KEY,JSON.stringify(alarms))}catch(e){}};
 function logEv(type,a,extra){if(EMBED)return;try{const L=JSON.parse(localStorage.getItem(LOG)||'[]');
   L.push({t:Date.now(),type,name:a?a.name:'',at:a?p2(a.h)+':'+p2(a.m):'',repeat:a?(a.days&&a.days.length?a.days.map(d=>DS[d]).join(' '):'once'):'',...(extra||{})});
@@ -184,8 +186,9 @@ async function openSheet(i,h,a,from,pre){if(opening||sh.classList.contains('on')
   draft=pre?{id:Date.now(),...pre,edit:false,shared:true}
         :a?{id:a.id,h:a.h,m:a.m,name:a.name,sound:snd(a.sound),days:[...a.days],once:!a.days.length,date:a.date||ymd(d),edit:true,shared:!!a.shared}
          :{id:Date.now(),h,m:0,name:'',sound:'rise',days:[d.getDay()],once:true,date:ymd(d),edit:false};
-  buzz(10);tipDone('tap');svLines();await stretchOpen(origin.closest('.sq'));acts.classList.toggle('three',draft.edit);step=-1;go(pre?LABELS.length-1:0,0);sh.classList.add('on');opening=false;tipSwipe()}
-async function closeSheet(target,after){if(!sh.classList.contains('on'))return;await stretchClose(target||origin.closest('.sq'),sh);body.innerHTML='';after&&after()}
+  buzz(10);if(!pre)tipDone('tap');svLines();await stretchOpen(origin.closest('.sq'));acts.classList.toggle('three',draft.edit);step=-1;go(pre?LABELS.length-1:0,0);sh.classList.add('on');opening=false;
+  if(pre){const t=el('tip from',sh);t.dataset.k='from';t.innerHTML='<b>someone shared this with you.</b><br>swipe ← to add it to your week.'}else tipSwipe()}
+async function closeSheet(target,after){if(!sh.classList.contains('on'))return;sh.querySelectorAll('.tip.from').forEach(t=>t.remove());await stretchClose(target||origin.closest('.sq'),sh);body.innerHTML='';after&&after()}
 function go(n,dir){if(n>0)tipDone('swipe');const from=dir===undefined?(n>step?1:n<step?-1:0):dir;step=n;sh.classList.add('fall');void sh.offsetWidth;sh.classList.remove('fall');
   dots.innerHTML=LABELS.map((l,k)=>`<button type="button" aria-label="${l}" class="${k<n?'done':k===n?'cur':''}"></button>`).join('');
   [...dots.children].forEach((b,k)=>b.onclick=()=>{if(k!==step)go(k)});
@@ -238,8 +241,8 @@ function commit(){const d=effDate(),a={id:draft.id,h:draft.h,m:draft.m,name:(dra
     days:draft.once?[]:[...draft.days],date:draft.once?ymd(d):null,...(draft.shared?{shared:true}:{})};
   logEv(draft.edit?'changed':'set',a);
   alarms=alarms.filter(x=>x.id!==a.id);alarms.push(a);store();paintAll();buzz([10,40,10]);
-  const i=indexOf(a);held.forEach(x=>x.cancel());held=[];reveal(i,a.h);const q=sqAt(i,a.h);
-  closeSheet(q,()=>{if(q){q.classList.add('pop');setTimeout(()=>q.classList.remove('pop'),700)}setTimeout(tipPinch,900)})}
+  const fresh=draft.shared&&!draft.edit&&!tips.now;const i=indexOf(a);held.forEach(x=>x.cancel());held=[];reveal(i,a.h);const q=sqAt(i,a.h);
+  closeSheet(q,()=>{if(q){q.classList.add('pop');setTimeout(()=>q.classList.remove('pop'),700)}if(fresh)setTimeout(()=>{sc.scrollTo({top:Math.max(0,yOf(0,new Date().getHours())-Math.round(PH*.3)),behavior:reduce?'auto':'smooth'});setTimeout(tipNow,700)},1400);else setTimeout(tipPinch,900)})}
 bGo.addEventListener('click',next);
 // ---------- share: the alarm travels inside a link; the friend opens it and lands on the filled-in hour ----------
 const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
