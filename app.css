@@ -158,6 +158,10 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 /* ---------- ring: the alarm's square, stretched to the screen; the grid stays on it ---------- */
 .ring{z-index:20;background:var(--orange);color:var(--ink)}
 .ring.fixed{background:var(--ink);color:var(--paper)}
+.sq[data-ring]{transition:background-color 160ms ease,border-color 160ms ease}
+.sq[data-ring=fixed]{background:var(--ink)!important;border-color:var(--ink)!important;color:var(--paper)!important}
+.sq[data-ring=temp]{background:var(--orange)!important;border-color:var(--orange)!important;color:var(--ink)!important}
+.ring .sv,.ring .rh{display:none} /* no second grid: the real one has already stretched out of the screen */
 .ring .sv i{background:var(--ink);opacity:.25}
 .ring.fixed .sv i{background:var(--orange);opacity:.45}
 .ring .rh{position:absolute;inset:0;pointer-events:none}

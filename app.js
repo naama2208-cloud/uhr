@@ -287,7 +287,7 @@ sc.addEventListener('pointerdown',e=>{const q=e.target.closest('.sq');if(!q)retu
 sc.addEventListener('scroll',()=>clearTimeout(lpT),{passive:true});
 const busy=()=>sh.classList.contains('on')||!!ringing||opening;
 
-// ---------- ring: the alarm's square stretches into the screen; the grid stays ----------
+// ---------- ring: zoom in — the grid stretches with the alarm's square until the square is the whole screen ----------
 const rg=el('ring',ph);
 rg.innerHTML=`<div class="sv"></div><div class="rh"></div><div class="rtime"></div><div class="rname"><div class="big"></div></div>
 <div class="acts"><button type="button" class="b-del">snooze · 9 min</button><button type="button" class="b-go">stop</button></div>`;
@@ -295,17 +295,16 @@ const rsv=rg.querySelector('.sv'),rh=rg.querySelector('.rh'),rtime=rg.querySelec
 let ringing=null,rLoop=null,firedAt='';
 async function ring(a){if(ringing)return;if(sh.classList.contains('on')){held.forEach(x=>x.cancel());held=[];sh.classList.remove('on');body.innerHTML='';sc.classList.remove('held')}
   ringing=a;logEv('rang',a);const i=Math.max(0,Math.round((day0(new Date())-base)/864e5));reveal(i,a.h);paint(i);const q=sqAt(i,a.h);
-  const l=lay(4);rsv.innerHTML=[0,1,2,3].flatMap(c=>[l.x(c),l.x(c)+l.F]).map(x=>`<i style="left:${x}px"></i>`).join('');
-  rh.innerHTML=[...Array(Math.ceil(PH/l.row)+1)].map((_,k)=>`<i style="top:${40+k*l.row}px"></i><i style="top:${40+k*l.row+l.F}px"></i>`).join('');
   rg.className='ring '+(a.days.length?'fixed':'temp');rtime.innerHTML=`${p2(a.h)}<span class="cd"></span>${p2(a.m)}`;setName(rname,a.name);
-  await stretchOpen(q);rg.classList.add('on');
+  // the square takes the alarm's colour before it grows, so the zoom lands on the same colour as the ring
+  if(q)q.dataset.ring=a.days.length?'fixed':'temp';await stretchOpen(q);rg.classList.add('on');
   let cyc=0;const beat=()=>{play(a.sound,Math.min(1,.4+cyc*.12));animName(rname,a.sound);buzz([280,120,280]);cyc++};
   setTimeout(beat,200);rLoop=setInterval(beat,2000)}
 async function stopRing(snooze){const a=ringing;if(!a)return;clearInterval(rLoop);buzz(0);logEv(snooze?'snoozed':'stopped',a);
   const i=Math.max(0,Math.round((day0(new Date())-base)/864e5)),q=sqAt(i,a.h);
   if(a.id>0&&!a.days.length)alarms=alarms.filter(x=>x.id!==a.id);
   let sn=null;if(snooze){const t=new Date(Date.now()+9*60000);sn={id:Date.now(),h:t.getHours(),m:t.getMinutes(),name:a.name,sound:a.sound,days:[],date:ymd(t)};alarms.push(sn)}
-  store();await stretchClose(q,rg);ringing=null;
+  store();await stretchClose(q,rg);if(q)delete q.dataset.ring;ringing=null;
   // done is done: a once-alarm leaves its square — no list keeps it
   const gone=q&&(q.querySelector(`.part[data-id="${a.id}"]`)||(q.dataset.id===String(a.id)?q:null));
   const popSn=()=>{if(!sn)return;const s=sqAt(indexOf(sn),sn.h);if(s){s.classList.add('pop');setTimeout(()=>s.classList.remove('pop'),700)}};
