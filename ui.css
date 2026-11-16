@@ -103,7 +103,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font);text-trans
 .nav,.nav2,.nav3{z-index:10}
 .ring .snooze{position:absolute;left:var(--margin);right:var(--margin);bottom:var(--gap);height:calc(var(--row)/2);display:flex;align-items:center;justify-content:center;font-size:var(--t-body);cursor:pointer}
 .splash:not(.ready) .gv,.splash:not(.ready) .gh,.splash:not(.ready) .dot{visibility:hidden}
-.ring{background:var(--orange);transition:clip-path var(--move) var(--ease),background var(--quick) var(--ease)}.ring.fixed{background:var(--ink)}
+.ring{background:var(--once);transition:clip-path var(--move) var(--ease),background var(--quick) var(--ease)}.ring.fixed{background:var(--fixed)}
 .ring.open{background:var(--paper);transition:clip-path var(--move) var(--ease),background var(--quick) var(--ease) calc(var(--move) * .5)}
 .ring>*{opacity:0;transition:opacity var(--quick)}.ring.open>*{opacity:1;transition:opacity var(--quick) var(--ease) calc(var(--move) * .7)}
 .ring .c span.core,.ring .dots.core b{animation:none!important;will-change:transform}

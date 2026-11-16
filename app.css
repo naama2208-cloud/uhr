@@ -43,9 +43,9 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .sq{position:absolute;cursor:pointer;-webkit-tap-highlight-color:transparent;overflow:hidden}
 .sq.hot{z-index:6}
 .sq.al{color:var(--paper)}
-.sq.temp{background:var(--orange)}
-.sq.fixed{background:var(--ink)}
-.sq.shared,.part.shared{background:var(--shared)}
+.sq.temp{background:var(--once);color:var(--on-once)}
+.sq.fixed{background:var(--fixed);color:var(--on-fixed)}
+.sq.shared,.part.shared{background:var(--shared);color:var(--on-shared)}
 /* the figures in a square scale with the zoom level */
 .sq .t,.sq .nt{position:absolute;left:7px;top:8px;font:700 var(--tf,25px)/.9 var(--font);font-variant-numeric:tabular-nums}
 .sq .t b,.sq .nt b{display:block;font-weight:700}
@@ -55,7 +55,8 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .sq.multi{color:var(--paper)}
 .part{position:absolute;left:0;right:0;display:flex;align-items:center;gap:6px;padding:0 7px;overflow:hidden;white-space:nowrap;font-size:13px}
 .part+.part{box-shadow:inset 0 2px 0 var(--paper)}
-.part.temp{background:var(--orange)}.part.fixed{background:var(--ink)}
+.part.temp{background:var(--once);color:var(--on-once)}.part.fixed{background:var(--fixed);color:var(--on-fixed)}
+.part.shared{background:var(--shared);color:var(--on-shared)}
 .part b{font:700 16px/1 var(--font);font-variant-numeric:tabular-nums}
 .part span{overflow:hidden;text-overflow:ellipsis}
 .part.thin b{font-size:13px}.part.thin span{font-size:11px}
@@ -63,8 +64,9 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .z8 .part *{display:none}
 .part.vanish{animation:vanish var(--vanish) var(--ease) both}
 /* now: the clearest thing on the screen — a thick orange frame, the time filling it, the minutes filling its floor */
-.sq.now{background:color-mix(in srgb,var(--now) 18%,var(--paper));box-shadow:inset 0 0 0 3px var(--now);z-index:3}
-.sq.now.temp{background:var(--orange);box-shadow:inset 0 0 0 3px var(--now)}
+.sq.now{background:color-mix(in srgb,var(--now) 6%,var(--paper));box-shadow:inset 0 0 0 3px var(--now);z-index:3}
+.sq.now.temp{background:var(--once);box-shadow:inset 0 0 0 3px var(--now)}
+.sq.now.shared{background:var(--shared)}.sq.now.fixed{background:var(--fixed)}
 .sq.now.fixed{box-shadow:inset 0 0 0 3px var(--now)}
 .sq .nt{color:var(--ink)}
 .sq .nb{position:absolute;left:0;bottom:0;height:5px;background:var(--orange)}
@@ -136,7 +138,7 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .acts button{height:60px;font-size:var(--btn);text-align:center;padding:0 10px;cursor:pointer;border-radius:0}
 .b-del{background:var(--paper);border:var(--stroke) solid var(--ink);color:var(--ink)}
 .b-go{background:var(--orange);border:0;color:var(--paper);font-weight:700}
-.b-sh{display:none;background:var(--paper);border:var(--stroke) solid var(--orange);color:var(--orange)}
+.b-sh{display:none;background:var(--paper);border:var(--stroke) solid var(--blue);color:var(--blue)}
 .acts.three{grid-template-columns:1fr 1fr 1fr;gap:calc(var(--gap)/2)}.acts.three .b-sh{display:block}
 /* came from a friend: a small open ring in the corner of the square */
 .sq .sm{position:absolute;right:8px;top:8px;width:9px;height:9px;border-radius:50%;border:var(--focus) solid currentColor}
@@ -157,7 +159,7 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .colon i{width:16px;height:16px;border-radius:50%;background:var(--orange)}
 .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
 .chip{height:44px;padding:0 13px;border:var(--stroke) solid var(--ink);background:var(--paper);color:var(--ink);font-size:16px;cursor:pointer;border-radius:0}
-.chip.on{background:var(--ink);color:var(--paper)}
+.chip.on{background:var(--yellow);border-color:var(--yellow);color:var(--ink)}
 .chip.or{border-color:var(--orange);color:var(--orange)}
 .chip.sqd{width:44px;padding:0;text-align:center}
 .nm{width:100%;border:0;border-bottom:3px solid var(--ink);background:none;font:700 var(--fs,64px)/1.08 var(--font);color:var(--ink);padding:0 0 8px;outline:0;border-radius:0;text-transform:lowercase}
@@ -176,11 +178,13 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 @keyframes tickk{0%{opacity:.15}30%{opacity:1}100%{opacity:1}}
 
 /* ---------- ring: the alarm's square, stretched to the screen; the grid stays on it ---------- */
-.ring{z-index:20;background:var(--orange);color:var(--ink)}
-.ring.fixed{background:var(--ink);color:var(--paper)}
+.ring{z-index:20;background:var(--once);color:var(--on-once)}
+.ring.shared{background:var(--shared);color:var(--on-shared)}
+.ring.fixed{background:var(--fixed);color:var(--on-fixed)}
 .sq[data-ring]{transition:background-color var(--snap) ease,border-color var(--snap) ease}
-.sq[data-ring=fixed]{background:var(--ink)!important;border-color:var(--ink)!important;color:var(--paper)!important}
-.sq[data-ring=temp]{background:var(--orange)!important;border-color:var(--orange)!important;color:var(--ink)!important}
+.sq[data-ring=fixed]{background:var(--fixed)!important;border-color:var(--fixed)!important;color:var(--on-fixed)!important}
+.sq[data-ring=shared]{background:var(--shared)!important;border-color:var(--shared)!important;color:var(--on-shared)!important}
+.sq[data-ring=temp]{background:var(--once)!important;border-color:var(--once)!important;color:var(--on-once)!important}
 .ring .sv,.ring .rh{display:none} /* no second grid: the real one has already stretched out of the screen */
 .ring .sv i{background:var(--ink);opacity:.25}
 .ring.fixed .sv i{background:var(--orange);opacity:.45}
@@ -194,8 +198,8 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .cd::before{top:.06em}.cd::after{bottom:0}
 .rname{position:relative;flex:1;display:flex;align-items:center;padding:0 var(--margin);min-height:0}
 .ring .acts .b-del{background:transparent;border-color:currentColor;color:inherit}
-.ring .acts .b-go{background:var(--ink);color:var(--orange)}
-.ring.fixed .acts .b-go{background:var(--orange);color:var(--ink)}
+.ring .acts .b-go{background:var(--paper);color:var(--ink)}
+.ring.fixed .acts .b-go{background:var(--paper);color:var(--ink)}
 
 /* ---------- splash (under): ühr breathes from thin to black, orange guides follow each letter ---------- */
 .splash{position:absolute;inset:0;z-index:30;background:var(--paper);transition:opacity var(--quick) var(--ease)}

@@ -334,9 +334,9 @@ const rsv=rg.querySelector('.sv'),rh=rg.querySelector('.rh'),rtime=rg.querySelec
 let ringing=null,rLoop=null,firedAt='';
 async function ring(a){if(ringing)return;if(sh.classList.contains('on')){held.forEach(x=>x.cancel());held=[];sh.classList.remove('on');body.innerHTML='';sc.classList.remove('held')}
   ringing=a;logEv('rang',a);const i=Math.max(0,Math.round((day0(new Date())-base)/864e5));reveal(i,a.h);paint(i);const q=sqAt(i,a.h);
-  rg.className='ring '+(a.days.length?'fixed':'temp');rtime.innerHTML=`${p2(a.h)}<span class="cd"></span>${p2(a.m)}`;setName(rname,a.name);
+  rg.className='ring '+(a.shared?'shared':a.days.length?'fixed':'temp');rtime.innerHTML=`${p2(a.h)}<span class="cd"></span>${p2(a.m)}`;setName(rname,a.name);
   // the square takes the alarm's colour before it grows, so the zoom lands on the same colour as the ring
-  if(q)q.dataset.ring=a.days.length?'fixed':'temp';await stretchOpen(q);rg.classList.add('on');
+  if(q)q.dataset.ring=a.shared?'shared':a.days.length?'fixed':'temp';await stretchOpen(q);rg.classList.add('on');
   let cyc=0;const beat=()=>{play(a.sound,Math.min(1,.4+cyc*.12));animName(rname,a.sound);buzz([280,120,280]);cyc++};
   setTimeout(beat,200);rLoop=setInterval(beat,2000)}
 async function stopRing(snooze){const a=ringing;if(!a)return;clearInterval(rLoop);buzz(0);logEv(snooze?'snoozed':'stopped',a);
