@@ -270,7 +270,7 @@ const STEPS=[
       b.onclick=()=>{if(v==='soon'){const n=new Date(Date.now()+60000);draft.h=n.getHours();draft.m=n.getMinutes();draft.date=ymd(n);draft.once=true}else draft.m=v;dh();dm();tick()}});
     el('hint',inn,'p').textContent='drag each number up or down'},
   inn=>{const big=el('big',inn);setName(big,draft.name);
-    const ch=el('chips',inn);el('spk',ch,'span').innerHTML=SPK;SOUNDS.forEach(s=>{const b=chip(ch,s,draft.sound===s?'on':'');
+    const ch=el('chips snd',inn);el('spk',ch,'span').innerHTML=SPK;SOUNDS.forEach(s=>{const b=chip(ch,s,draft.sound===s?'on':'');
       b.onclick=()=>{draft.sound=s;[...ch.querySelectorAll('.chip')].forEach(x=>x.classList.toggle('on',x===b));play(s,.9);animName(big,s)}});
     el('hint',inn,'p').textContent='tap to hear it';setTimeout(()=>{play(draft.sound,.6);animName(big,draft.sound)},420)},
   inn=>{const big=el('big',inn);setName(big,draft.name);big.style.setProperty('--fs',Math.min(72,parseFloat(big.style.getPropertyValue('--fs')))+'px');
