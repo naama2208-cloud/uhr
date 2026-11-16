@@ -275,7 +275,7 @@ const STEPS=[
     el('hint',inn,'p').textContent='tap to hear it';setTimeout(()=>{play(draft.sound,.6);animName(big,draft.sound)},420)},
   inn=>{const big=el('big',inn);setName(big,draft.name);big.style.setProperty('--fs',Math.min(72,parseFloat(big.style.getPropertyValue('--fs')))+'px');
     const ch=el('chips',inn),dch=el('chips',inn),note=el('hint',inn,'p');
-    const draw=()=>{drawSum();note.textContent=draft.once?dayWord(effDate()):'every '+(draft.days.length===7?'day':draft.days.map(d=>DS[d]).join(' '));
+    const draw=()=>{drawSum();big.style.color=draft.once?'var(--once)':'var(--fixed)';note.textContent=draft.once?dayWord(effDate()):'every '+(draft.days.length===7?'day':draft.days.map(d=>DS[d]).join(' '));
       [...ch.children].forEach((b,k)=>b.classList.toggle('on',k===(draft.once?0:1)));dch.hidden=draft.once;[...dch.children].forEach((b,k)=>b.classList.toggle('on',draft.days.includes(k)))};
     ['once','every week'].forEach((t,k)=>{chip(ch,t).onclick=()=>{draft.once=!k;if(!draft.days.length)draft.days=[effDate().getDay()];draw();tick()}});
     DS.forEach((t,k)=>{chip(dch,t,'sqd').onclick=()=>{const i=draft.days.indexOf(k);i<0?draft.days.push(k):draft.days.length>1&&draft.days.splice(i,1);draft.days.sort();draw();tick()}});
@@ -427,7 +427,11 @@ function land(){const q=sqAt(0,new Date().getHours()),r=rel(q),n=new Date(),L=el
   L.style.fontSize=parseFloat(getComputedStyle(L).fontSize)*k+'px';L.style.left=Lc.M+'px';L.style.top=Math.round(PH*.24)+'px';void L.offsetWidth;
   const nt=q.querySelector('.nt'),tr=nt?rel(nt):{x:r.x+8,y:r.y+9};
   L.style.transition='';setTimeout(()=>{L.style.transform=`translate(${tr.x-Lc.M}px,${tr.y-Math.round(PH*.24)}px) scale(${1/k})`;drawGrid()},500);
-  setTimeout(()=>{ph.classList.remove('landing');L.remove()},500+MOVE*1.4+60)}
+  setTimeout(()=>{ph.classList.remove('landing');L.remove();showAlarms()},500+MOVE*1.4+60)}
+// your alarms wait under the splash; once "now" has landed they come in one after another, in time order
+function showAlarms(){if(!sc.classList.contains('hold'))return;const qs=[...sc.querySelectorAll('.sq.al,.sq.draft')].sort((a,b)=>parseFloat(a.closest('.day').style.top)-parseFloat(b.closest('.day').style.top)||(+a.dataset.h)-(+b.dataset.h));
+  qs.forEach((q,k)=>q.style.setProperty('--d',Math.min(k,12)*STEP*2+'ms'));sc.classList.add('appear');sc.classList.remove('hold');
+  setTimeout(()=>{sc.classList.remove('appear');qs.forEach(q=>q.style.removeProperty('--d'))},MOVE+12*STEP*2+100)}
 // the splash does not cut away: its construction lines ARE the grid. The letters' lines glide out to the
 // app's columns and run the full height, the baseline and x-height lines settle on the edges of the hour you are in,
 // the two dots fall into that hour — and only then does the paper underneath show the week.
@@ -455,7 +459,7 @@ function splash(){const sp=el('splash',ph);sp.innerHTML='<div class="sw"><span c
     requestAnimationFrame(stepF);
     setTimeout(()=>morph(sp,sw2,gv,gh),THICK+1000)};
   (document.fonts&&document.fonts.load?document.fonts.load(`100 ${TSPL}px under`).then(()=>document.fonts.ready):Promise.resolve()).then(go2,go2)}
-if(reduce||EMBED){sc.classList.remove('drawing')}else splash();
+if(reduce||EMBED){sc.classList.remove('drawing')}else{sc.classList.add('hold');splash();setTimeout(showAlarms,THICK+5000)} // safety: never leave alarms hidden
 
 // ---------- first time: the app teaches by doing — one hint at a time, each gone for good once done ----------
 const TIPS='uhr5tips';let tips={};try{tips=JSON.parse(localStorage.getItem(TIPS))||{}}catch(e){}

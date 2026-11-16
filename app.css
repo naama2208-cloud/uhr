@@ -223,3 +223,8 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .pvi{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:18px var(--margin) 22px}
 .pvi canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto;box-shadow:0 18px 40px -12px rgba(32,32,30,.35);transform:scale(.94);transition:transform var(--move) var(--ease)}
 .pvw.on .pvi canvas{transform:none}
+
+/* after the splash: alarms wait, then come in one by one */
+.hold .sq.al,.hold .sq.draft{opacity:0;transform:scale(.55)}
+.appear .sq.al,.appear .sq.draft{transition:opacity var(--soft) var(--ease) var(--d,0ms),transform var(--move) var(--ease) var(--d,0ms)}
+.big{transition:color var(--snap) ease}
