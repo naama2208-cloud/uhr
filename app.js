@@ -298,37 +298,53 @@ const dec=t=>JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g,'+').repla
 bSh.addEventListener('click',()=>{const a=draft.edit?alarms.find(x=>x.id===draft.id):commit();if(a)shareAlarm(a,!draft.edit)});
 // ---------- the share poster (Figma: "share poster · A2"): type on the app's grid, and the one square of the shared hour ----------
 const CV=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-function poster(a){const W=1080,H=1350,k=W/463.2,M=24*k,F=101.2*k,G=10.3*k,X=c=>M+c*(F+G),Y=r=>M+r*(F+G);
+// the poster: 1080×1920, the home grid (4 columns of squares). Every line of type starts on a column line
+// and stands on a row line; sizes come from the square, not from numbers.
+let POSTER_V='a';
+function poster(a,v=POSTER_V){const W=1080,H=1920,M=56,G=24,F=(W-2*M-3*G)/4,R=Math.floor((H-2*M+G)/(F+G)),T0=(H-(R*F+(R-1)*G))/2,
+  X=c=>M+c*(F+G),Y=r=>T0+r*(F+G);
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
-  const col={paper:CV('--paper'),ink:CV('--ink'),line:CV('--line'),red:CV('--red'),kind:CV(a.shared?'--shared':a.days.length?'--fixed':'--once')};
+  const kind=a.shared?'shared':a.days.length?'fixed':'once';
+  const col={paper:CV('--paper'),ink:CV('--ink'),line:CV('--line'),red:CV('--red'),kind:CV('--'+kind),on:CV('--on-'+kind)||CV('--paper')};
   const font=CV('--font')||'Helvetica,Arial,sans-serif',type=CV('--type')||font;
   g.fillStyle=col.paper;g.fillRect(0,0,W,H);
-  // the grid: a pair of hairlines at both edges of every column and every row
   g.globalAlpha=.75;g.fillStyle=col.line;
-  for(let c=0;c<4;c++)for(const x of [X(c),X(c)+F])g.fillRect(Math.round(x),0,2,H);
-  for(let r=0;r<5;r++)for(const y of [Y(r),Y(r)+F])g.fillRect(0,Math.round(y),W,2);
+  for(let c=0;c<4;c++)for(const x of [X(c),X(c)+F])g.fillRect(Math.round(x)-1,0,2,H);
+  for(let r=0;r<R;r++)for(const y of [Y(r),Y(r)+F])g.fillRect(0,Math.round(y)-1,W,2);
   g.globalAlpha=1;
-  // the one square: the hour, in the colour of its kind
-  g.fillStyle=col.kind;g.fillRect(X(1),Y(1),F,F);
-  const T=(t,x,y,size,weight,color,fam=font)=>{g.font=`${weight} ${size}px ${fam}`;g.fillStyle=color;g.textBaseline='top';g.fillText(t,x,y);return g.measureText(t).width};
-  // top left: ühr, and the day right under it
-  const lw=T('uhr',24*k,27*k,32.6*k,900,col.ink,type);g.font=`900 ${32.6*k}px ${type}`;const uw=g.measureText('u').width;
-  g.fillStyle=col.red;[0,1].forEach(i=>{g.beginPath();g.arc(24*k+uw*(.3+.4*i),25.5*k,2.6*k,0,7);g.fill()});
+  // cap height → font size, measured, so the top of a capital lands on a line
+  const fnt=(s,w,f=font)=>`${w} ${s}px ${f}`;
+  const capOf=(w,f=font)=>{g.font=fnt(100,w,f);return g.measureText('H').actualBoundingBoxAscent/100};
+  // write t with its cap top on y and its ink starting exactly on x
+  const put=(t,x,y,cap,w,color,f=font)=>{const s=cap/capOf(w,f);g.font=fnt(s,w,f);g.fillStyle=color;g.textBaseline='alphabetic';
+    const m=g.measureText(t);g.fillText(t,x+m.actualBoundingBoxLeft,y+cap);return {w:m.actualBoundingBoxRight+m.actualBoundingBoxLeft,s}};
+  const fit=(t,cap,w,max,f=font)=>{const s=cap/capOf(w,f);g.font=fnt(s,w,f);const m=g.measureText(t),tw=m.actualBoundingBoxRight+m.actualBoundingBoxLeft;return tw>max?cap*max/tw:cap};
+  const logo=(x,y,cap,color)=>{const r=put('uhr',x,y,cap,900,color,type);g.font=fnt(r.s,900,type);const uw=g.measureText('u').width;
+    g.fillStyle=col.red;[0,1].forEach(i=>{g.beginPath();g.arc(x+uw*(.3+.4*i),y-cap*.32,Math.max(cap*.13,4),0,7);g.fill()})};
+  const B=(F+G)/8;                                  // the small line: an eighth of a module
+  const small=(lines,c,r,w=400)=>lines.forEach((t,i)=>put(t,X(c),Y(r)+i*B,B*.5,i===0?700:w,col.ink));
   const d=a.days.length?parse(ymd(new Date())):parse(a.date),dn=DAYS[a.days.length?(a.days.includes(new Date().getDay())?new Date().getDay():a.days[0]):d.getDay()];
-  T(dn,24*k,64*k,12.9*k,700,col.ink);
-  // the block at the bottom: name, how often, with whom
-  const who=(me||'a friend').replace(/^./,c=>c.toUpperCase());
-  const often=a.days.length?(a.days.length===7?'every day':'every '+(a.days.length===1?DAYS[a.days[0]]:a.days.map(x=>DS[x]).join(' '))):'once · '+dn;
-  T(a.name,24*k,420*k,63.8*k,700,col.red);
-  T(often,24*k,481*k,36*k,300,col.ink);
-  T('with '+who,24*k,517*k,38.5*k,400,col.ink);
-  // the column on the right: the time (the colon is two circles), the facts, the invitation
-  const tx=347*k,ty=430*k,ts=38*k;const hw=T(p2(a.h),tx,ty,ts,700,col.ink);
-  g.fillStyle=col.red;[.3,.62].forEach(f=>{g.beginPath();g.arc(tx+hw+ts*.12,ty+ts*f+ts*.05,ts*.065,0,7);g.fill()});
-  T(p2(a.m),tx+hw+ts*.26,ty,ts,700,col.ink);
-  const fs=9.4*k,lh=fs*1.45;[dn,a.days.length?'every week':'once','sound: '+a.sound].forEach((t,i)=>T(t,348*k,474*k+i*lh,fs,400,col.ink));
-  [`${(me||'someone')} shared`,'this hour.'].forEach((t,i)=>T(t,348*k,518*k+i*lh,fs,700,col.ink));
-  const aw=T('add it to your ',348*k,546*k,fs,400,col.ink);T('uhr',348*k+aw,546*k,fs,900,col.ink,type);g.font=`900 ${fs}px ${type}`;const su=g.measureText('u').width;g.fillStyle=col.red;[0,1].forEach(i=>{g.beginPath();g.arc(348*k+aw+su*(.3+.4*i),546*k-fs*.08,fs*.075,0,7);g.fill()});
+  const often=a.days.length?(a.days.length===7?'every day':'every '+(a.days.length===1?DAYS[a.days[0]]:a.days.map(x=>DS[x]).join(' '))):'once';
+  const who=(me||'a friend').replace(/^./,c=>c.toUpperCase()),hh=p2(a.h),mm=p2(a.m),wide=W-2*M;
+  const foot=r=>{small([dn,often],0,r);small(['sound',a.sound],1,r);small([who+' shared','this hour.'],2,r);
+    put('add it to your',X(3),Y(r),B*.5,700,col.ink);logo(X(3),Y(r)+B,B*.5,col.ink)};
+  const colon=(x,y,cap,color)=>{g.fillStyle=color;[.25,.75].forEach(f=>{g.beginPath();g.arc(x,y+cap*f,cap*.09,0,7);g.fill()})};
+  if(v==='a'){ // the hour, stacked like the home screen: each pair two rows tall
+    logo(X(0),Y(0),B*1.5,col.ink);
+    g.fillStyle=col.kind;g.fillRect(X(3),Y(0),F,F);
+    const cap=2*F+G;put(hh,X(0),Y(1),cap,700,col.ink);put(mm,X(0),Y(3),cap,700,col.ink);
+    put(a.name,X(0),Y(5),fit(a.name,F/2,700,wide),700,col.red);foot(R-1);
+  }else if(v==='b'){ // the hour in the colour of its kind: one field, three columns by four rows
+    logo(X(0),Y(0),B*1.5,col.ink);
+    g.fillStyle=col.kind;g.fillRect(X(0),Y(1),3*F+2*G,4*F+3*G);
+    const cap=F+G/2;const cb=Math.min(fit(hh,2*F-G,700,3*F),fit(mm,2*F-G,700,3*F));put(hh,X(0)+G,Y(1)+G,cb,700,col.on);put(mm,X(0)+G,Y(3)+G,cb,700,col.on);
+    put(a.name,X(0),Y(5),fit(a.name,F/2,700,wide),700,col.ink);foot(R-1);
+  }else{ // the name leads; the hour sits one row under it, in a single line
+    logo(X(0),Y(0),B*1.5,col.ink);
+    const nc=fit(a.name,F,700,wide);put(a.name,X(0),Y(1),nc,700,col.red);
+    let cap=F;{const s0=cap/capOf(700);g.font=fnt(s0,700);const tw=g.measureText(hh).width+g.measureText(mm).width+cap*.44,max=3*F+2*G-G;if(tw>max)cap*=max/tw}const r1=put(hh,X(0),Y(3),cap,700,col.ink);colon(X(0)+r1.w+cap*.22,Y(3),cap,col.red);put(mm,X(0)+r1.w+cap*.44,Y(3),cap,700,col.ink);
+    g.fillStyle=col.kind;g.fillRect(X(3),Y(3),F,F);foot(R-1);
+  }
   return cv}
 // a canvas → a File without waiting, so the share still counts as part of the tap
 const posterFile=cv=>{const b=atob(cv.toDataURL('image/png').split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new File([u],'uhr-hour.png',{type:'image/png'})};
@@ -495,7 +511,7 @@ if(!takeShared()&&!EMBED)setTimeout(()=>askName(tipNow),reduce?400:THICK+1000+MO
 
 addEventListener('resize',()=>{fit();if(!busy())layoutAll()});
 // presenting + the live system page
-window.uhr={poster:(i=0)=>poster(alarms[i]).toDataURL('image/png'),ring:()=>{const n=new Date(),a=alarms.slice().sort((x,y)=>(indexOf(x)*1440+x.h*60+x.m)-(indexOf(y)*1440+y.h*60+y.m))[0];
+window.uhr={poster:(i=0,v)=>poster(alarms[i],v).toDataURL('image/png'),ring:()=>{const n=new Date(),a=alarms.slice().sort((x,y)=>(indexOf(x)*1440+x.h*60+x.m)-(indexOf(y)*1440+y.h*60+y.m))[0];
     ring(a?{...a,id:-1,h:n.getHours(),m:n.getMinutes()}:{id:-1,h:n.getHours(),m:n.getMinutes(),name:'ühr',sound:'rise',days:[]})},
   reset:()=>{alarms=sample();store();paintAll()},
   first:()=>{alarms=[];store();try{localStorage.removeItem(TIPS)}catch(e){}location.reload()},
