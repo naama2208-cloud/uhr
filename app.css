@@ -41,6 +41,7 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .sq.al{color:var(--paper)}
 .sq.temp{background:var(--orange)}
 .sq.fixed{background:var(--ink)}
+.sq.shared,.part.shared{background:var(--shared)}
 /* the figures in a square scale with the zoom level */
 .sq .t,.sq .nt{position:absolute;left:7px;top:8px;font:700 var(--tf,25px)/.9 var(--font);font-variant-numeric:tabular-nums}
 .sq .t b,.sq .nt b{display:block;font-weight:700}
@@ -58,9 +59,9 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .z8 .part *{display:none}
 .part.vanish{animation:vanish var(--vanish) var(--ease) both}
 /* now: the clearest thing on the screen — a thick orange frame, the time filling it, the minutes filling its floor */
-.sq.now{background:color-mix(in srgb,var(--orange) 12%,var(--paper));box-shadow:inset 0 0 0 3px var(--orange);z-index:3}
-.sq.now.temp{background:var(--orange);box-shadow:inset 0 0 0 3px var(--ink)}
-.sq.now.fixed{box-shadow:inset 0 0 0 3px var(--orange)}
+.sq.now{background:color-mix(in srgb,var(--now) 18%,var(--paper));box-shadow:inset 0 0 0 3px var(--now);z-index:3}
+.sq.now.temp{background:var(--orange);box-shadow:inset 0 0 0 3px var(--now)}
+.sq.now.fixed{box-shadow:inset 0 0 0 3px var(--now)}
 .sq .nt{color:var(--ink)}
 .sq .nb{position:absolute;left:0;bottom:0;height:5px;background:var(--orange)}
 .landing .sq.now .nt{opacity:0}

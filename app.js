@@ -77,10 +77,10 @@ function paint(i){const {d,sqs}=days[i],now=new Date();
   sqs.forEach(q=>{q.className='sq';q.innerHTML='';delete q.dataset.id;q.removeAttribute('aria-label')});
   const by={};occ(d).forEach(a=>(by[a.h]=by[a.h]||[]).push(a));
   Object.entries(by).forEach(([h,list])=>{const q=sqs[h];q.dataset.id=list[0].id;
-    if(list.length===1){const a=list[0];q.classList.add('al',a.days.length?'fixed':'temp');q.innerHTML=`<span class="t"><b>${p2(a.h)}</b><b>${p2(a.m)}</b></span><span class="n">${esc(a.name)}</span>${a.shared?'<i class="sm"></i>':''}`;q.setAttribute('aria-label',`${p2(a.h)}:${p2(a.m)} ${a.name}`);return}
+    if(list.length===1){const a=list[0];q.classList.add('al',a.days.length?'fixed':'temp');if(a.shared)q.classList.add('shared');q.innerHTML=`<span class="t"><b>${p2(a.h)}</b><b>${p2(a.m)}</b></span><span class="n">${esc(a.name)}</span>${a.shared?'<i class="sm"></i>':''}`;q.setAttribute('aria-label',`${p2(a.h)}:${p2(a.m)} ${a.name}`);return}
     // two or more in one hour: the square splits into bands, one per alarm, in time order
     q.classList.add('al','multi');const k=100/list.length;
-    q.innerHTML=list.map((a,j)=>`<div class="part ${a.days.length?'fixed':'temp'}${list.length>2?' thin':''}" data-id="${a.id}" style="top:${j*k}%;height:${k}%"><b><span class="cd"></span>${p2(a.m)}</b><span>${esc(a.name)}</span>${a.shared?'<i class="sm"></i>':''}</div>`).join('');
+    q.innerHTML=list.map((a,j)=>`<div class="part ${a.days.length?'fixed':'temp'}${a.shared?' shared':''}${list.length>2?' thin':''}" data-id="${a.id}" style="top:${j*k}%;height:${k}%"><b><span class="cd"></span>${p2(a.m)}</b><span>${esc(a.name)}</span>${a.shared?'<i class="sm"></i>':''}</div>`).join('');
     q.setAttribute('aria-label',list.map(a=>`${p2(a.h)}:${p2(a.m)} ${a.name}`).join(', '))});
   if(i%7===0){const h=now.getHours(),q=sqs[h];q.classList.add('now');
     if(!q.dataset.id)q.insertAdjacentHTML('beforeend',`<span class="nt"><b>${p2(h)}</b><b>${p2(now.getMinutes())}</b></span>`);
