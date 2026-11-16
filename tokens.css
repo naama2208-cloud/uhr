@@ -8,9 +8,9 @@
 --fixed:var(--blue);      /* every week */
 --once:var(--red);        /* just once */
 --shared:var(--yellow);   /* an hour someone shared with you */
---now:var(--ink);         /* the hour you are in: a black frame */
+--now:var(--ink);         /* the hour you are in: just its time, in black — no frame */
 --on-fixed:var(--paper);--on-once:var(--paper);--on-shared:var(--ink);  /* type that reads on each */
---line:var(--blue);--line-o:.55;   /* the grid */
+--line:var(--red);--line-o:.55;    /* the grid */
 /* space */
 --margin:21px;--field:72px;--gap:24px;--top:96px;--row:96px;--head:28px;
 /* lines: the grid's hairline, borders, focus */
