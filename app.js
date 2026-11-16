@@ -332,13 +332,20 @@ function poster(a){const W=1080,H=1350,k=W/463.2,M=24*k,F=101.2*k,G=10.3*k,X=c=>
   return cv}
 // a canvas → a File without waiting, so the share still counts as part of the tap
 const posterFile=cv=>{const b=atob(cv.toDataURL('image/png').split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new File([u],'uhr-hour.png',{type:'image/png'})};
-async function shareAlarm(a,closing){
+// before it goes: the poster, full screen — send it, or go back
+const pvw=el('pvw',ph);pvw.innerHTML='<div class="top"><div class="lab">what your friend gets</div></div><div class="pvi"></div><div class="acts"><button type="button" class="b-del">go back</button><button type="button" class="b-go">send</button></div>';
+const pvi=pvw.querySelector('.pvi');let pvA=null,pvCv=null;
+function preview(a){pvA=a;pvCv=poster(a);pvi.replaceChildren(pvCv);pvw.classList.add('on');tick()}
+const closePv=()=>{pvw.classList.remove('on');pvA=null};
+pvw.querySelector('.b-del').addEventListener('click',()=>{tick();closePv()});
+pvw.querySelector('.b-go').addEventListener('click',async()=>{const a=pvA,cv=pvCv;if(!a)return;await sendShared(a,cv);closePv()});
+function shareAlarm(a){preview(a)}
+async function sendShared(a,cv){
   const url=location.origin+location.pathname+'#add='+enc({h:a.h,m:a.m,n:a.name,s:a.sound,d:a.days,t:a.date||ymd(new Date()),f:me});
   const text=`${a.name} · ${p2(a.h)}:${p2(a.m)} — add it to your ühr`;logEv('shared',a);buzz(10);
-  let file=null;try{file=posterFile(poster(a))}catch(e){}
+  let file=null;try{file=posterFile(cv||poster(a))}catch(e){}
   try{if(navigator.share){const data={title:'ühr',text,url};if(file&&navigator.canShare&&navigator.canShare({files:[file]}))data.files=[file];await navigator.share(data);return}}catch(e){if(e&&e.name==='AbortError')return}
-  if(closing){prompt('copy this link',url);return}
-  try{await navigator.clipboard.writeText(text+'\n'+url);bSh.textContent='copied';setTimeout(()=>bSh.textContent='share',1600)}catch(e){prompt('copy this link',url)}}
+  try{await navigator.clipboard.writeText(text+'\n'+url)}catch(e){prompt('copy this link',url)}}
 function takeShared(){const m=location.hash.match(/^#add=([\w-]+)/);if(!m)return false;history.replaceState(null,'',location.pathname+location.search);
   let o;try{o=dec(m[1])}catch(e){return false}if(!(o.h>=0&&o.h<24&&o.m>=0&&o.m<60))return false;
   const pre={h:o.h|0,m:o.m|0,name:String(o.n||'').slice(0,16),sound:snd(o.s),days:Array.isArray(o.d)&&o.d.length?o.d.filter(x=>x>=0&&x<7):[],date:o.t||ymd(new Date()),from:String(o.f||'').slice(0,16)};

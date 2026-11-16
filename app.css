@@ -216,3 +216,10 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .land span{display:block}
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:1ms!important;transition-duration:1ms!important}}
+
+/* share preview: the poster, full screen, before it is sent */
+.pvw{position:absolute;inset:0;z-index:15;background:var(--paper);display:flex;flex-direction:column;visibility:hidden;opacity:0;transition:opacity var(--snap) ease,visibility 0s linear var(--snap)}
+.pvw.on{visibility:visible;opacity:1;transition:opacity var(--snap) ease,visibility 0s}
+.pvi{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:18px var(--margin) 22px}
+.pvi canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto;box-shadow:0 18px 40px -12px rgba(32,32,30,.35);transform:scale(.94);transition:transform var(--move) var(--ease)}
+.pvw.on .pvi canvas{transform:none}
