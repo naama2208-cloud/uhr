@@ -188,7 +188,10 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .ring .rh i{position:absolute;left:0;right:0;height:1px;background:var(--ink);opacity:.25}
 .ring.fixed .rh i{background:var(--orange);opacity:.45}
 .rtime{position:relative;padding:54px var(--margin) 0;font:700 64px/1 var(--font);font-variant-numeric:tabular-nums}
-.cd{display:inline-block;width:.3em;height:.72em;vertical-align:baseline;background:radial-gradient(circle closest-side,currentColor 92%,transparent) 50% 18%/.13em .13em no-repeat,radial-gradient(circle closest-side,currentColor 92%,transparent) 50% 100%/.13em .13em no-repeat}
+.cd{display:inline-block;position:relative;width:.3em;height:.72em;vertical-align:baseline}
+/* two real circles at any size — never squares */
+.cd::before,.cd::after{content:"";position:absolute;left:50%;width:max(.14em,3px);height:max(.14em,3px);border-radius:50%;background:var(--c,currentColor);transform:translateX(-50%)}
+.cd::before{top:.06em}.cd::after{bottom:0}
 .rname{position:relative;flex:1;display:flex;align-items:center;padding:0 var(--margin);min-height:0}
 .ring .acts .b-del{background:transparent;border-color:currentColor;color:inherit}
 .ring .acts .b-go{background:var(--ink);color:var(--orange)}
