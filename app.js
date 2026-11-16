@@ -31,6 +31,10 @@ function sample(){const n=new Date(),t=day0(n),h=(n.getHours()+2)%24,dt=h<n.getH
     {id:3,h:7,m:0,name:'wake up',sound:'rise',days:[],date:ymd(addDays(t,1))},{id:4,h:18,m:30,name:'babysitter',sound:'tick',days:[],date:ymd(addDays(t,3))}]}
 let alarms=null;try{alarms=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!Array.isArray(alarms))alarms=[];
+// alarms left half-way: kept as drafts until they are finished or thrown away
+const DRAFTS='uhr5drafts';let drafts={};try{drafts=JSON.parse(localStorage.getItem(DRAFTS))||{}}catch(e){}
+const saveDrafts=()=>{try{localStorage.setItem(DRAFTS,JSON.stringify(drafts))}catch(e){}};
+const dkey=(d,h)=>ymd(d)+'|'+h;
 // once: clear the old example alarms that earlier versions saved on every phone (ids 1–4); real alarms stay
 if(!localStorage.getItem('uhr5clean')){const EX={1:'training',2:'pill',3:'wake up',4:'babysitter'};
   alarms=alarms.filter(a=>EX[a.id]!==a.name);try{localStorage.setItem(KEY,JSON.stringify(alarms));localStorage.setItem('uhr5clean','1')}catch(e){}}
@@ -72,7 +76,7 @@ function addDay(){const i=days.length,d=addDays(base,i%7),de=el('day',track);
   const hd=el('dh',de);hd.innerHTML=`<b>${i%7===0?'today':DAYS[d.getDay()]}</b>`;
   const sqs=[];for(let h=0;h<24;h++){const q=el('sq',de);q.dataset.i=i;q.dataset.h=h;sqs.push(q)}
   const D={d,de,sqs,bands:[],hd};days.push(D);layoutDay(D,i);track.style.height=days.length*Lc.dayH+Lc.row+'px';paint(i)}
-function layoutAll(){days.forEach(layoutDay);track.style.height=days.length*Lc.dayH+Lc.row+'px';setVL();zclass()}
+function layoutAll(){days.forEach(layoutDay);track.style.height=days.length*Lc.dayH+Lc.row+'px';setVL();zclass();if(typeof upStick==='function')requestAnimationFrame(upStick)}
 function paint(i){const {d,sqs}=days[i],now=new Date();
   sqs.forEach(q=>{q.className='sq';q.innerHTML='';delete q.dataset.id;q.removeAttribute('aria-label')});
   const by={};occ(d).forEach(a=>(by[a.h]=by[a.h]||[]).push(a));
@@ -85,6 +89,8 @@ function paint(i){const {d,sqs}=days[i],now=new Date();
   if(i%7===0){const h=now.getHours(),q=sqs[h];q.classList.add('now');
     if(!q.dataset.id)q.insertAdjacentHTML('beforeend',`<span class="nt"><b>${p2(h)}</b><b>${p2(now.getMinutes())}</b></span>`);
     q.insertAdjacentHTML('beforeend',`<i class="nb" style="width:${(now.getMinutes()+1)/60*100}%"></i>`)}
+  Object.entries(drafts).forEach(([k,v])=>{const [dt,h]=k.split('|');if(dt!==ymd(d))return;const q=sqs[+h];if(!q||q.dataset.id)return;
+    q.classList.add('draft');q.insertAdjacentHTML('beforeend',`<span class="n">${esc(v.d.name||'…')}</span>`)});
   if(beck&&beck.i===i)sqs[beck.h].classList.add('beckon')}
 let beck=null;
 const paintAll=()=>days.forEach((_,i)=>paint(i));
@@ -93,6 +99,12 @@ rebuild();
 const yOf=(i,h)=>i*Lc.dayH+Lc.head+Math.floor(h/Lc.n)*Lc.row;
 sc.scrollTop=Math.max(0,yOf(0,new Date().getHours())-Math.round(PH*.3));
 sc.addEventListener('scroll',()=>{if(sc.scrollTop+PH>(days.length-2)*Lc.dayH)for(let k=0;k<7;k++)addDay()},{passive:true});
+// the day you are looking at stays named at the top; the next day's name pushes it out (snap)
+const stick=el('stick',ph);stick.innerHTML='<b></b>';let stickI=-1;
+function upStick(){if(!days.length)return;const y=sc.scrollTop,i=Math.max(0,Math.min(days.length-1,Math.floor(y/Lc.dayH)));
+  if(i!==stickI){if(days[stickI])days[stickI].hd.style.visibility='';stickI=i;stick.firstChild.textContent=days[i].hd.textContent;days[i].hd.style.visibility='hidden'}
+  const push=Math.min(0,(i+1)*Lc.dayH-y-stick.offsetHeight);stick.style.transform=`translateY(${push}px)`}
+sc.addEventListener('scroll',upStick,{passive:true});
 const sqAt=(i,h)=>days[i]&&days[i].sqs[h];
 const indexOf=a=>{const now=new Date();if(!a.days.length)return Math.max(0,Math.round((parse(a.date)-base)/864e5));
   for(let i=0;i<8;i++){const d=addDays(base,i);if(a.days.includes(d.getDay())&&at(d,a.h,a.m)>now)return i}return 0};
@@ -185,17 +197,20 @@ function animName(e,s){e.classList.remove(...SOUNDS.map(k=>'an-'+k));void e.offs
 // ---------- create: four isolated steps inside the stretched hour ----------
 const sh=el('sheet',ph);
 sh.innerHTML=`<div class="sv"></div>
-<div class="top"><div class="dots"></div><div class="lab"></div></div><div class="body"></div>
-<div class="acts"><button type="button" class="b-del">delete</button><button type="button" class="b-sh">share</button><button type="button" class="b-go">continue</button></div>`;
-const sv=sh.querySelector('.sv'),dots=sh.querySelector('.dots'),lab=sh.querySelector('.lab'),body=sh.querySelector('.body'),bDel=sh.querySelector('.b-del'),bGo=sh.querySelector('.b-go'),bSh=sh.querySelector('.b-sh'),acts=sh.querySelector('.acts');
+<div class="top"><div class="dots"></div><div class="lab"></div><button type="button" class="b-x" aria-label="close"></button></div><div class="sum"></div><div class="body"></div>
+<div class="acts"><button type="button" class="b-del">go back</button><button type="button" class="b-sh">share</button><button type="button" class="b-go">continue</button></div>`;
+const sv=sh.querySelector('.sv'),dots=sh.querySelector('.dots'),lab=sh.querySelector('.lab'),body=sh.querySelector('.body'),bDel=sh.querySelector('.b-del'),bGo=sh.querySelector('.b-go'),bSh=sh.querySelector('.b-sh'),acts=sh.querySelector('.acts'),bX=sh.querySelector('.b-x'),sum=sh.querySelector('.sum');
 const svLines=()=>{const l=lay(4);sv.innerHTML=[0,1,2,3].flatMap(c=>[l.x(c),l.x(c)+l.F]).map((x,i)=>`<i style="left:${x}px;--d:${i*STEP}ms"></i>`).join('')};
-const LABELS=['time','name','sound','repeat'];
+const LABELS=['name','time','sound','repeat'];
+const SPK='<svg class="spk" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 let draft=null,step=0,origin=null,opening=false;
 async function openSheet(i,h,a,from,pre){if(opening||sh.classList.contains('on'))return;opening=true;origin=from||sqAt(i,h);const d=days[i].d;
   draft=pre?{id:Date.now(),...pre,edit:false,shared:true}
         :a?{id:a.id,h:a.h,m:a.m,name:a.name,sound:snd(a.sound),days:[...a.days],once:!a.days.length,date:a.date||ymd(d),edit:true,shared:!!a.shared}
+         :drafts[dkey(d,h)]?{...drafts[dkey(d,h)].d,edit:false,fromDraft:true}
          :{id:Date.now(),h,m:0,name:'',sound:'rise',days:[d.getDay()],once:true,date:ymd(d),edit:false};
-  buzz(10);if(!pre)tipDone('tap');svLines();await stretchOpen(origin.closest('.sq'));step=-1;go(pre?LABELS.length-1:0,0);sh.classList.add('on');opening=false;
+  const resume=draft.fromDraft?drafts[dkey(d,h)].step:0;draft.key=dkey(d,h);
+  buzz(10);if(!pre)tipDone('tap');svLines();await stretchOpen(origin.closest('.sq'));step=-1;go(pre?LABELS.length-1:resume,0);sh.classList.add('on');opening=false;
   if(pre){const t=el('tip from',sh);t.dataset.k='from';t.innerHTML=`<b>${esc(pre.from||'someone')} shared this with you.</b><br>swipe ← to add it to your week.`}else tipSwipe()}
 async function closeSheet(target,after){if(!sh.classList.contains('on'))return;sh.querySelectorAll('.tip.from').forEach(t=>t.remove());await stretchClose(target||origin.closest('.sq'),sh);body.innerHTML='';after&&after()}
 function go(n,dir){if(n>0)tipDone('swipe');const from=dir===undefined?(n>step?1:n<step?-1:0):dir;step=n;sh.classList.add('fall');void sh.offsetWidth;sh.classList.remove('fall');
@@ -203,8 +218,18 @@ function go(n,dir){if(n>0)tipDone('swipe');const from=dir===undefined?(n>step?1:
   [...dots.children].forEach((b,k)=>b.onclick=()=>{if(k!==step)go(k)});
   lab.textContent=n===LABELS.length-1?'swipe ← to set':LABELS[n];body.innerHTML='';const inn=el('in'+(from>0?' from-r':from<0?' from-l':''),body);STEPS[n](inn);
   bGo.textContent=n===LABELS.length-1?'set':'continue';
+  if(n===2)lab.innerHTML=SPK+'sound';
+  bDel.textContent=n>0?'go back':draft.edit?'delete':draft.fromDraft?'discard':'go back';
+  bDel.disabled=n===0&&!draft.edit&&!draft.fromDraft;
+  drawSum()
   // share sits beside set on the last step, and always on an alarm that already exists
   acts.classList.toggle('three',draft.edit||(n===LABELS.length-1&&!draft.shared))}
+// what you have told it so far, adding up at the top: the name, then the time, the sound, how often
+function drawSum(){const parts=[];
+  if(step>0||draft.edit||draft.shared)parts.push(`<b>${esc(draft.name.trim()||'ühr')}</b>`);
+  if(step>1||draft.edit||draft.shared)parts.push(`<span>${hm(draft.h,draft.m)} ${dayWord(effDate())}</span>`);
+  if(step>2||draft.edit||draft.shared)parts.push(`<span>${SPK}${esc(draft.sound)}</span>`);
+  sum.innerHTML=parts.join('<i class="sep"></i>')}
 const effDate=()=>{let d=parse(draft.date);if(draft.once&&at(d,draft.h,draft.m)<=new Date())d=addDays(d,1);return d};
 const dayWord=d=>{const k=Math.round((day0(d)-day0(new Date()))/864e5);return k===0?'today':DAYS[d.getDay()]};
 function wheel(inn,{get,set,fmt=p2,step:st=1,mod,onchange}){const w=el('wheel',inn);w.tabIndex=0;w.setAttribute('role','spinbutton');
@@ -224,7 +249,11 @@ const chip=(p,txt,cls='')=>{const b=el('chip '+cls,p,'button');b.type='button';i
 // the colon is always two circles, never the typed ':'
 const hm=(h,m)=>p2(h)+'<span class="cd"></span>'+p2(m);
 const STEPS=[
-  inn=>{const pr=el('pair',inn),note=el('hint',inn,'p');const upd=()=>note.textContent=dayWord(effDate());
+  inn=>{const nm=el('nm',inn,'input');nm.id='uhr-name';nm.maxLength=16;nm.placeholder='name it';nm.autocomplete='off';nm.value=draft.name;
+    nm.setAttribute('aria-label','name');const fitIn=()=>nm.style.setProperty('--fs',Math.max(36,Math.min(72,360/(Math.max(nm.value.length,6)*.58)))+'px');fitIn();
+    nm.addEventListener('input',()=>{draft.name=nm.value;fitIn()});nm.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();next()}});
+    el('hint',inn,'p').textContent='what is it? one or two words';setTimeout(()=>{try{nm.focus({preventScroll:true})}catch(e){}},300)},
+  inn=>{const pr=el('pair',inn),note=el('hint',inn,'p');const big=el('big small',inn);setName(big,draft.name);inn.insertBefore(big,pr);const upd=()=>note.textContent=dayWord(effDate());
     const dh=wheel(pr,{get:()=>draft.h,set:v=>draft.h=v,mod:24,onchange:upd});pr.firstChild.setAttribute('aria-label','hour');
     el('colon',pr).innerHTML='<i></i><i></i>';
     const dm=wheel(pr,{get:()=>draft.m,set:v=>draft.m=v,step:5,mod:60,onchange:upd});pr.lastChild.setAttribute('aria-label','minutes');
@@ -232,17 +261,13 @@ const STEPS=[
     [['in 1 minute','soon'],['00',0],['15',15],['30',30],['45',45]].forEach(([t,v])=>{const b=chip(ch,v==='soon'?t:':'+t,v==='soon'?'or':'');
       b.onclick=()=>{if(v==='soon'){const n=new Date(Date.now()+60000);draft.h=n.getHours();draft.m=n.getMinutes();draft.date=ymd(n);draft.once=true}else draft.m=v;dh();dm();tick()}});
     el('hint',inn,'p').textContent='drag each number up or down'},
-  inn=>{el('cap',inn).innerHTML=hm(draft.h,draft.m);const nm=el('nm',inn,'input');nm.id='uhr-name';nm.maxLength=16;nm.placeholder='name it';nm.autocomplete='off';nm.value=draft.name;
-    nm.setAttribute('aria-label','name');const fitIn=()=>nm.style.setProperty('--fs',Math.max(36,Math.min(72,360/(Math.max(nm.value.length,6)*.58)))+'px');fitIn();
-    nm.addEventListener('input',()=>{draft.name=nm.value;fitIn()});nm.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();next()}});
-    el('hint',inn,'p').textContent='one or two words';setTimeout(()=>{try{nm.focus({preventScroll:true})}catch(e){}},300)},
-  inn=>{el('cap',inn).innerHTML=hm(draft.h,draft.m);const big=el('big',inn);setName(big,draft.name);
-    const ch=el('chips',inn);SOUNDS.forEach(s=>{const b=chip(ch,s,draft.sound===s?'on':'');
-      b.onclick=()=>{draft.sound=s;[...ch.children].forEach(x=>x.classList.toggle('on',x===b));play(s,.9);animName(big,s)}});
+  inn=>{const big=el('big',inn);setName(big,draft.name);
+    const ch=el('chips',inn);el('spk',ch,'span').innerHTML=SPK;SOUNDS.forEach(s=>{const b=chip(ch,s,draft.sound===s?'on':'');
+      b.onclick=()=>{draft.sound=s;[...ch.querySelectorAll('.chip')].forEach(x=>x.classList.toggle('on',x===b));play(s,.9);animName(big,s)}});
     el('hint',inn,'p').textContent='tap to hear it';setTimeout(()=>{play(draft.sound,.6);animName(big,draft.sound)},420)},
-  inn=>{const cap=el('cap',inn),big=el('big',inn);setName(big,draft.name);big.style.setProperty('--fs',Math.min(72,parseFloat(big.style.getPropertyValue('--fs')))+'px');
+  inn=>{const big=el('big',inn);setName(big,draft.name);big.style.setProperty('--fs',Math.min(72,parseFloat(big.style.getPropertyValue('--fs')))+'px');
     const ch=el('chips',inn),dch=el('chips',inn),note=el('hint',inn,'p');
-    const draw=()=>{cap.innerHTML=hm(draft.h,draft.m);note.textContent=draft.once?dayWord(effDate()):'every '+(draft.days.length===7?'day':draft.days.map(d=>DS[d]).join(' '));
+    const draw=()=>{drawSum();note.textContent=draft.once?dayWord(effDate()):'every '+(draft.days.length===7?'day':draft.days.map(d=>DS[d]).join(' '));
       [...ch.children].forEach((b,k)=>b.classList.toggle('on',k===(draft.once?0:1)));dch.hidden=draft.once;[...dch.children].forEach((b,k)=>b.classList.toggle('on',draft.days.includes(k)))};
     ['once','every week'].forEach((t,k)=>{chip(ch,t).onclick=()=>{draft.once=!k;if(!draft.days.length)draft.days=[effDate().getDay()];draw();tick()}});
     DS.forEach((t,k)=>{chip(dch,t,'sqd').onclick=()=>{const i=draft.days.indexOf(k);i<0?draft.days.push(k):draft.days.length>1&&draft.days.splice(i,1);draft.days.sort();draw();tick()}});
@@ -250,11 +275,14 @@ const STEPS=[
 function next(){if(step<STEPS.length-1){go(step+1);return}commit()}
 function commit(){const d=effDate(),a={id:draft.id,h:draft.h,m:draft.m,name:(draft.name.trim()||'ühr').split(/\s+/).slice(0,2).join(' '),sound:draft.sound,
     days:draft.once?[]:[...draft.days],date:draft.once?ymd(d):null,...(draft.shared?{shared:true}:{})};
-  logEv(draft.edit?'changed':'set',a);
+  logEv(draft.edit?'changed':'set',a);if(draft.key&&drafts[draft.key]){delete drafts[draft.key];saveDrafts()}
   alarms=alarms.filter(x=>x.id!==a.id);alarms.push(a);store();paintAll();buzz([10,40,10]);
   const fresh=draft.shared&&!draft.edit&&!tips.now;const i=indexOf(a);held.forEach(x=>x.cancel());held=[];reveal(i,a.h);const q=sqAt(i,a.h);
   closeSheet(q,()=>{if(q){q.classList.add('pop');setTimeout(()=>q.classList.remove('pop'),700)}if(fresh)setTimeout(()=>{sc.scrollTo({top:Math.max(0,yOf(0,new Date().getHours())-Math.round(PH*.3)),behavior:reduce?'auto':'smooth'});setTimeout(()=>askName(tipNow),700)},1400);else setTimeout(tipPinch,900)});return a}
 bGo.addEventListener('click',next);
+bX.addEventListener('click',()=>{const q=origin&&origin.closest('.sq');
+  if(draft&&!draft.edit&&!draft.shared&&(draft.name.trim()||step>0)){const {edit,fromDraft,key,...d}=draft;drafts[draft.key]={d,step};saveDrafts()}
+  closeSheet(q,paintAll)});
 // ---------- share: the alarm travels inside a link; the friend opens it and lands on the filled-in hour ----------
 const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const dec=t=>JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g,'+').replace(/_/g,'/')))));
@@ -282,7 +310,8 @@ const swEnd=e=>{if(!sw)return;const dx=(e.clientX-sw.x)/S,on=sw.on;sw=null;if(!o
   if(dx<-70){tick();next()}else if(dx>70&&step>0){tick();go(step-1,-1)}
   else{inn.style.transition='transform 240ms var(--ease),opacity 240ms';inn.style.transform='';inn.style.opacity=''}};
 body.addEventListener('pointerup',swEnd,true);body.addEventListener('pointercancel',()=>{sw=null},true);
-bDel.addEventListener('click',()=>{const q=origin&&origin.closest('.sq');
+bDel.addEventListener('click',()=>{const q=origin&&origin.closest('.sq');if(step>0){tick();go(step-1,-1);return}
+  if(draft&&draft.fromDraft&&!draft.edit){delete drafts[draft.key];saveDrafts();closeSheet(q,paintAll);return}
   if(draft&&draft.edit){const a=alarms.find(x=>x.id===draft.id);logEv('deleted',a);alarms=alarms.filter(x=>x.id!==draft.id);store();
     closeSheet(q,()=>{const g=origin.classList.contains('part')?origin:q;g.classList.add('vanish');setTimeout(paintAll,700)})}else closeSheet(q)});
 sc.addEventListener('click',e=>{if(lpFired){lpFired=false;return}if(Date.now()-pinchT<600)return;const q=e.target.closest('.sq');if(!q||busy())return;
@@ -347,6 +376,23 @@ function land(){const q=sqAt(0,new Date().getHours()),r=rel(q),n=new Date(),L=el
   const nt=q.querySelector('.nt'),tr=nt?rel(nt):{x:r.x+8,y:r.y+9};
   L.style.transition='';setTimeout(()=>{L.style.transform=`translate(${tr.x-Lc.M}px,${tr.y-Math.round(PH*.24)}px) scale(${1/k})`;drawGrid()},500);
   setTimeout(()=>{ph.classList.remove('landing');L.remove()},500+MOVE*1.4+60)}
+// the splash does not cut away: its construction lines ARE the grid. The letters' lines glide out to the
+// app's columns and run the full height, the baseline and x-height lines settle on the edges of the hour you are in,
+// the two dots fall into that hour — and only then does the paper underneath show the week.
+function morph(sp,sw2,gv,gh){const xs=[0,1,2,3].flatMap(c=>[Lc.x(c),Lc.x(c)+Lc.F]),q=sqAt(0,new Date().getHours()),r=rel(q);
+  while(gv.length<xs.length){const g=el('gv',sp);g.style.top=gv[0].style.top;g.style.height=gv[0].style.height;g.style.left=W/2+'px';g.style.opacity=0;gv.push(g)}
+  const T=`left ${MOVE}ms ${EASE},top ${MOVE}ms ${EASE},height ${MOVE}ms ${EASE},opacity ${MOVE}ms ${EASE}`;
+  void sp.offsetWidth;
+  gv.forEach((g,k)=>{g.style.transition=T;g.style.left=xs[k]+'px';g.style.top='0px';g.style.height=PH+'px';g.style.opacity=''});
+  gh.forEach((g,k)=>{g.style.transition=T;g.style.top=(k?r.y:r.y+r.h)+'px'});
+  sw2.style.transition=`opacity ${MOVE*.6}ms ${EASE},transform ${MOVE}ms ${EASE}`;
+  const u=sw2.querySelector('.u'),dots=[...u.querySelectorAll('i')];
+  [...sw2.children].forEach(c=>{if(c!==u)c.style.transition=`opacity ${MOVE*.5}ms ${EASE}`;});
+  const ur=u.getBoundingClientRect(),pr=ph.getBoundingClientRect(),cx=r.x+r.w/2,cy=r.y+r.h/2;
+  u.style.color='transparent';[...sw2.children].forEach(c=>{if(c!==u)c.style.opacity=0});
+  dots.forEach((d,k)=>{const dr=d.getBoundingClientRect(),dx=(cx-((dr.left+dr.width/2-pr.left)/S))+(k?6:-6),dy=cy-((dr.top+dr.height/2-pr.top)/S);
+    d.style.transition=`transform ${MOVE}ms ${EASE},opacity ${MOVE*.4}ms ${EASE} ${MOVE*.75}ms`;d.style.transform=`translate(${dx}px,${dy}px) scale(.45)`;d.style.opacity=0});
+  setTimeout(()=>{land();sp.classList.add('out');setTimeout(()=>sp.remove(),400)},MOVE*.85)}
 function splash(){const sp=el('splash',ph);sp.innerHTML='<div class="sw"><span class="u">u<i></i><i></i></span><span>h</span><span>r</span></div>';
   const sw2=sp.firstChild,ls=[...sw2.children],TOP=Math.round(PH*.36),G=Lc.g;sw2.style.top=TOP+'px';
   const gv=ls.flatMap(()=>[el('gv',sp),el('gv',sp)]),gh=[el('gh',sp),el('gh',sp)];gv.forEach(g=>{g.style.top=TOP-2*G+'px';g.style.height=TSPL+4*G+'px'});
@@ -355,7 +401,7 @@ function splash(){const sp=el('splash',ph);sp.innerHTML='<div class="sw"><span c
     BL=(TSPL-(m.fontBoundingBoxAscent+m.fontBoundingBoxDescent))/2+m.fontBoundingBoxAscent;XH=m.actualBoundingBoxAscent;trk();sp.classList.add('ready');
     const t0=performance.now(),ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,stepF=n=>{const t=Math.min(1,(n-t0)/THICK);sw2.style.fontWeight=Math.round(100+800*ease(t));trk();if(t<1)requestAnimationFrame(stepF)};
     requestAnimationFrame(stepF);
-    setTimeout(()=>{sp.classList.add('out');land();setTimeout(()=>sp.remove(),400)},THICK+1000)};
+    setTimeout(()=>morph(sp,sw2,gv,gh),THICK+1000)};
   (document.fonts&&document.fonts.load?document.fonts.load(`100 ${TSPL}px under`).then(()=>document.fonts.ready):Promise.resolve()).then(go2,go2)}
 if(reduce||EMBED){sc.classList.remove('drawing')}else splash();
 
@@ -389,7 +435,7 @@ function askName(then){if(me||EMBED){then&&then();return}
     me=v;try{localStorage.setItem(ME,me)}catch(e){}tick();w.classList.remove('on');setTimeout(()=>{w.remove();then&&then()},260)};
   w.querySelector('.b-go').onclick=go;nm.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go()}});
   setTimeout(()=>{try{nm.focus({preventScroll:true})}catch(e){}},300)}
-if(!takeShared()&&!EMBED)setTimeout(()=>askName(tipNow),reduce?400:THICK+1000+500+MOVE*1.4+400);
+if(!takeShared()&&!EMBED)setTimeout(()=>askName(tipNow),reduce?400:THICK+1000+MOVE*.85+500+MOVE*1.4+400);
 
 addEventListener('resize',()=>{fit();if(!busy())layoutAll()});
 // presenting + the live system page
