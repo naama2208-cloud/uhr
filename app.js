@@ -100,34 +100,39 @@ function reveal(i,h){while(i+1>=days.length)addDay();sc.scrollTop=Math.max(0,yOf
 const nearby=()=>{const i0=Math.floor(sc.scrollTop/Lc.dayH);return days.slice(Math.max(0,i0-1),i0+3)};
 
 // ---------- zoom: pinch between 2 · 4 · 8 squares a row; everything glides to its new place (flip) ----------
-function zoomTo(n,anchorY){if(n===N||busy())return;tipDone('pinch');const Ds=nearby();
-  const els=Ds.flatMap(D=>[...D.sqs,D.hd]);const old=new Map(els.map(e=>[e,e.getBoundingClientRect()]));
+function zoomTo(n,anchorY){if(n===N||busy())return;tipDone('pinch');
+  // one camera move for the whole grid: measure the anchor hour before and after the new layout,
+  // then scale the track (and the lines) evenly from the old picture to the new one — nothing stretches out of shape
   const ay=anchorY==null?PH/2:anchorY;
-  const anchor=Ds.flatMap(D=>D.sqs).map(q=>[q,rel(q)]).filter(([,r])=>r.y<=ay+r.h).sort((a,b)=>Math.abs(a[1].y+a[1].h/2-ay)-Math.abs(b[1].y+b[1].h/2-ay))[0];
-  const aq=anchor?anchor[0]:sqAt(0,new Date().getHours()),aOld=rel(aq).y;
-  track.style.transform='';N=n;Lc=lay();layoutAll();sc.scrollTop+=rel(aq).y-aOld;
-  vl.classList.add('glide');setTimeout(()=>vl.classList.remove('glide'),MOVE);
-  els.forEach(e=>{const a=old.get(e),b=e.getBoundingClientRect();if(!b.width||!a.width)return;
-    const t=e.classList.contains('dh')?`translate(${(a.left-b.left)/S}px,${(a.top-b.top)/S}px)`:`translate(${(a.left-b.left)/S}px,${(a.top-b.top)/S}px) scale(${a.width/b.width},${a.height/b.height})`;
-    e.animate([{transform:t,transformOrigin:'0 0'},{transform:'none',transformOrigin:'0 0'}],{duration:reduce?1:MOVE,easing:EASE})});
-  Ds.forEach(D=>D.bands.forEach((b,r)=>b.animate([{transform:'scaleX(0)'},{transform:'none'}],{duration:reduce?1:MOVE,delay:r*STEP,easing:EASE,fill:'backwards'})));
+  const anchor=nearby().flatMap(D=>D.sqs).map(q=>[q,rel(q)]).filter(([,r])=>r.y<=ay+r.h).sort((a,b)=>Math.abs(a[1].y+a[1].h/2-ay)-Math.abs(b[1].y+b[1].h/2-ay))[0];
+  const aq=anchor?anchor[0]:sqAt(0,new Date().getHours()),r0=rel(aq);       // as seen now (pinch scale included)
+  track.style.transform='';vl.style.transform='';const rFlat=rel(aq);
+  N=n;Lc=lay();layoutAll();sc.scrollTop+=rel(aq).y-rFlat.y;                  // keep the anchor hour where it was
+  const r1=rel(aq),k=r0.w/r1.w,dx=r0.x-r1.x,dy=r0.y-r1.y;
+  const o={duration:reduce?1:MOVE,easing:EASE};
+  track.style.transformOrigin=`${r1.x}px ${r1.y+sc.scrollTop}px`;
+  track.animate([{transform:`translate(${dx}px,${dy}px) scale(${k})`},{transform:'none'}],o);
+  vl.style.transformOrigin=`${r1.x}px 0px`;
+  vl.animate([{transform:`translateX(${dx}px) scaleX(${k})`},{transform:'none'}],o);
   buzz(8)}
 const zoomStep=(dir,y)=>{const k=LEVELS.indexOf(N)+dir;if(k>=0&&k<LEVELS.length)zoomTo(LEVELS[k],y)};
 let pz=null;const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
 const midP=t=>{const b=ph.getBoundingClientRect();return{x:((t[0].clientX+t[1].clientX)/2-b.left)/S,y:((t[0].clientY+t[1].clientY)/2-b.top)/S}};
 ph.addEventListener('touchstart',e=>{if(e.touches.length===2&&!ringing){pz={d:dist(e.touches),c:midP(e.touches),k:1};
-  if(!sh.classList.contains('on'))track.style.transformOrigin=`${pz.c.x}px ${pz.c.y+sc.scrollTop}px`}},{passive:true});
+  if(!sh.classList.contains('on')){track.style.transformOrigin=`${pz.c.x}px ${pz.c.y+sc.scrollTop}px`;vl.style.transformOrigin=`${pz.c.x}px 0px`}}},{passive:true});
 ph.addEventListener('touchmove',e=>{if(!pz||e.touches.length!==2)return;e.preventDefault();pz.k=dist(e.touches)/pz.d;
   if(sh.classList.contains('on')){if(pz.k<.75&&!pz.done){pz.done=true;closeSheet(null)}return}
-  track.style.transform=`scale(${Math.max(.55,Math.min(1.8,pz.k))})`},{passive:false});
-ph.addEventListener('touchend',e=>{if(!pz||e.touches.length>=2)return;const {k,c,done}=pz;pz=null;if(done||sh.classList.contains('on'))return;
+  const z=Math.max(.55,Math.min(1.8,pz.k));track.style.transform=`scale(${z})`;vl.style.transform=`scaleX(${z})`},{passive:false}); // the lines follow the fingers too
+let pinchT=0; // a pinch must never end as a tap on the square under the fingers
+ph.addEventListener('touchend',e=>{if(!pz||e.touches.length>=2)return;const {k,c,done}=pz;pz=null;pinchT=Date.now();if(done||sh.classList.contains('on'))return;
   // pinch open past the largest squares = open that hour
   if(k>1.2&&N===2){track.style.transform='';const q=document.elementsFromPoint(...client(c)).find(n=>n.classList&&n.classList.contains('sq'));if(q)q.click();return}
   // zoom only when a level exists that way; otherwise the grid always glides back to its true size
   const j=LEVELS.indexOf(N)+(k>1.18?-1:k<.85?1:0);
   if(j!==LEVELS.indexOf(N)&&j>=0&&j<LEVELS.length&&!busy())zoomTo(LEVELS[j],c.y);else unpinch()});
 ph.addEventListener('touchcancel',()=>{pz=null;unpinch()});
-function unpinch(){const t=track.style.transform;if(!t)return;track.style.transform='';track.animate([{transform:t},{transform:'none'}],{duration:V('--snap')||180,easing:EASE})}
+function unpinch(){const t=track.style.transform,u=vl.style.transform;if(!t)return;track.style.transform='';vl.style.transform='';const o={duration:V('--snap')||180,easing:EASE};
+  track.animate([{transform:t},{transform:'none'}],o);if(u)vl.animate([{transform:u},{transform:'none'}],o)}
 // the browser's own page zoom fights ours and breaks the proportions — keep it off
 ['gesturestart','gesturechange'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
 const client=p=>{const b=ph.getBoundingClientRect();return[b.left+p.x*S,b.top+p.y*S]};
@@ -280,12 +285,15 @@ body.addEventListener('pointerup',swEnd,true);body.addEventListener('pointercanc
 bDel.addEventListener('click',()=>{const q=origin&&origin.closest('.sq');
   if(draft&&draft.edit){const a=alarms.find(x=>x.id===draft.id);logEv('deleted',a);alarms=alarms.filter(x=>x.id!==draft.id);store();
     closeSheet(q,()=>{const g=origin.classList.contains('part')?origin:q;g.classList.add('vanish');setTimeout(paintAll,700)})}else closeSheet(q)});
-sc.addEventListener('click',e=>{if(lpFired){lpFired=false;return}const q=e.target.closest('.sq');if(!q||busy())return;
+sc.addEventListener('click',e=>{if(lpFired){lpFired=false;return}if(Date.now()-pinchT<600)return;const q=e.target.closest('.sq');if(!q||busy())return;
   const pt=e.target.closest('.part'),id=pt?pt.dataset.id:q.dataset.id,i=+q.dataset.i,h=+q.dataset.h,a=id?alarms.find(x=>String(x.id)===id):null;openSheet(i,h,a,pt||q)});
 let lpT=null,lpFired=false;
-sc.addEventListener('pointerdown',e=>{const q=e.target.closest('.sq');if(!q)return;clearTimeout(lpT);
-  lpT=setTimeout(()=>{if(busy())return;lpFired=true;buzz(20);openSheet(+q.dataset.i,+q.dataset.h,null,q)},550)});
-['pointerup','pointercancel','pointerleave'].forEach(t=>sc.addEventListener(t,()=>clearTimeout(lpT)));
+let lpX=0,lpY=0;const downs=new Set();
+sc.addEventListener('pointerdown',e=>{downs.add(e.pointerId);const q=e.target.closest('.sq');clearTimeout(lpT);if(!q||downs.size>1)return;lpX=e.clientX;lpY=e.clientY;
+  lpT=setTimeout(()=>{if(busy()||pz)return;lpFired=true;buzz(20);openSheet(+q.dataset.i,+q.dataset.h,null,q)},550)});
+['pointerup','pointercancel','pointerleave'].forEach(t=>sc.addEventListener(t,e=>{clearTimeout(lpT);downs.delete(e.pointerId)}));
+// a long press is one still finger: moving, or a second finger (a pinch), cancels it
+sc.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-lpX,e.clientY-lpY)>10)clearTimeout(lpT)},{passive:true});
 sc.addEventListener('scroll',()=>clearTimeout(lpT),{passive:true});
 const busy=()=>sh.classList.contains('on')||!!ringing||opening;
 
