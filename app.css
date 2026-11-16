@@ -129,7 +129,7 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .sq.draft .n{position:absolute;left:8px;bottom:6px;font-size:var(--t-label);color:var(--ink);opacity:.7}
 .chips .spk{color:var(--blue);width:22px;height:22px;align-self:center}
 /* sound is blue: its icon and the sound you picked */
-.lab .spk{color:var(--blue)}.chips.snd .chip.on{background:var(--blue);border-color:var(--blue);color:var(--paper)}
+.lab .spk{color:var(--blue)}.big.snd{color:var(--blue)}.chips.snd .chip.on{background:var(--blue);border-color:var(--blue);color:var(--paper)}
 .body{position:relative;flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 var(--margin);min-height:0;touch-action:pan-y}
 .in{animation:enter var(--move) var(--ease) both}
 @keyframes enter{from{opacity:0;transform:translateY(28px)}}
