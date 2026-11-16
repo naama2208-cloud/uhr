@@ -296,10 +296,47 @@ const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g
 const dec=t=>JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g,'+').replace(/_/g,'/')))));
 // new alarm on its last step: share = set it, then send it on
 bSh.addEventListener('click',()=>{const a=draft.edit?alarms.find(x=>x.id===draft.id):commit();if(a)shareAlarm(a,!draft.edit)});
+// ---------- the share poster (Figma: "share poster · A2"): type on the app's grid, and the one square of the shared hour ----------
+const CV=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function poster(a){const W=1080,H=1350,k=W/463.2,M=24*k,F=101.2*k,G=10.3*k,X=c=>M+c*(F+G),Y=r=>M+r*(F+G);
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  const col={paper:CV('--paper'),ink:CV('--ink'),line:CV('--line'),red:CV('--red'),kind:CV(a.shared?'--shared':a.days.length?'--fixed':'--once')};
+  const font=CV('--font')||'Helvetica,Arial,sans-serif',type=CV('--type')||font;
+  g.fillStyle=col.paper;g.fillRect(0,0,W,H);
+  // the grid: a pair of hairlines at both edges of every column and every row
+  g.globalAlpha=.75;g.fillStyle=col.line;
+  for(let c=0;c<4;c++)for(const x of [X(c),X(c)+F])g.fillRect(Math.round(x),0,2,H);
+  for(let r=0;r<5;r++)for(const y of [Y(r),Y(r)+F])g.fillRect(0,Math.round(y),W,2);
+  g.globalAlpha=1;
+  // the one square: the hour, in the colour of its kind
+  g.fillStyle=col.kind;g.fillRect(X(1),Y(1),F,F);
+  const T=(t,x,y,size,weight,color,fam=font)=>{g.font=`${weight} ${size}px ${fam}`;g.fillStyle=color;g.textBaseline='top';g.fillText(t,x,y);return g.measureText(t).width};
+  // top left: ühr, and the day right under it
+  const lw=T('uhr',24*k,27*k,32.6*k,700,col.ink,type);g.font=`700 ${32.6*k}px ${type}`;const uw=g.measureText('u').width;
+  g.fillStyle=col.red;[0,1].forEach(i=>{g.beginPath();g.arc(24*k+uw*(.3+.4*i),25.5*k,2.6*k,0,7);g.fill()});
+  const d=a.days.length?parse(ymd(new Date())):parse(a.date),dn=DAYS[a.days.length?(a.days.includes(new Date().getDay())?new Date().getDay():a.days[0]):d.getDay()];
+  T(dn,24*k,64*k,12.9*k,700,col.ink);
+  // the block at the bottom: name, how often, with whom
+  const who=(me||'a friend').replace(/^./,c=>c.toUpperCase());
+  const often=a.days.length?(a.days.length===7?'every day':'every '+(a.days.length===1?DAYS[a.days[0]]:a.days.map(x=>DS[x]).join(' '))):'once · '+dn;
+  T(a.name,24*k,420*k,63.8*k,700,col.red);
+  T(often,24*k,481*k,36*k,300,col.ink);
+  T('with '+who,24*k,517*k,38.5*k,400,col.ink);
+  // the column on the right: the time (the colon is two circles), the facts, the invitation
+  const tx=347*k,ty=430*k,ts=38*k;const hw=T(p2(a.h),tx,ty,ts,700,col.ink);
+  g.fillStyle=col.red;[.3,.62].forEach(f=>{g.beginPath();g.arc(tx+hw+ts*.12,ty+ts*f+ts*.05,ts*.065,0,7);g.fill()});
+  T(p2(a.m),tx+hw+ts*.26,ty,ts,700,col.ink);
+  const fs=9.4*k,lh=fs*1.45;[dn,a.days.length?'every week':'once','sound: '+a.sound].forEach((t,i)=>T(t,348*k,474*k+i*lh,fs,400,col.ink));
+  [`${(me||'someone')} shared`,'this hour.'].forEach((t,i)=>T(t,348*k,518*k+i*lh,fs,700,col.ink));
+  T('add it to your ühr',348*k,546*k,fs,400,col.ink);
+  return cv}
+// a canvas → a File without waiting, so the share still counts as part of the tap
+const posterFile=cv=>{const b=atob(cv.toDataURL('image/png').split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new File([u],'uhr-hour.png',{type:'image/png'})};
 async function shareAlarm(a,closing){
   const url=location.origin+location.pathname+'#add='+enc({h:a.h,m:a.m,n:a.name,s:a.sound,d:a.days,t:a.date||ymd(new Date()),f:me});
   const text=`${a.name} · ${p2(a.h)}:${p2(a.m)} — add it to your ühr`;logEv('shared',a);buzz(10);
-  try{if(navigator.share){await navigator.share({title:'ühr',text,url});return}}catch(e){if(e&&e.name==='AbortError')return}
+  let file=null;try{file=posterFile(poster(a))}catch(e){}
+  try{if(navigator.share){const data={title:'ühr',text,url};if(file&&navigator.canShare&&navigator.canShare({files:[file]}))data.files=[file];await navigator.share(data);return}}catch(e){if(e&&e.name==='AbortError')return}
   if(closing){prompt('copy this link',url);return}
   try{await navigator.clipboard.writeText(text+'\n'+url);bSh.textContent='copied';setTimeout(()=>bSh.textContent='share',1600)}catch(e){prompt('copy this link',url)}}
 function takeShared(){const m=location.hash.match(/^#add=([\w-]+)/);if(!m)return false;history.replaceState(null,'',location.pathname+location.search);
@@ -447,7 +484,7 @@ if(!takeShared()&&!EMBED)setTimeout(()=>askName(tipNow),reduce?400:THICK+1000+MO
 
 addEventListener('resize',()=>{fit();if(!busy())layoutAll()});
 // presenting + the live system page
-window.uhr={ring:()=>{const n=new Date(),a=alarms.slice().sort((x,y)=>(indexOf(x)*1440+x.h*60+x.m)-(indexOf(y)*1440+y.h*60+y.m))[0];
+window.uhr={poster:(i=0)=>poster(alarms[i]).toDataURL('image/png'),ring:()=>{const n=new Date(),a=alarms.slice().sort((x,y)=>(indexOf(x)*1440+x.h*60+x.m)-(indexOf(y)*1440+y.h*60+y.m))[0];
     ring(a?{...a,id:-1,h:n.getHours(),m:n.getMinutes()}:{id:-1,h:n.getHours(),m:n.getMinutes(),name:'ühr',sound:'rise',days:[]})},
   reset:()=>{alarms=sample();store();paintAll()},
   first:()=>{alarms=[];store();try{localStorage.removeItem(TIPS)}catch(e){}location.reload()},
