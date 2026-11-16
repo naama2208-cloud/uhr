@@ -46,7 +46,7 @@ textarea:focus{outline:2px solid var(--orange);outline-offset:0}
 <body>
 <div class="wrap">
   <h1>my log</h1>
-  <p class="sub">everything i did with ühr, kept on this phone. <a href="./">← app</a></p>
+  <p class="sub">everything i did with <span class="lg"><span class="u">u<i></i><i></i></span>hr</span>, kept on this phone. <a href="./">← app</a></p>
   <div class="sum" id="sum"></div>
   <div class="key"><span class="set"><i></i>set</span><span class="changed"><i></i>changed</span><span class="rang"><i></i>rang</span><span class="stopped"><i></i>stopped</span><span class="snoozed"><i></i>snoozed</span><span class="deleted"><i></i>deleted</span></div>
   <div id="days"></div>
@@ -64,7 +64,7 @@ const count=t=>L.filter(e=>e.type===t).length;
 document.getElementById('sum').innerHTML=[['set',count('set')],['rang',count('rang')],['snoozed',count('snoozed')],['days used',new Set(L.map(e=>key(e.t))).size]].map(([l,v])=>`<div><b>${v}</b>${l}</div>`).join('');
 const by={};L.forEach(e=>(by[key(e.t)]=by[key(e.t)]||[]).push(e));
 const ks=Object.keys(by).sort().reverse(),box=document.getElementById('days');
-if(!ks.length)box.innerHTML='<p class="empty">nothing yet. set an alarm in ühr and it shows up here, with the time you set it.</p>';
+if(!ks.length)box.innerHTML='<p class="empty">nothing yet. set an alarm in <span class="lg"><span class="u">u<i></i><i></i></span>hr</span> and it shows up here, with the time you set it.</p>';
 ks.forEach(k=>{const d=new Date(k+'T00:00'),sec=document.createElement('section');sec.className='day';
   sec.innerHTML=`<h2>${DAYS[d.getDay()]}<span>${d.getDate()} ${MON[d.getMonth()]}</span></h2>`+by[k].map(e=>{const t=new Date(e.t);
     return`<div class="ev ${e.type}"><time>${p2(t.getHours())}<span class="cd"></span>${p2(t.getMinutes())}</time><i></i><span>${esc(e.type)} · <b>${esc(e.name)}</b> ${esc(e.at).replace(':','<span class="cd"></span>')}</span><span class="what">${esc(e.repeat||'')}</span></div>`}).join('')+

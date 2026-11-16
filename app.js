@@ -312,7 +312,7 @@ function poster(a){const W=1080,H=1350,k=W/463.2,M=24*k,F=101.2*k,G=10.3*k,X=c=>
   g.fillStyle=col.kind;g.fillRect(X(1),Y(1),F,F);
   const T=(t,x,y,size,weight,color,fam=font)=>{g.font=`${weight} ${size}px ${fam}`;g.fillStyle=color;g.textBaseline='top';g.fillText(t,x,y);return g.measureText(t).width};
   // top left: ühr, and the day right under it
-  const lw=T('uhr',24*k,27*k,32.6*k,700,col.ink,type);g.font=`700 ${32.6*k}px ${type}`;const uw=g.measureText('u').width;
+  const lw=T('uhr',24*k,27*k,32.6*k,900,col.ink,type);g.font=`900 ${32.6*k}px ${type}`;const uw=g.measureText('u').width;
   g.fillStyle=col.red;[0,1].forEach(i=>{g.beginPath();g.arc(24*k+uw*(.3+.4*i),25.5*k,2.6*k,0,7);g.fill()});
   const d=a.days.length?parse(ymd(new Date())):parse(a.date),dn=DAYS[a.days.length?(a.days.includes(new Date().getDay())?new Date().getDay():a.days[0]):d.getDay()];
   T(dn,24*k,64*k,12.9*k,700,col.ink);
@@ -328,7 +328,7 @@ function poster(a){const W=1080,H=1350,k=W/463.2,M=24*k,F=101.2*k,G=10.3*k,X=c=>
   T(p2(a.m),tx+hw+ts*.26,ty,ts,700,col.ink);
   const fs=9.4*k,lh=fs*1.45;[dn,a.days.length?'every week':'once','sound: '+a.sound].forEach((t,i)=>T(t,348*k,474*k+i*lh,fs,400,col.ink));
   [`${(me||'someone')} shared`,'this hour.'].forEach((t,i)=>T(t,348*k,518*k+i*lh,fs,700,col.ink));
-  T('add it to your ühr',348*k,546*k,fs,400,col.ink);
+  const aw=T('add it to your ',348*k,546*k,fs,400,col.ink);T('uhr',348*k+aw,546*k,fs,900,col.ink,type);g.font=`900 ${fs}px ${type}`;const su=g.measureText('u').width;g.fillStyle=col.red;[0,1].forEach(i=>{g.beginPath();g.arc(348*k+aw+su*(.3+.4*i),546*k-fs*.08,fs*.075,0,7);g.fill()});
   return cv}
 // a canvas → a File without waiting, so the share still counts as part of the tap
 const posterFile=cv=>{const b=atob(cv.toDataURL('image/png').split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new File([u],'uhr-hour.png',{type:'image/png'})};
@@ -477,7 +477,7 @@ function tipNow(){if(seen('now')){tipTap();return}const q=sqAt(0,new Date().getH
   setTimeout(()=>addEventListener('pointerdown',done,true),400);setTimeout(()=>{if(!tips.now)done()},7000)}
 function tipTap(){if(seen('tap')){setTimeout(tipPinch,600);return}if(busy()){setTimeout(tipTap,800);return}const h0=new Date().getHours();let i=0,h=h0+2;if(h>23){i=1;h-=24}
   while(sqAt(i,h)&&sqAt(i,h).dataset.id){h++;if(h>23){i++;h=0}}
-  beck={i,h};const q=sqAt(i,h);q.classList.add('beckon');tipAt('tap','<b>tap an hour</b> to set an ühr.',q)}
+  beck={i,h};const q=sqAt(i,h);q.classList.add('beckon');tipAt('tap','<b>tap an hour</b> to set an <span class="lg"><span class="u">u<i></i><i></i></span>hr</span>.',q)}
 function tipSwipe(){if(seen('swipe'))return;const t=el('tip swipe',sh);t.dataset.k='swipe';t.innerHTML='<i></i><b>swipe</b> to continue';}
 function tipPinch(){if(seen('pinch')||busy())return;const t=el('tip pinch',ph);t.dataset.k='pinch';t.innerHTML='<span class="pd"><i></i><i></i></span><span><b>two fingers</b><br>apart · bigger hours<br>together · the whole week</span>';
   setTimeout(()=>{const off=()=>{removeEventListener('pointerdown',off,true);if(!tips.pinch){t.classList.add('out');setTimeout(()=>t.remove(),300)}};addEventListener('pointerdown',off,true)},600)}
@@ -485,7 +485,7 @@ function tipPinch(){if(seen('pinch')||busy())return;const t=el('tip pinch',ph);t
 const ME='uhr5me';let me='';try{me=localStorage.getItem(ME)||''}catch(e){}
 function askName(then){if(me||EMBED){then&&then();return}
   const w=el('sheet who on',ph);w.innerHTML=`<div class="top"><div class="lab">hello</div></div><div class="body"><div class="in">
-    <input class="nm" dir="auto" maxlength="16" placeholder="your name" autocomplete="off" aria-label="your name"><p class="hint">so friends know who shared an ühr with them.</p></div></div>
+    <input class="nm" dir="auto" maxlength="16" placeholder="your name" autocomplete="off" aria-label="your name"><p class="hint">so friends know who shared an <span class="lg"><span class="u">u<i></i><i></i></span>hr</span> with them.</p></div></div>
     <div class="acts"><button type="button" class="b-go">continue</button></div>`;
   const nm=w.querySelector('.nm'),go=()=>{const v=nm.value.trim();if(!v){nm.focus();buzz([20,40,20]);return}
     me=v;try{localStorage.setItem(ME,me)}catch(e){}tick();w.classList.remove('on');setTimeout(()=>{w.remove();then&&then()},260)};

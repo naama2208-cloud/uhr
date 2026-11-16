@@ -102,7 +102,7 @@ th{font-weight:400;color:var(--grey)}td:first-child{font-size:var(--t-body);font
     <div class="bd">
       <div class="fonts">
         <div><b>helvetica</b> <code>--font</code><div class="big" style="font-family:var(--font)">pill</div><div class="use">כל הממשק: ימים, שעות, שמות התראות, כפתורים, שעון עכשיו.</div></div>
-        <div><b>under 100–900</b> <code>--type</code><div class="big" id="underSpec" style="font-family:var(--type)">16<span class="cd"></span>30</div><div class="use">רק במקום אחד: הלוגו ühr. פונט וריאבילי: המשקל הוא התנועה של הספלאש.</div></div>
+        <div><b>under 100–900</b> <code>--type</code><div class="big" id="underSpec" style="font-family:var(--type)">16<span class="cd"></span>30</div><div class="use">רק במקום אחד: הלוגו <span class="lg"><span class="u">u<i></i><i></i></span>hr</span>. פונט וריאבילי: המשקל הוא התנועה של הספלאש.</div></div>
       </div>
       <div class="rules">
         <div class="rule"><b>שעה</b><span>השעה תמיד מעל הדקות, בלי נקודתיים. helvetica bold, ספרות ברוחב קבוע, כך שכל ספרה יושבת בדיוק מתחת לספרה שמעליה. 32 בשדה, 112 במדייקת, 355 בפתיחה ובצלצול.</span></div>
@@ -167,7 +167,7 @@ th{font-weight:400;color:var(--grey)}td:first-child{font-size:var(--t-body);font
 
   <section id="flow"><div class="hd"><div class="n">10</div><h2>פעולות<span>action</span></h2><p>לבחור שעה: יש לי משהו, ואני צריכה תזכורת כדי לא לשכוח.</p></div>
     <div class="bd flow">
-      <div><b>מחליטה</b><p>הפתיחה. ühr מתעבה ב-under על קווים כתומים. השעה של עכשיו מופיעה כפוסטר, הגריד נבנה, והיא נוחתת בשדה שלה.</p></div>
+      <div><b>מחליטה</b><p>הפתיחה. <span class="lg"><span class="u">u<i></i><i></i></span>hr</span> מתעבה ב-under על קווים כתומים. השעה של עכשיו מופיעה כפוסטר, הגריד נבנה, והיא נוחתת בשדה שלה.</p></div>
       <div><b>מתמקדת</b><p>שבוע ← יום ← שעה. הגריד נופל: אנכיים מלמעלה, אופקיים מהצדדים, ונוחת.</p></div>
       <div><b>מתרחקת</b><p>אותה תנועה, הפוך. לחיצה על שם היום או שתי אצבעות סוגרות.</p></div>
       <div><b>מדייקת</b><p>בתוך השעה: דקות, מה (עד 2 מילים), צלצול, זמני או קבוע, ובאילו ימים.</p></div>
@@ -190,7 +190,7 @@ document.getElementById('sp').innerHTML=[['--margin','שוליים'],['--gap','�
   .map(([k,n])=>`<div><b>${n}</b><code>${k} · ${g(k)}</code><div class="bar" style="width:var(${k})"></div></div>`).join('');
 const mo=[['--move','תנועה','כל מעבר בין רמות',(t,d)=>slide(t,d,g('--ease'))],['--step','צעד','ההשהיה בין קו לקו, מהיום שנלחץ החוצה',(t,d)=>steps(t,d)],
   ['--fall','נפילה','הגריד נופל בתאוצה של כובד',(t,d)=>slide(t,d,g('--gravity'))],['--quick','מהיר','הופעה והיעלמות',(t,d)=>fade(t,d)],
-  ['--thicken','התעבות','ühr מ-100 ל-900 בספלאש',(t,d)=>weight(t,d,false)],['--breath','נשימה','צלצול אחד: ארבעה צפצופים והפסקה',(t,d)=>weight(t,d,true)],['--ring','קווים','הספרה מתפרקת לקווי הגריד: הקו מתדקק מ-<code>--stripe</code> עד 1px כתום וחוזר. radar: ספרה אחרי ספרה. chime ו-pulse: כל הספרות יחד',(t,d)=>fade(t,d/2)]];
+  ['--thicken','התעבות','<span class="lg"><span class="u">u<i></i><i></i></span>hr</span> מ-100 ל-900 בספלאש',(t,d)=>weight(t,d,false)],['--breath','נשימה','צלצול אחד: ארבעה צפצופים והפסקה',(t,d)=>weight(t,d,true)],['--ring','קווים','הספרה מתפרקת לקווי הגריד: הקו מתדקק מ-<code>--stripe</code> עד 1px כתום וחוזר. radar: ספרה אחרי ספרה. chime ו-pulse: כל הספרות יחד',(t,d)=>fade(t,d/2)]];
 const mel=document.getElementById('mo');
 mel.innerHTML=mo.map(([k,n,u],i)=>`<div><b>${n}</b><code>${k} · ${g(k)}</code><div><div class="track" tabindex="0" role="button" aria-label="play ${n}" data-i="${i}">${i==1?'<span class="bars">'+'<i></i>'.repeat(8)+'</span>':i>3?'<span class="wt">u</span>':'<i></i>'}</div><span class="use">${u}</span></div></div>`).join('');
 function slide(t,d,e){const b=t.querySelector('i');b.animate([{transform:'translateX(0)'},{transform:`translateX(${-(t.clientWidth-20)}px)`}],{duration:d,easing:e,fill:'both'})}
