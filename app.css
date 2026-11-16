@@ -232,3 +232,5 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .appear .sq.al,.appear .sq.draft{transition:opacity var(--soft) var(--ease) var(--d,0ms),transform var(--move) var(--ease) var(--d,0ms)}
 .big{transition:color var(--snap) ease}
 .chips[hidden]{display:none}
+/* labels sit in the optical middle whatever the font: the box is trimmed to the x-height, then centred */
+.acts button,.chip{text-box:trim-both ex alphabetic}
