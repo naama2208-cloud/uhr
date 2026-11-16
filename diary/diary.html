@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>ühr diary 2027</title>
+<link rel="stylesheet" href="../tokens.css">
+<style>
+/* ühr diary — A5, printed. Every colour and proportion comes from tokens.css, like the app. */
+@font-face{font-family:Inter;src:url(fonts/inter-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-700-normal.woff2);font-weight:700}
+@font-face{font-family:Inter;src:url(fonts/inter-latin-900-normal.woff2);font-weight:900}
+:root{
+  --bleed:3mm; --pw:148mm; --ph:210mm;            /* A5 trim, plus bleed */
+  --m:10mm;                                       /* page margin: the app's --margin, in print */
+  --g:2.6mm;                                      /* gap between squares: the app's --gap ratio */
+  --hair-p:.25mm;                                 /* the grid's hairline in print */
+  --pfont:Inter,var(--font);
+}
+@page{size:calc(var(--pw) + 2*var(--bleed)) calc(var(--ph) + 2*var(--bleed));margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#888}
+body{font-family:var(--pfont);color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{position:relative;width:calc(var(--pw) + 2*var(--bleed));height:calc(var(--ph) + 2*var(--bleed));background:var(--paper);overflow:hidden;page-break-after:always;break-after:page}
+.trim{position:absolute;left:var(--bleed);top:var(--bleed);width:var(--pw);height:var(--ph)}
+.in{position:absolute;inset:var(--m)}
+@media screen{body{display:flex;flex-wrap:wrap;gap:8mm;padding:8mm}.page{break-after:auto}}
+/* the colon is two circles */
+.cd{display:inline-block;width:.3em;height:.72em;vertical-align:baseline;background:radial-gradient(circle closest-side,currentColor 92%,transparent) 50% 18%/.13em .13em no-repeat,radial-gradient(circle closest-side,currentColor 92%,transparent) 50% 100%/.13em .13em no-repeat}
+/* full-height vertical lines, like the app's */
+.vls i{position:absolute;top:0;bottom:0;width:var(--hair-p);background:var(--line);opacity:var(--line-o)}
+.hl{position:absolute;left:0;right:0;height:var(--hair-p);background:var(--line);opacity:var(--line-o)}
+/* squares */
+.sq{position:absolute;outline:none}
+.sq .h{position:absolute;left:1mm;top:.9mm;font-size:5.2pt;font-weight:600;line-height:1;color:var(--grey);letter-spacing:.02em}
+.lab{font-size:7pt;font-weight:600;letter-spacing:.06em;text-transform:lowercase;color:var(--ink)}
+.small{font-size:6.5pt;color:var(--grey);line-height:1.35}
+.folio{position:absolute;bottom:4mm;font-size:6pt;color:var(--grey);font-weight:600}
+.logo{font-weight:700;letter-spacing:-.05em;line-height:1;position:relative;display:inline-block}
+.logo .dots{position:absolute;display:flex;gap:.06em;top:.02em;left:.06em}
+.logo .dots i{display:block;width:.15em;height:.15em;border-radius:50%;background:var(--orange)}
+</style></head>
+<body>
+<script>
+const YEAR=2027, START=6, END=21; // weekly squares: 06–21, two rows of eight — the app's "8 a row"
+const DAYS=['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+const MONTHS=['january','february','march','april','may','june','july','august','september','october','november','december'];
+const mm=v=>v+'mm', p2=n=>String(n).padStart(2,'0');
+const W=148-20, COLS=8, G=2.6, SQ=(W-(COLS-1)*G)/COLS;   // content width 128mm → square ≈ 13.7mm
+let folio=0;
+function page(fn,{num=true}={}){const p=document.createElement('div');p.className='page';const t=document.createElement('div');t.className='trim';p.appendChild(t);
+  const i=document.createElement('div');i.className='in';t.appendChild(i);fn(i,t);folio++;
+  if(num){const f=document.createElement('div');f.className='folio';f.textContent=folio;f.style[folio%2?'right':'left']=mm(10);t.appendChild(f)}
+  document.body.appendChild(p)}
+const el=(p,html,style)=>{const d=document.createElement('div');d.innerHTML=html;Object.assign(d.style,style||{});p.appendChild(d);return d};
+function vlines(p,cols,sq,g){const v=el(p,'',{position:'absolute',left:0,right:0,top:mm(-10),bottom:mm(-10)});v.className='vls';
+  for(let c=0;c<cols;c++)for(const x of [c*(sq+g),c*(sq+g)+sq])el(v,'',{left:mm(x)}).outerHTML=`<i style="left:${mm(x)}"></i>`}
+function logo(p,size,style){return el(p,`<span class="logo" style="font-size:${size}">uhr<span class="dots"><i></i><i></i></span></span>`,style)}
+// ---------- cover ----------
+page((i,t)=>{vlines(i,4,(W-3*6)/4,6);
+  for(let r=0;r<9;r++){const y=24+r*20;el(i,'',{position:'absolute',left:0,right:0,top:mm(y)}).className='hl'}
+  logo(i,'64mm',{position:'absolute',left:mm(-1),top:mm(74)});
+  el(i,`${YEAR}`,{position:'absolute',left:0,bottom:mm(4),fontSize:'22pt',fontWeight:700,letterSpacing:'-.03em'});
+  el(i,'every hour, in its place.',{position:'absolute',right:0,bottom:mm(6),fontSize:'8pt',fontWeight:600,color:'var(--grey)'})},{num:false});
+// ---------- how it works ----------
+page(i=>{el(i,'how it works',{fontSize:'16pt',fontWeight:700,letterSpacing:'-.03em',marginBottom:mm(8)});
+  const rows=[['','every square is an hour. write what happens in it.'],['fixed','a black square: something that comes back every week.'],['once','an orange square: something that happens once.'],
+    ['shared','an open circle in the corner: an hour you share with someone.'],['now','a line around the square: the hour you are in right now.']];
+  rows.forEach(([k,txt],n)=>{const y=22+n*24;const s=el(i,'',{position:'absolute',left:0,top:mm(y),width:mm(SQ),height:mm(SQ),
+      background:k==='fixed'?'var(--ink)':k==='once'?'var(--orange)':'transparent',outline:k==='now'?'.5mm solid var(--orange)':k===''||k==='shared'?'var(--hair-p) solid var(--orange)':'none'});
+    if(k==='shared')el(s,'',{position:'absolute',right:mm(1.2),top:mm(1.2),width:mm(2.2),height:mm(2.2),borderRadius:'50%',border:'.45mm solid var(--ink)'});
+    el(i,`<div class="lab">${k||'hour'}</div><div class="small" style="margin-top:1mm;max-width:80mm">${txt}</div>`,{position:'absolute',left:mm(SQ+6),top:mm(y+1)})});
+  el(i,`<div class="lab">time</div><div class="small" style="margin-top:1mm">the colon is always two circles: <b style="color:var(--ink);font-size:9pt">09<span class="cd"></span>30</b></div>`,{position:'absolute',left:0,top:mm(146)});
+  el(i,`<div class="small">the same system as the app — <b style="color:var(--ink)">naama2208-cloud.github.io/uhr</b></div>`,{position:'absolute',left:0,bottom:mm(4)})});
+// ---------- months ----------
+for(let mo=0;mo<12;mo++)page(i=>{
+  el(i,MONTHS[mo],{fontSize:'20pt',fontWeight:700,letterSpacing:'-.035em'});el(i,YEAR,{position:'absolute',right:0,top:mm(2),fontSize:'8pt',fontWeight:600,color:'var(--grey)'});
+  const C=7,g=2.2,s=(W-(C-1)*g)/C,top=22;vlines(i,C,s,g);
+  DAYS.forEach((d,k)=>el(i,d.slice(0,2),{position:'absolute',left:mm(k*(s+g)+1),top:mm(top-6),fontSize:'6pt',fontWeight:600,color:'var(--grey)'}));
+  const first=new Date(YEAR,mo,1),off=(first.getDay()+6)%7,n=new Date(YEAR,mo+1,0).getDate();
+  for(let r=0;r<6;r++){const y=top+r*(s+g);el(i,'',{position:'absolute',left:0,right:0,top:mm(y)}).className='hl';el(i,'',{position:'absolute',left:0,right:0,top:mm(y+s)}).className='hl';
+    for(let c=0;c<7;c++){const day=r*7+c-off+1;if(day<1||day>n)continue;el(i,`<span class="h" style="font-size:7pt;color:var(--ink)">${day}</span>`,{position:'absolute',left:mm(c*(s+g)),top:mm(y),width:mm(s),height:mm(s)}).className='sq'}}
+  el(i,'<div class="lab">notes</div>',{position:'absolute',left:0,top:mm(top+6*(s+g)+4)});
+  for(let k=0;k<4;k++)el(i,'',{position:'absolute',left:0,right:0,top:mm(top+6*(s+g)+14+k*8)}).className='hl'});
+// ---------- weeks: a spread per week, each day two rows of eight hours (06–21) ----------
+let d=new Date(YEAR,0,4); // first monday of 2027
+const HOURS=END-START+1, ROWS=HOURS/COLS;
+function dayBlock(i,date,y){
+  el(i,`${DAYS[(date.getDay()+6)%7]}`,{position:'absolute',left:0,top:mm(y),fontSize:'9pt',fontWeight:700,letterSpacing:'-.02em'});
+  el(i,`${date.getDate()} ${MONTHS[date.getMonth()].slice(0,3)}`,{position:'absolute',right:0,top:mm(y+.6),fontSize:'6.5pt',fontWeight:600,color:'var(--grey)'});
+  for(let r=0;r<ROWS;r++){const yy=y+6+r*(SQ+G);el(i,'',{position:'absolute',left:0,right:0,top:mm(yy)}).className='hl';el(i,'',{position:'absolute',left:0,right:0,top:mm(yy+SQ)}).className='hl';
+    for(let c=0;c<COLS;c++){const h=START+r*COLS+c;el(i,`<span class="h">${p2(h)}</span>`,{position:'absolute',left:mm(c*(SQ+G)),top:mm(yy),width:mm(SQ),height:mm(SQ)}).className='sq'}}}
+const DAYH=6+ROWS*SQ+(ROWS-1)*G+7;  // one day's block, with breathing room
+for(let w=0;w<52;w++){
+  const days=[...Array(7)].map((_,k)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+k));
+  const wk=w+1;
+  page(i=>{vlines(i,COLS,SQ,G);el(i,`week ${wk}`,{position:'absolute',left:0,top:0,fontSize:'7pt',fontWeight:700,color:'var(--orange)'});
+    days.slice(0,4).forEach((dt,k)=>dayBlock(i,dt,8+k*DAYH));
+    const ny=8+4*DAYH;el(i,'<span style="font-size:9pt;font-weight:700;letter-spacing:-.02em">notes</span>',{position:'absolute',left:0,top:mm(ny)});
+    for(let k=0;k<Math.floor((186-ny-10)/7.2);k++)el(i,'',{position:'absolute',left:0,right:0,top:mm(ny+10+k*7.2)}).className='hl'});
+  page(i=>{vlines(i,COLS,SQ,G);el(i,`${MONTHS[days[0].getMonth()]} ${YEAR}`,{position:'absolute',right:0,top:0,fontSize:'7pt',fontWeight:700,color:'var(--grey)'});
+    days.slice(4).forEach((dt,k)=>dayBlock(i,dt,8+k*DAYH));
+    const ny=8+3*DAYH;el(i,'<span style="font-size:9pt;font-weight:700;letter-spacing:-.02em">this week</span>',{position:'absolute',left:0,top:mm(ny)});
+    for(let k=0;k<5;k++)el(i,'',{position:'absolute',left:0,right:0,top:mm(ny+10+k*7.2)}).className='hl'});
+  d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+7)}
+// ---------- stickers ----------
+page(i=>{el(i,'stickers',{fontSize:'16pt',fontWeight:700,letterSpacing:'-.03em'});el(i,'cut along the lines. black: every week. orange: once.',{position:'absolute',left:0,top:mm(10)}).className='small';
+  const top=22,rows=Math.floor((190-top)/(SQ+G));
+  for(let r=0;r<rows;r++)for(let c=0;c<COLS;c++){const kind=(r+c)%3===0?'ink':(r*COLS+c)%2?'orange':'ink';
+    const s=el(i,'',{position:'absolute',left:mm(c*(SQ+G)),top:mm(top+r*(SQ+G)),width:mm(SQ),height:mm(SQ),background:`var(--${kind})`});
+    if(r===rows-1)el(s,'',{position:'absolute',right:mm(1.2),top:mm(1.2),width:mm(2.2),height:mm(2.2),borderRadius:'50%',border:'.45mm solid var(--paper)'})}});
+// ---------- back ----------
+page((i)=>{vlines(i,4,(W-3*6)/4,6);logo(i,'14mm',{position:'absolute',left:0,bottom:mm(4)})},{num:false});
+document.title=`ühr diary ${YEAR} · ${folio} pages`;
+</script>
+</body></html>
