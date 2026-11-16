@@ -139,8 +139,8 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .acts{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);padding:0 var(--margin) 30px}
 .acts button{height:60px;font-size:var(--btn);text-align:center;padding:0 10px;cursor:pointer;border-radius:0}
 .b-del{background:var(--paper);border:var(--stroke) solid var(--ink);color:var(--ink)}
-.b-go{background:var(--orange);border:0;color:var(--paper);font-weight:700}
-.b-sh{display:none;background:var(--yellow);border:0;color:var(--ink);font-weight:700}
+.b-go{background:var(--ink);border:0;color:var(--paper);font-weight:700}  /* buttons carry no colour */
+.b-sh{display:none;background:var(--paper);border:var(--stroke) solid var(--ink);color:var(--ink)}
 .acts.three{grid-template-columns:1fr 1fr 1fr;gap:calc(var(--gap)/2)}.acts.three .b-sh{display:block}
 /* came from a friend: a small open ring in the corner of the square */
 .sq .sm{position:absolute;right:8px;top:8px;width:9px;height:9px;border-radius:50%;border:var(--focus) solid currentColor}
