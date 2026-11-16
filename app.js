@@ -25,18 +25,26 @@ const buzz=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 
 // ---------- data (kept in this browser) + the log of everything that happens ----------
-const KEY='uhr5',LOG='uhr5log';
+// the demo inside the landing page keeps its own, separate data — it never touches your real alarms
+const KEY=EMBED?'uhr5demo':'uhr5',LOG=EMBED?'uhr5demolog':'uhr5log';
 function sample(){const n=new Date(),t=day0(n),h=(n.getHours()+2)%24,dt=h<n.getHours()?addDays(t,1):t;
   return[{id:1,h,m:0,name:'training',sound:'drop',days:[],date:ymd(dt)},{id:2,h:20,m:0,name:'pill',sound:'glass',days:[0,1,2,3,4,5,6],date:null},
     {id:3,h:7,m:0,name:'wake up',sound:'rise',days:[],date:ymd(addDays(t,1))},{id:4,h:18,m:30,name:'babysitter',sound:'tick',days:[],date:ymd(addDays(t,3))}]}
 let alarms=null;try{alarms=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!Array.isArray(alarms))alarms=[];
+if(EMBED&&!alarms.length){const t=day0(new Date()),n=new Date().getHours(),H=k=>(n+k)%24,D=k=>ymd(n+k>23?addDays(t,1):t);
+  // the demo week sits around the hour you open it in, so all four colours are on screen at once
+  alarms=[{id:101,h:H(1),m:0,name:'training',sound:'glass',days:[0,1,2,3,4,5,6],date:null},
+  {id:102,h:H(2),m:15,name:'doctor',sound:'drop',days:[],date:D(2)},{id:103,h:H(3),m:0,name:'boxes to mom',sound:'tick',days:[],date:D(3),shared:true},
+  {id:107,h:H(5),m:30,name:'pick up kids',sound:'rise',days:[],date:D(5)},
+  {id:104,h:8,m:30,name:'work',sound:'rise',days:[0,1,2,3,4],date:null},{id:105,h:18,m:30,name:'babysitter',sound:'rise',days:[],date:ymd(addDays(t,1))},
+  {id:106,h:11,m:0,name:'hygienist',sound:'tick',days:[],date:ymd(addDays(t,2))}]}
 // alarms left half-way: kept as drafts until they are finished or thrown away
-const DRAFTS='uhr5drafts';let drafts={};try{drafts=JSON.parse(localStorage.getItem(DRAFTS))||{}}catch(e){}
+const DRAFTS=EMBED?'uhr5demodrafts':'uhr5drafts';let drafts={};try{drafts=JSON.parse(localStorage.getItem(DRAFTS))||{}}catch(e){}
 const saveDrafts=()=>{try{localStorage.setItem(DRAFTS,JSON.stringify(drafts))}catch(e){}};
 const dkey=(d,h)=>ymd(d)+'|'+h;
 // once: clear the old example alarms that earlier versions saved on every phone (ids 1–4); real alarms stay
-if(!localStorage.getItem('uhr5clean')){const EX={1:'training',2:'pill',3:'wake up',4:'babysitter'};
+if(!EMBED&&!localStorage.getItem('uhr5clean')){const EX={1:'training',2:'pill',3:'wake up',4:'babysitter'};
   alarms=alarms.filter(a=>EX[a.id]!==a.name);try{localStorage.setItem(KEY,JSON.stringify(alarms));localStorage.setItem('uhr5clean','1')}catch(e){}}
 // everyone starts with an empty week; #demo fills in example alarms for presenting
 if(location.hash==='#demo'){alarms=sample();try{localStorage.setItem(KEY,JSON.stringify(alarms))}catch(e){}history.replaceState(null,'',location.pathname+location.search)}
