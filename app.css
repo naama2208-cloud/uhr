@@ -68,7 +68,7 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .sq.now.temp{background:var(--once)}
 .sq.now.shared{background:var(--shared)}.sq.now.fixed{background:var(--fixed)}
 .sq.now.fixed{box-shadow:none}
-.sq .nt{color:var(--ink)}
+.sq .nt{color:var(--now)}
 .sq .nb{display:none} /* now is only its time, in black */
 .landing .sq.now .nt{opacity:0}
 .sq.pop{animation:pop var(--move) var(--ease) both}
