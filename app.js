@@ -231,13 +231,13 @@ function go(n,dir){if(n>0)tipDone('swipe');const from=dir===undefined?(n>step?1:
   bDel.disabled=n===0&&!draft.edit&&!draft.fromDraft;
   drawSum()
   // share sits beside set on the last step, and always on an alarm that already exists
-  acts.classList.toggle('three',draft.edit||(n===LABELS.length-1&&!draft.shared))}
+  acts.classList.toggle('three',draft.edit||(n===LABELS.length-1&&!draft.shared));if(acts.classList.contains('three')&&bDel.textContent==='go back')bDel.textContent='back'}
 // what you have told it so far, adding up at the top: the name, then the time, the sound, how often
 function drawSum(){const parts=[];
   if(step>0||draft.edit||draft.shared)parts.push(`<b>${esc(draft.name.trim()||'ühr')}</b>`);
   if(step>1||draft.edit||draft.shared)parts.push(`<span>${hm(draft.h,draft.m)} ${dayWord(effDate())}</span>`);
   if(step>2||draft.edit||draft.shared)parts.push(`<span>${SPK}${esc(draft.sound)}</span>`);
-  sum.innerHTML=parts.join('<i class="sep"></i>')}
+  sum.innerHTML=parts.join('')}
 const effDate=()=>{let d=parse(draft.date);if(draft.once&&at(d,draft.h,draft.m)<=new Date())d=addDays(d,1);return d};
 const dayWord=d=>{const k=Math.round((day0(d)-day0(new Date()))/864e5);return k===0?'today':DAYS[d.getDay()]};
 function wheel(inn,{get,set,fmt=p2,step:st=1,mod,onchange}){const w=el('wheel',inn);w.tabIndex=0;w.setAttribute('role','spinbutton');
@@ -270,11 +270,11 @@ const STEPS=[
       b.onclick=()=>{if(v==='soon'){const n=new Date(Date.now()+60000);draft.h=n.getHours();draft.m=n.getMinutes();draft.date=ymd(n);draft.once=true}else draft.m=v;dh();dm();tick()}});
     el('hint',inn,'p').textContent='drag each number up or down'},
   inn=>{const big=el('big snd',inn);setName(big,draft.name);
-    const ch=el('chips snd',inn);el('spk',ch,'span').innerHTML=SPK;SOUNDS.forEach(s=>{const b=chip(ch,s,draft.sound===s?'on':'');
+    const ch=el('chips snd',inn);SOUNDS.forEach(s=>{const b=chip(ch,s,draft.sound===s?'on':'');
       b.onclick=()=>{draft.sound=s;[...ch.querySelectorAll('.chip')].forEach(x=>x.classList.toggle('on',x===b));play(s,.9);animName(big,s)}});
     el('hint',inn,'p').textContent='tap to hear it';setTimeout(()=>{play(draft.sound,.6);animName(big,draft.sound)},420)},
   inn=>{const big=el('big',inn);setName(big,draft.name);big.style.setProperty('--fs',Math.min(72,parseFloat(big.style.getPropertyValue('--fs')))+'px');
-    const ch=el('chips',inn),dch=el('chips',inn),note=el('hint',inn,'p');
+    const ch=el('chips two',inn),dch=el('chips days',inn),note=el('hint',inn,'p');
     const draw=()=>{drawSum();big.style.color=draft.once?'var(--once)':'var(--fixed)';note.textContent=draft.once?dayWord(effDate()):'every '+(draft.days.length===7?'day':draft.days.map(d=>DS[d]).join(' '));
       [...ch.children].forEach((b,k)=>b.classList.toggle('on',k===(draft.once?0:1)));dch.hidden=draft.once;[...dch.children].forEach((b,k)=>b.classList.toggle('on',draft.days.includes(k)))};
     ['once','every week'].forEach((t,k)=>{chip(ch,t).onclick=()=>{draft.once=!k;if(!draft.days.length)draft.days=[effDate().getDay()];draw();tick()}});

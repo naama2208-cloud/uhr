@@ -109,18 +109,19 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .sv i{position:absolute;top:0;bottom:0;width:var(--hair);background:var(--line);opacity:calc(var(--line-o) * .55);transform-origin:top;transition:transform var(--fall) var(--gravity) var(--d,0ms)}
 .fall .sv i{transform:scaleY(0);transition:none}
 .top{position:relative;padding:46px var(--margin) 0;display:flex;align-items:center;gap:14px}
-.dots{display:flex;gap:8px}
-.dots button{width:16px;height:16px;border:var(--stroke) solid var(--ink);background:var(--paper);padding:0;cursor:pointer;border-radius:0}
+.dots{display:flex;gap:8px;width:var(--field)}
+.dots button{width:12px;height:12px;flex:none;border:var(--stroke) solid var(--ink);background:var(--paper);padding:0;cursor:pointer;border-radius:0}
 .dots .done{background:var(--ink)}
 .dots .cur{background:var(--orange);border-color:var(--orange)}
-.lab{margin-left:auto;font-size:15px;color:var(--grey);display:flex;align-items:center;gap:6px}
+.lab{margin-left:calc(var(--field) + 2*var(--gap) - 14px);margin-right:auto;font-size:15px;color:var(--grey);display:flex;align-items:center;gap:6px}
 .spk{width:1.15em;height:1.15em;flex:none;vertical-align:-.2em}
 /* close: an X drawn from two hairlines */
 .b-x{position:relative;width:32px;height:32px;margin-right:-6px;border:0;background:none;cursor:pointer;color:var(--ink)}
 .b-x::before,.b-x::after{content:"";position:absolute;left:6px;right:6px;top:50%;height:var(--stroke);background:currentColor;rotate:45deg}
 .b-x::after{rotate:-45deg}
 /* what you have told it so far */
-.sum{min-height:22px;padding:14px var(--margin) 0;font-size:var(--t-body);color:var(--ink);display:flex;flex-wrap:wrap;align-items:center;gap:0 10px}
+.sum{min-height:22px;padding:14px var(--margin) 0;font-size:var(--t-body);color:var(--ink);display:grid;grid-template-columns:repeat(4,var(--field));gap:0 var(--gap);align-items:center}
+.sum>*{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:calc(var(--field) + var(--gap) - 8px)}
 .sum b{font-weight:700}.sum .spk{margin-right:4px;color:var(--blue)}
 .sum .sep{width:5px;height:5px;border-radius:50%;background:var(--orange)}
 .acts button:disabled{opacity:.3;cursor:default}
@@ -141,7 +142,7 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .b-del{background:var(--paper);border:var(--stroke) solid var(--ink);color:var(--ink)}
 .b-go{background:var(--ink);border:0;color:var(--paper);font-weight:700}  /* buttons carry no colour */
 .b-sh{display:none;background:var(--paper);border:var(--stroke) solid var(--ink);color:var(--ink)}
-.acts.three{grid-template-columns:1fr 1fr 1fr;gap:calc(var(--gap)/2)}.acts.three .b-sh{display:block}
+.acts.three{grid-template-columns:var(--field) var(--field) 1fr;gap:var(--gap)}.acts.three button{padding:0;white-space:nowrap}.acts.three .b-sh{display:block}
 /* came from a friend: a small open ring in the corner of the square */
 .sq .sm{position:absolute;right:8px;top:8px;width:9px;height:9px;border-radius:50%;border:var(--focus) solid currentColor}
 .part .sm{top:50%;margin-top:-6px}.part:has(.sm){padding-right:22px}
@@ -159,11 +160,13 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .pair .wheel span{font-size:42px}
 .colon{display:flex;flex-direction:column;gap:32px;margin:0 6px 0 2px;padding-top:6px}
 .colon i{width:16px;height:16px;border-radius:50%;background:var(--orange)}
-.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
-.chip{height:44px;padding:0 13px;border:var(--stroke) solid var(--ink);background:var(--paper);color:var(--ink);font-size:16px;cursor:pointer;border-radius:0}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:12px var(--gap);margin-top:24px}
+.chips.two{grid-template-columns:1fr 1fr}.chips.days{grid-template-columns:repeat(7,1fr);gap:8px}
+.chips .chip.or{grid-column:1/span 2;grid-row:2}
+.chip{height:44px;padding:0;text-align:center;min-width:0;border:var(--stroke) solid var(--ink);background:var(--paper);color:var(--ink);font-size:16px;cursor:pointer;border-radius:0}
 .chip.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .chip.or{border-color:var(--orange);color:var(--orange)}
-.chip.sqd{width:44px;padding:0;text-align:center}
+.chip.sqd{padding:0;text-align:center}
 .nm{width:100%;border:0;border-bottom:3px solid var(--ink);background:none;font:700 var(--fs,64px)/1.08 var(--font);color:var(--ink);padding:0 0 8px;outline:0;border-radius:0;text-transform:lowercase}
 .nm::placeholder{color:color-mix(in srgb,var(--ink) 22%,transparent)}
 .nm:focus{border-color:var(--orange)}
@@ -228,3 +231,4 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .hold .sq.al,.hold .sq.draft{opacity:0;transform:scale(.55)}
 .appear .sq.al,.appear .sq.draft{transition:opacity var(--soft) var(--ease) var(--d,0ms),transform var(--move) var(--ease) var(--d,0ms)}
 .big{transition:color var(--snap) ease}
+.chips[hidden]{display:none}
