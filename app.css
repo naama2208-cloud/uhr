@@ -129,7 +129,7 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .sq.draft .n{position:absolute;left:8px;bottom:6px;font-size:var(--t-label);color:var(--ink);opacity:.7}
 .chips .spk{color:var(--blue);width:22px;height:22px;align-self:center}
 /* sound is blue: its icon and the sound you picked */
-.lab .spk{color:var(--blue)}.big.snd{color:var(--blue)}.chips.snd .chip.on{background:var(--blue);border-color:var(--blue);color:var(--paper)}
+.lab .spk{color:var(--blue)}.big.snd{color:var(--blue)}
 .body{position:relative;flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 var(--margin);min-height:0;touch-action:pan-y}
 .in{animation:enter var(--move) var(--ease) both}
 @keyframes enter{from{opacity:0;transform:translateY(28px)}}
@@ -161,7 +161,7 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .colon i{width:16px;height:16px;border-radius:50%;background:var(--orange)}
 .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
 .chip{height:44px;padding:0 13px;border:var(--stroke) solid var(--ink);background:var(--paper);color:var(--ink);font-size:16px;cursor:pointer;border-radius:0}
-.chip.on{background:var(--yellow);border-color:var(--yellow);color:var(--ink)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .chip.or{border-color:var(--orange);color:var(--orange)}
 .chip.sqd{width:44px;padding:0;text-align:center}
 .nm{width:100%;border:0;border-bottom:3px solid var(--ink);background:none;font:700 var(--fs,64px)/1.08 var(--font);color:var(--ink);padding:0 0 8px;outline:0;border-radius:0;text-transform:lowercase}
