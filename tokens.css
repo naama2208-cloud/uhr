@@ -1,7 +1,7 @@
 /* ühr — every decision once, by name. product and system both read this file. */
 :root{
 /* color */
---paper:#F3F1EC;--ink:#20201E;--grey:#737373;
+--paper:#E6E4DB;--ink:#20201E;--grey:#737373;
 --red:#C3282D;--blue:#0052B5;--yellow:#EEA700;
 /* roles: who wears which colour */
 --orange:var(--red);      /* the accent: lines, once-alarms, the main button (name kept so nothing else changes) */
