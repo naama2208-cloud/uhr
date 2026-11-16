@@ -1,15 +1,22 @@
 /* ühr — every decision once, by name. product and system both read this file. */
 :root{
 /* color */
---paper:#F3F1EC;--ink:#221D1A;--orange:#FF411F;--grey:#737373;--line:var(--orange);
+--paper:#F3F1EC;--ink:#221D1A;--orange:#FF411F;--grey:#737373;--line:var(--orange);--line-o:.55;
 /* space */
 --margin:21px;--field:72px;--gap:24px;--top:96px;--row:96px;--head:28px;
+/* lines: the grid's hairline, borders, focus */
+--hair:1px;--stroke:1.5px;--focus:2px;
 /* type */
 --font:"Helvetica Neue",Helvetica,Arial,sans-serif;--type:"under","Helvetica Neue",Helvetica,Arial,sans-serif;
---t-micro:9px;--t-label:11px;--t-body:15px;--t-title:22px;--t-logo:32px;--t-ring:355px;--stripe:6px;--t-hour:112px;--t-splash:120px;
+--t-micro:9px;--t-label:11px;--t-body:15px;--t-title:22px;--t-logo:32px;--t-ring:355px;--stripe:6px;--t-hour:112px;--t-splash:120px;--btn:19px;--t-wheel:236px;
+/* the hour's own text, per zoom */
+--tf-2:58px;--nf-2:18px;--tf-8:14px;
 /* motion */
 --move:640ms;--ease:cubic-bezier(.7,0,.2,1);--step:40ms;--fall:460ms;--gravity:cubic-bezier(.6,0,1,1);
---quick:300ms;--thicken:1500ms;--breath:1000ms;--ring:2000ms}
+--quick:300ms;--thicken:1500ms;--breath:1000ms;--ring:2000ms;
+--snap:180ms;--soft:420ms;--vanish:700ms;--nudge:90ms;
+/* the sound previews */
+--s-rise:1100ms;--s-drop:900ms;--s-glass:1600ms;--s-tick:800ms;--s-chime:2000ms;--s-pulse:1200ms}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#221D1A;--ink:#F3F1EC}}
 :root[data-theme="dark"]{--paper:#221D1A;--ink:#F3F1EC}
 

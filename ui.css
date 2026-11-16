@@ -1,21 +1,21 @@
 *{box-sizing:border-box;margin:0}
 body{background:var(--paper);color:var(--ink);font-family:var(--font);text-transform:lowercase}
 .stage{display:flex;justify-content:center;padding:16px}
-.phone{position:relative;width:402px;height:874px;flex:none;background:var(--paper);transform-origin:top center;overflow:hidden;cursor:pointer;outline:1px solid color-mix(in srgb,var(--ink) 15%,transparent);user-select:none;touch-action:none}
+.phone{position:relative;width:402px;height:874px;flex:none;background:var(--paper);transform-origin:top center;overflow:hidden;cursor:pointer;outline:var(--hair) solid color-mix(in srgb,var(--ink) 15%,transparent);user-select:none;touch-action:none}
 .logo{position:absolute;left:var(--margin);top:var(--head);font-size:var(--t-logo);letter-spacing:-.5px}
 .logo{line-height:1}.u{position:relative;display:inline-block}.u i{position:absolute;border-radius:50%;background:var(--orange)}
 .h{position:absolute;left:0;right:0;height:1px;background:var(--line);opacity:.55}
 .v{position:absolute;top:calc(var(--top) - 24px);bottom:62px;width:1px;background:var(--line);opacity:.55}
-.v,.lab,.al{transition:left var(--move) var(--ease),width var(--move) var(--ease),top var(--move) var(--ease),height var(--move) var(--ease),opacity var(--move) var(--ease),transform 260ms var(--ease)}
+.v,.lab,.al{transition:left var(--move) var(--ease),width var(--move) var(--ease),top var(--move) var(--ease),height var(--move) var(--ease),opacity var(--move) var(--ease),transform var(--quick) var(--ease)}
 .lab{position:absolute;top:calc(var(--top) - 20px);font-size:var(--t-label);color:var(--grey)}
 .lab.on{color:var(--ink);font-size:var(--t-body)}
-.hr{position:absolute;font-size:var(--t-micro);color:var(--grey);opacity:0;transition:opacity 300ms}
+.hr{position:absolute;font-size:var(--t-micro);color:var(--grey);opacity:0;transition:opacity var(--quick)}
 .isday .hr{opacity:1}
 .al{position:absolute;padding:3px 4px;overflow:hidden;color:var(--paper);font-size:var(--t-micro);line-height:1.1;transform-origin:top}
 .al.temp{background:var(--orange)}.al.fixed{background:var(--ink)}
 .al span{display:none}.al.big{font-size:var(--t-body);padding:6px}.al.big b{font-weight:700}.al.big span{display:block}
 .al.enter{transform:scaleY(0)}
-.hi{position:absolute;outline:2px solid var(--orange);opacity:0;transition:opacity 120ms;pointer-events:none}.hi.show{opacity:1}
+.hi{position:absolute;outline:var(--focus) solid var(--orange);opacity:0;transition:opacity var(--snap);pointer-events:none}.hi.show{opacity:1}
 .next{position:absolute;left:var(--margin);bottom:24px;font-size:var(--t-body)}.next small{display:block;font-size:var(--t-label);color:var(--grey)}
 .msg{position:absolute;font-size:var(--t-label);color:var(--grey);opacity:0}.msg.show{animation:f 1.2s var(--ease)}
 @keyframes f{0%,70%{opacity:1}to{opacity:0}}
@@ -33,13 +33,13 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font);text-trans
 .ishour .hr{opacity:0}
 .form>*{position:absolute}.ishour .form>*{pointer-events:auto}.form .big{font-size:var(--t-hour);font-weight:700;letter-spacing:-4px;line-height:1;display:flex;align-items:flex-end}
 .mins{cursor:ew-resize;touch-action:none}.mins i{position:absolute;top:0;bottom:0;width:3px;background:var(--orange)}.qt{position:absolute;top:4px;font-size:var(--t-micro);color:var(--grey)}
-.what{border:0;border-bottom:1px solid var(--ink);background:none;font:inherit;font-size:var(--t-title);color:var(--ink);text-transform:lowercase;outline:none}
+.what{border:0;border-bottom:var(--hair) solid var(--ink);background:none;font:inherit;font-size:var(--t-title);color:var(--ink);text-transform:lowercase;outline:none}
 .type,.days{display:flex;gap:var(--gap)}.days{gap:4px}
-.type b,.days b{flex:1;display:flex;align-items:center;padding:0 8px;font-weight:400;font-size:var(--t-body);outline:1px solid var(--ink);cursor:pointer}
+.type b,.days b{flex:1;display:flex;align-items:center;padding:0 8px;font-weight:400;font-size:var(--t-body);outline:var(--hair) solid var(--ink);cursor:pointer}
 .days b{justify-content:center;padding:0}.type b.on{background:var(--orange);color:var(--paper);outline-color:var(--orange)}
 .type b.on[data-t=fixed],.days b.on{background:var(--ink);color:var(--paper)}.days.off{opacity:.25;pointer-events:none}
 .del{font-size:var(--t-label);color:var(--grey);cursor:pointer}.done{font-weight:400;font-size:var(--t-title);cursor:pointer}
-.grow{position:absolute;outline:2px solid var(--orange);opacity:0;pointer-events:none;transition:left var(--move) var(--ease),top var(--move) var(--ease),width var(--move) var(--ease),height var(--move) var(--ease),opacity calc(var(--move) / 2)}
+.grow{position:absolute;outline:var(--focus) solid var(--orange);opacity:0;pointer-events:none;transition:left var(--move) var(--ease),top var(--move) var(--ease),width var(--move) var(--ease),height var(--move) var(--ease),opacity calc(var(--move) / 2)}
 @keyframes fv{from{transform:translateY(-900px)}to{transform:none}}
 @keyframes fh{from{transform:translateX(-420px)}to{transform:none}}
 @keyframes fhr{from{transform:translateX(420px)}to{transform:none}}
@@ -47,16 +47,16 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font);text-trans
 .dropping .v{transition:none}.v.fall{animation:fv var(--fall) var(--gravity) both}
 .h.fall{animation:fh var(--fall) var(--gravity) both}.h.fall.r{animation-name:fhr}
 .dropping .al,.dropping .lab,.dropping .hr{transition:none!important}.dropping .nowf{opacity:0!important;transition:none}
-.land{animation:jolt 220ms ease-out}
+.land{animation:jolt var(--snap) ease-out}
 .hr{display:none}
 /* hour panel: grid steps back, the square itself takes the colour of its type */
 .phone{--panel:color-mix(in srgb,var(--orange) 9%,var(--paper));-webkit-touch-callout:none}
 .phone.t-temp{--panel:var(--orange)}.phone.t-fixed{--panel:var(--ink)}
 .grow{background:var(--panel);outline:0;transition:left var(--move) var(--ease),top var(--move) var(--ease),width var(--move) var(--ease),height var(--move) var(--ease),opacity calc(var(--move) / 2),background var(--quick)}
-.ishour .h,.ishour .v{opacity:0;transition:opacity 300ms}
+.ishour .h,.ishour .v{opacity:0;transition:opacity var(--quick)}
 .t-temp .form,.t-fixed .form{color:var(--paper)}
 .form .what{color:inherit;border-bottom-color:currentColor}.what::placeholder{color:inherit;opacity:.5}
-.form .type b,.form .days b{outline-color:currentColor;transition:background var(--quick),color 300ms}
+.form .type b,.form .days b{outline-color:currentColor;transition:background var(--quick),color var(--quick)}
 .t-temp .form .type b.on,.t-fixed .form .type b.on,.t-fixed .form .days b.on{background:var(--paper);color:var(--panel);outline-color:var(--paper)}
 .t-temp .mins i,.t-fixed .mins i{background:currentColor}.form .qt{color:inherit;opacity:.6}
 .note{font-size:var(--t-label);opacity:.8}
@@ -66,19 +66,19 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font);text-trans
 .clk{display:grid;grid-template-columns:auto auto;column-gap:8px;justify-content:start;align-items:center;line-height:1.06}
 .clk b{font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums}.clk em{display:flex;flex-direction:column;gap:7px}.clk em i{width:6px;height:6px;border-radius:50%;background:var(--orange)}
 /* splash clock */
-.sp{position:absolute;z-index:4;color:var(--ink);font-size:var(--t-logo);line-height:.9;padding:6px;transform-origin:0 0;pointer-events:none;animation:spIn 600ms var(--ease)}
-.sp.fly{transition:transform calc(var(--move) * 1.4) var(--ease),opacity 400ms}
+.sp{position:absolute;z-index:4;color:var(--ink);font-size:var(--t-logo);line-height:.9;padding:6px;transform-origin:0 0;pointer-events:none;animation:spIn var(--vanish) var(--ease)}
+.sp.fly{transition:transform calc(var(--move) * 1.4) var(--ease),opacity var(--soft)}
 .sp.fly .clk b{transition:transform calc(var(--move) * 1.4) var(--ease)}
 @keyframes spIn{from{opacity:0}}
 /* long press */
 .al.pending{background:transparent!important;outline:1.5px dashed currentColor;outline-offset:-1.5px}
 .al.temp.pending{color:var(--orange)}.al.fixed.pending{color:var(--ink)}
-.menu{position:absolute;z-index:5;width:110px;background:var(--paper);outline:1px solid var(--ink);display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity 150ms}
-.menu.show{opacity:1;pointer-events:auto}.menu b{font-weight:400;font-size:var(--t-body);padding:10px 12px}.menu b+b{border-top:1px solid var(--ink);color:var(--orange)}
+.menu{position:absolute;z-index:5;width:110px;background:var(--paper);outline:var(--hair) solid var(--ink);display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity var(--snap)}
+.menu.show{opacity:1;pointer-events:auto}.menu b{font-weight:400;font-size:var(--t-body);padding:10px 12px}.menu b+b{border-top:var(--hair) solid var(--ink);color:var(--orange)}
 .live .v,.live .al,.live .lab{transition:none!important}.live .al,.live .lab:not(.on),.live .nowf{opacity:var(--fade)!important}
 /* splash (under type): ühr breathes thin → black, orange guides follow each letter */
 .splash{position:absolute;inset:0;z-index:6;background:var(--paper);transition:opacity var(--quick) var(--ease)}.splash.out{opacity:0;pointer-events:none}
-.splash .sw{position:absolute;left:0;right:0;top:calc(var(--top) + 2*(var(--row) + var(--gap)));display:flex;justify-content:center;font-family:"under",var(--font);font-size:var(--t-splash);line-height:1;font-weight:100;color:var(--ink)}
+.splash .sw{position:absolute;left:0;right:0;top:calc(var(--top) + 2*(var(--row) + var(--gap)));display:flex;justify-content:center;font-family:var(--type);font-size:var(--t-splash);line-height:1;font-weight:100;color:var(--ink)}
 .splash .sw span{display:block}
 .splash .gv{position:absolute;top:calc(var(--top) + 2*(var(--row) + var(--gap)) - 2*var(--gap));height:calc(var(--t-splash) + 4*var(--gap));width:1px;background:var(--line);opacity:.55}
 .splash .gh{position:absolute;left:0;right:0;height:1px;background:var(--line);opacity:.55}
@@ -87,7 +87,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font);text-trans
 .nav3{position:fixed;top:12px;left:50%;transform:translateX(-50%);font-size:var(--t-label);color:var(--orange)}
 .ring{position:absolute;inset:0;z-index:7;background:var(--paper);display:none;cursor:default}.ring.on{display:block}
 .ring .rh{position:absolute;left:var(--margin);top:var(--head);font-size:var(--t-body);color:var(--grey)}
-.ring .rt{position:absolute;left:0;right:0;top:calc(var(--top) + 2*(var(--row) + var(--gap)));display:flex;justify-content:center;align-items:center;gap:.06em;font-family:"under",var(--font);font-size:var(--t-ring);line-height:1}
+.ring .rt{position:absolute;left:0;right:0;top:calc(var(--top) + 2*(var(--row) + var(--gap)));display:flex;justify-content:center;align-items:center;gap:.06em;font-family:var(--type);font-size:var(--t-ring);line-height:1}
 .ring .c{display:grid;place-items:center}.ring .c>*{grid-area:1/1}
 .ring .c span{color:var(--c);font-weight:var(--w)}
 .ring .c span.core{color:var(--ink);font-weight:900;animation:core 4s infinite cubic-bezier(.65,0,.35,1)}
@@ -160,13 +160,13 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font);text-trans
 @media (prefers-reduced-motion:reduce){.ring .c .w{animation-duration:calc(var(--ring) * 2)}}
 /* ringing in helvetica: stripes = grid hairlines inside the digit */
 @property --lw{syntax:'<length>';inherits:false;initial-value:6px}
-@property --lc{syntax:'<color>';inherits:false;initial-value:#221D1A}
+@property --lc{syntax:'<color>';inherits:false;initial-value:#221D1A} /* @property can't read a variable: same as --ink */
 .ring .rt{font-family:var(--font);font-weight:700;font-variant-numeric:tabular-nums;margin:0;line-height:.74;letter-spacing:0}
 .ring .rw{gap:var(--gap)}.ring .rw+.rw{margin-top:0}
 .ring .c .w{font-family:var(--font);font-weight:700;color:transparent;-webkit-text-stroke:0;paint-order:normal;--lw:var(--stripe);--lc:var(--ink);
   background:repeating-linear-gradient(90deg,var(--lc) 0 var(--lw),transparent var(--lw) var(--stripe));-webkit-background-clip:text;background-clip:text;
   animation:lines var(--ring) cubic-bezier(.7,0,.3,1) infinite;animation-delay:calc(var(--move) + var(--i) * var(--ring) / 8)}
-@keyframes lines{0%,10%,90%,100%{--lw:var(--stripe);--lc:var(--ink)}40%,60%{--lw:1px;--lc:var(--orange)}}
+@keyframes lines{0%,10%,90%,100%{--lw:var(--stripe);--lc:var(--ink)}40%,60%{--lw:var(--hair);--lc:var(--orange)}}
 @media (prefers-reduced-motion:reduce){.ring .c .w{animation-duration:calc(var(--ring) * 2)}}
 .ring .rt{line-height:.72}.ring .rw+.rw{margin-top:var(--gap)}
 .ring .rw{gap:calc(var(--gap) - .086em)}.ring .rt{margin-left:-.04em}.ring .rw+.rw{margin-top:calc(var(--gap) - .026em)}
@@ -189,7 +189,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font);text-trans
 .al.big span{font-size:var(--t-label);line-height:1.2}
 /* now = an alarm without a colour: same size and inset as the fields, a 1px orange line inside the square */
 .sp,.nowf{padding:calc(var(--gap)/4)}
-.nowf{outline:1px solid var(--orange);outline-offset:-1px}
+.nowf{outline:var(--hair) solid var(--orange);outline-offset:-1px}
 /* hour panel (מדייקת): the same composition, hour over minutes, no colon */
 .form .big{display:block;line-height:.72;letter-spacing:0;font-variant-numeric:tabular-nums}
 .form .big i{display:block;font-style:normal}.form .big i+i{margin-top:.068em}
@@ -197,23 +197,23 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font);text-trans
 .sp .clk2,.nowf .clk2{margin-left:calc(-1 * var(--now-il,0px));margin-top:calc(-1 * var(--now-it,0px))}
 /* sound (צליל): a row of three choices in the hour panel, like temporary / fixed */
 .form .snd{display:flex;gap:var(--gap)}
-.form .snd b{flex:1;display:flex;align-items:center;padding:0 8px;font-weight:400;font-size:var(--t-body);outline:1px solid currentColor;outline-offset:-1px;cursor:pointer}
+.form .snd b{flex:1;display:flex;align-items:center;padding:0 8px;font-weight:400;font-size:var(--t-body);outline:var(--hair) solid currentColor;outline-offset:-1px;cursor:pointer}
 .form .snd b.on{background:var(--ink);color:var(--paper)}
 .t-temp .form .snd b.on,.t-fixed .form .snd b.on{background:var(--paper);color:var(--panel)}
 /* ringing: one shape, three rhythms */
-.ring.s-chime .c .w{animation:lines-chime 2000ms cubic-bezier(.45,0,.55,1) infinite;animation-delay:var(--move)}
-@keyframes lines-chime{0%,100%{--lw:var(--stripe);--lc:var(--ink)}45%{--lw:1px;--lc:var(--orange)}}
-.ring.s-pulse .c .w{animation:lines-pulse 1200ms linear infinite;animation-delay:var(--move)}
-@keyframes lines-pulse{0%,34%,100%{--lw:var(--stripe);--lc:var(--ink)}8%,24%{--lw:1px;--lc:var(--orange)}16%{--lw:var(--stripe);--lc:var(--ink)}}
+.ring.s-chime .c .w{animation:lines-chime var(--s-chime) cubic-bezier(.45,0,.55,1) infinite;animation-delay:var(--move)}
+@keyframes lines-chime{0%,100%{--lw:var(--stripe);--lc:var(--ink)}45%{--lw:var(--hair);--lc:var(--orange)}}
+.ring.s-pulse .c .w{animation:lines-pulse var(--s-pulse) linear infinite;animation-delay:var(--move)}
+@keyframes lines-pulse{0%,34%,100%{--lw:var(--stripe);--lc:var(--ink)}8%,24%{--lw:var(--hair);--lc:var(--orange)}16%{--lw:var(--stripe);--lc:var(--ink)}}
 /* the big time in the hour panel previews the chosen ring once */
 .form{--pc:var(--ink)}.t-temp .form,.t-fixed .form{--pc:var(--paper)}
 .form .big span{--lw:var(--stripe);padding:.12em 0;color:transparent;background:repeating-linear-gradient(90deg,var(--pc) 0 var(--lw),transparent var(--lw) var(--stripe));-webkit-background-clip:text;background-clip:text}
 .form .big.play.s-radar span{animation:pv-radar var(--ring) cubic-bezier(.7,0,.3,1)}
-.form .big.play.s-chime span{animation:pv-chime 2000ms cubic-bezier(.45,0,.55,1)}
-.form .big.play.s-pulse span{animation:pv-pulse 1200ms linear}
-@keyframes pv-radar{0%,10%,90%,100%{--lw:var(--stripe)}40%,60%{--lw:1px}}
-@keyframes pv-chime{0%,100%{--lw:var(--stripe)}45%{--lw:1px}}
-@keyframes pv-pulse{0%,34%,100%{--lw:var(--stripe)}8%,24%{--lw:1px}16%{--lw:var(--stripe)}}
+.form .big.play.s-chime span{animation:pv-chime var(--s-chime) cubic-bezier(.45,0,.55,1)}
+.form .big.play.s-pulse span{animation:pv-pulse var(--s-pulse) linear}
+@keyframes pv-radar{0%,10%,90%,100%{--lw:var(--stripe)}40%,60%{--lw:var(--hair)}}
+@keyframes pv-chime{0%,100%{--lw:var(--stripe)}45%{--lw:var(--hair)}}
+@keyframes pv-pulse{0%,34%,100%{--lw:var(--stripe)}8%,24%{--lw:var(--hair)}16%{--lw:var(--stripe)}}
 /* now: svg on its own baselines (see nowFit) */
 .sp,.nowf{padding:0}
 .nowsvg{display:block;overflow:visible}.nowsvg text{font-family:var(--font);font-weight:700;fill:currentColor;font-variant-numeric:tabular-nums}

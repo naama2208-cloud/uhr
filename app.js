@@ -5,7 +5,9 @@
 // every measure is read from the tokens (tokens.css), so changing one changes everything — see tokens.html.
 (()=>{
 const V=n=>parseFloat(getComputedStyle(document.documentElement).getPropertyValue(n));
-const EASE='cubic-bezier(.7,0,.2,1)';
+const EASE=getComputedStyle(document.documentElement).getPropertyValue('--ease').trim()||'cubic-bezier(.7,0,.2,1)';
+// the browser bar takes the paper colour too
+{const m=document.querySelector('meta[name=theme-color]'),p=getComputedStyle(document.documentElement).getPropertyValue('--paper').trim();if(m&&p)m.content=p}
 let MOVE=V('--move')||640;const STEP=V('--step')||40,THICK=V('--thicken')||1500,TSPL=V('--t-splash')||120;
 const p2=n=>String(n).padStart(2,'0');
 const el=(c,p,tag='div')=>{const e=document.createElement(tag);if(c)e.className=c;if(p)p.appendChild(e);return e};
@@ -125,7 +127,7 @@ ph.addEventListener('touchend',e=>{if(!pz||e.touches.length>=2)return;const {k,c
   const j=LEVELS.indexOf(N)+(k>1.18?-1:k<.85?1:0);
   if(j!==LEVELS.indexOf(N)&&j>=0&&j<LEVELS.length&&!busy())zoomTo(LEVELS[j],c.y);else unpinch()});
 ph.addEventListener('touchcancel',()=>{pz=null;unpinch()});
-function unpinch(){const t=track.style.transform;if(!t)return;track.style.transform='';track.animate([{transform:t},{transform:'none'}],{duration:240,easing:EASE})}
+function unpinch(){const t=track.style.transform;if(!t)return;track.style.transform='';track.animate([{transform:t},{transform:'none'}],{duration:V('--snap')||180,easing:EASE})}
 // the browser's own page zoom fights ours and breaks the proportions — keep it off
 ['gesturestart','gesturechange'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
 const client=p=>{const b=ph.getBoundingClientRect();return[b.left+p.x*S,b.top+p.y*S]};
