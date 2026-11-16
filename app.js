@@ -326,7 +326,9 @@ function poster(a){const W=1080,H=1920,k=W/463.2,M=23.57,F=96.07,G=10.29,T0=44.1
   const two=2*F+G,three=3*F+2*G,nb=525.02+60.12*.77;let lines=[a.name],nf=fitTo(a.name,60.12,700,-.035,two);
   if(nf<45){const w=a.name.split(/\s+/);if(w.length>1){let best=null;for(let i=1;i<w.length;i++){const L=[w.slice(0,i).join(' '),w.slice(i).join(' ')],f=Math.min(...L.map(t=>fitTo(t,60.12,700,-.035,two)));if(!best||f>best.f)best={L,f}}lines=best.L;nf=best.f}
     else nf=fitTo(a.name,60.12,700,-.035,three)}
-  lines.forEach((t,i)=>put(t,X(0),nb-(lines.length-1-i)*nf-.77*nf,nf,700,col.red,-.035));
+  // the name takes its own colour: red, blue or black, never the square's; each alarm keeps its own, next to its neighbours' different ones
+  const pal=['red','once','ink'],hs=(h=>{h^=h>>>16;h=Math.imul(h,0x45d9f3b);h^=h>>>16;return h>>>0})([...a.name].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261)),ix=alarms.indexOf(a),k0=(ix>=0?ix:hs)%3;let ncol=CV('--'+pal[k0]);if(ncol===col.kind)ncol=CV('--'+pal[(k0+1)%3]);
+  lines.forEach((t,i)=>put(t,X(0),nb-(lines.length-1-i)*nf-.77*nf,nf,700,ncol,-.035));
   const d=a.days.length?parse(ymd(new Date())):parse(a.date),dn=DAYS[a.days.length?(a.days.includes(new Date().getDay())?new Date().getDay():a.days[0]):d.getDay()];
   const often=a.days.length?(a.days.length===7?'every day':'every '+(a.days.length===1?DAYS[a.days[0]]:a.days.map(x=>DS[x]).join(' '))):`${dn}, ${d.getDate()}.${d.getMonth()+1}`;
   put(often,X(0),606,fitTo(often,30.88,300,-.035,three),300,col.ink,-.035);
