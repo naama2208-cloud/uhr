@@ -5,10 +5,10 @@
 --red:#C3282D;--blue:#0052B5;--yellow:#EEA700;
 /* roles: who wears which colour */
 --orange:var(--red);      /* the accent: lines, the main button (name kept so nothing else changes) */
---fixed:var(--blue);      /* every week */
---once:var(--red);        /* just once */
+--fixed:var(--ink);       /* every week */
+--once:var(--blue);       /* just once */
 --shared:var(--yellow);   /* an hour someone shared with you */
---now:var(--ink);         /* the hour you are in: just its time, in black — no frame */
+--now:var(--red);         /* the hour you are in: just its time, in red — no frame */
 --on-fixed:var(--paper);--on-once:var(--paper);--on-shared:var(--ink);  /* type that reads on each */
 --line:var(--red);--line-o:.55;    /* the grid */
 /* space */
