@@ -23,8 +23,8 @@
 --snap:180ms;--soft:420ms;--vanish:700ms;--nudge:90ms;
 /* the sound previews */
 --s-rise:1100ms;--s-drop:900ms;--s-glass:1600ms;--s-tick:800ms;--s-chime:2000ms;--s-pulse:1200ms}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#221D1A;--ink:#F3F1EC}}
-:root[data-theme="dark"]{--paper:#221D1A;--ink:#F3F1EC}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#20201E;--ink:#E6E4DB}}
+:root[data-theme="dark"]{--paper:#20201E;--ink:#E6E4DB}
 
 /* the colon is always two circles */
 .cd{display:inline-block;width:.3em;height:.72em;vertical-align:baseline;background:radial-gradient(circle closest-side,currentColor 92%,transparent) 50% 18%/.13em .13em no-repeat,radial-gradient(circle closest-side,currentColor 92%,transparent) 50% 100%/.13em .13em no-repeat}
