@@ -2,7 +2,7 @@
 :root{
 /* color */
 --paper:#E6E4DB;--ink:#20201E;--grey:#737373;
---red:#C3282D;--blue:#0052B5;--yellow:#EEA700;
+--red:#D50023;--blue:#0052B5;--yellow:#EEA700;
 /* roles: who wears which colour */
 --orange:var(--red);      /* the accent: lines, the main button (name kept so nothing else changes) */
 --fixed:var(--ink);       /* every week */

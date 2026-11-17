@@ -64,11 +64,12 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .z8 .part *{display:none}
 .part.vanish{animation:vanish var(--vanish) var(--ease) both}
 /* now: the clearest thing on the screen — a thick orange frame, the time filling it, the minutes filling its floor */
-.sq.now{background:transparent;box-shadow:none;color:var(--now);z-index:3}
+.sq.now{background:var(--now);box-shadow:none;color:var(--paper);z-index:3}
 .sq.now.temp{background:var(--once)}
 .sq.now.shared{background:var(--shared)}.sq.now.fixed{background:var(--fixed)}
-.sq.now.fixed{box-shadow:none}
-.sq .nt{color:var(--now)}
+.sq .nt{color:var(--paper)}
+/* the hour you are in, when it already holds an alarm: the alarm's colour, ringed in red */
+.sq.now.temp,.sq.now.shared,.sq.now.fixed{box-shadow:inset 0 0 0 4px var(--now)}.sq.now.shared .nt{color:var(--ink)}
 .sq .nb{display:none} /* now is only its time, in black */
 .landing .sq.now .nt{opacity:0}
 .sq.pop{animation:pop var(--move) var(--ease) both}

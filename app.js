@@ -224,20 +224,22 @@ async function closeSheet(target,after){if(!sh.classList.contains('on'))return;s
 function go(n,dir){if(n>0)tipDone('swipe');const from=dir===undefined?(n>step?1:n<step?-1:0):dir;step=n;sh.classList.add('fall');void sh.offsetWidth;sh.classList.remove('fall');
   dots.innerHTML=LABELS.map((l,k)=>`<button type="button" aria-label="${l}" class="${k<n?'done':k===n?'cur':''}"></button>`).join('');
   [...dots.children].forEach((b,k)=>b.onclick=()=>{if(k!==step)go(k)});
-  lab.textContent=n===LABELS.length-1?'swipe ← to set':LABELS[n];body.innerHTML='';const inn=el('in'+(from>0?' from-r':from<0?' from-l':''),body);STEPS[n](inn);
+  lab.textContent=dayTop();body.innerHTML='';const inn=el('in'+(from>0?' from-r':from<0?' from-l':''),body);STEPS[n](inn);
   bGo.textContent=n===LABELS.length-1?'set':'continue';
-  if(n===2)lab.innerHTML=SPK+'sound';
   bDel.textContent=n>0?'go back':draft.edit?'delete':draft.fromDraft?'discard':'go back';
   bDel.disabled=n===0&&!draft.edit&&!draft.fromDraft;
   drawSum()
   // share sits beside set on the last step, and always on an alarm that already exists
   acts.classList.toggle('three',draft.edit||(n===LABELS.length-1&&!draft.shared));if(acts.classList.contains('three')&&bDel.textContent==='go back')bDel.textContent='back'}
 // what you have told it so far, adding up at the top: the name, then the time, the sound, how often
+// the day of the alarm, written at the top of the sheet
+function dayTop(){if(!draft.once&&draft.days.length)return draft.days.length===7?'every day':'every '+(draft.days.length===1?DAYS[draft.days[0]]:draft.days.slice().sort().map(x=>DS[x]).join(' '));
+  const e=effDate(),d=typeof e==='string'?parse(e):new Date(e);return DAYS[d.getDay()]+' '+d.getDate()+'.'+(d.getMonth()+1)}
 function drawSum(){const parts=[];
   if(step>0||draft.edit||draft.shared)parts.push(`<b>${esc(draft.name.trim()||'ühr')}</b>`);
-  if(step>1||draft.edit||draft.shared)parts.push(`<span>${hm(draft.h,draft.m)} ${dayWord(effDate())}</span>`);
+  if(step>1||draft.edit||draft.shared)parts.push(`<span>${hm(draft.h,draft.m)}</span>`);
   if(step>2||draft.edit||draft.shared)parts.push(`<span>${SPK}${esc(draft.sound)}</span>`);
-  sum.innerHTML=parts.join('')}
+  sum.innerHTML=parts.join('');lab.textContent=dayTop()}
 const effDate=()=>{let d=parse(draft.date);if(draft.once&&at(d,draft.h,draft.m)<=new Date())d=addDays(d,1);return d};
 const dayWord=d=>{const k=Math.round((day0(d)-day0(new Date()))/864e5);return k===0?'today':DAYS[d.getDay()]};
 function wheel(inn,{get,set,fmt=p2,step:st=1,mod,onchange}){const w=el('wheel',inn);w.tabIndex=0;w.setAttribute('role','spinbutton');
@@ -266,7 +268,7 @@ const STEPS=[
     el('colon',pr).innerHTML='<i></i><i></i>';
     const dm=wheel(pr,{get:()=>draft.m,set:v=>draft.m=v,step:5,mod:60,onchange:upd});pr.lastChild.setAttribute('aria-label','minutes');
     inn.appendChild(note);const ch=el('chips',inn);
-    [['in 1 minute','soon'],['00',0],['15',15],['30',30],['45',45]].forEach(([t,v])=>{const b=chip(ch,v==='soon'?t:':'+t,v==='soon'?'or':'');
+    [['00',0],['15',15],['30',30],['45',45]].forEach(([t,v])=>{const b=chip(ch,v==='soon'?t:':'+t,v==='soon'?'or':'');
       b.onclick=()=>{if(v==='soon'){const n=new Date(Date.now()+60000);draft.h=n.getHours();draft.m=n.getMinutes();draft.date=ymd(n);draft.once=true}else draft.m=v;dh();dm();tick()}});
     el('hint',inn,'p').textContent='drag each number up or down'},
   inn=>{const big=el('big snd',inn);setName(big,draft.name);
