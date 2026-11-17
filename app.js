@@ -28,24 +28,27 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 // the demo inside the landing page keeps its own, separate data — it never touches your real alarms
 const KEY=EMBED?'uhr5demo':'uhr5',LOG=EMBED?'uhr5demolog':'uhr5log';
 function sample(){const n=new Date(),t=day0(n),h=(n.getHours()+2)%24,dt=h<n.getHours()?addDays(t,1):t;
-  return[{id:1,h,m:0,name:'training',sound:'drop',days:[],date:ymd(dt)},{id:2,h:20,m:0,name:'pill',sound:'glass',days:[0,1,2,3,4,5,6],date:null},
-    {id:3,h:7,m:0,name:'wake up',sound:'rise',days:[],date:ymd(addDays(t,1))},{id:4,h:18,m:30,name:'babysitter',sound:'tick',days:[],date:ymd(addDays(t,3))}]}
+  return[{id:1,h,m:0,name:'Training',sound:'drop',days:[],date:ymd(dt)},{id:2,h:20,m:0,name:'Pill',sound:'glass',days:[0,1,2,3,4,5,6],date:null},
+    {id:3,h:7,m:0,name:'Wake up',sound:'rise',days:[],date:ymd(addDays(t,1))},{id:4,h:18,m:30,name:'Babysitter',sound:'tick',days:[],date:ymd(addDays(t,3))}]}
 let alarms=null;try{alarms=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!Array.isArray(alarms))alarms=[];
+// a name always starts with a capital
+function cap(t){t=String(t||'');return t.charAt(0).toUpperCase()+t.slice(1)}
+alarms.forEach(a=>a.name=cap(a.name));
 if(EMBED&&!alarms.length){const t=day0(new Date()),n=new Date().getHours(),H=k=>(n+k)%24,D=k=>ymd(n+k>23?addDays(t,1):t);
   // the demo week sits around the hour you open it in, so all four colours are on screen at once
-  alarms=[{id:101,h:H(1),m:0,name:'training',sound:'glass',days:[0,1,2,3,4,5,6],date:null},
-  {id:102,h:H(2),m:15,name:'doctor',sound:'drop',days:[],date:D(2)},{id:103,h:H(3),m:0,name:'boxes to mom',sound:'tick',days:[],date:D(3),shared:true},
-  {id:107,h:H(5),m:30,name:'pick up kids',sound:'rise',days:[],date:D(5)},
-  {id:104,h:8,m:30,name:'work',sound:'rise',days:[0,1,2,3,4],date:null},{id:105,h:18,m:30,name:'babysitter',sound:'rise',days:[],date:ymd(addDays(t,1))},
-  {id:106,h:11,m:0,name:'hygienist',sound:'tick',days:[],date:ymd(addDays(t,2))}]}
+  alarms=[{id:101,h:H(1),m:0,name:'Training',sound:'glass',days:[0,1,2,3,4,5,6],date:null},
+  {id:102,h:H(2),m:15,name:'Doctor',sound:'drop',days:[],date:D(2)},{id:103,h:H(3),m:0,name:'Boxes to mom',sound:'tick',days:[],date:D(3),shared:true},
+  {id:107,h:H(5),m:30,name:'Pick up kids',sound:'rise',days:[],date:D(5)},
+  {id:104,h:8,m:30,name:'Work',sound:'rise',days:[0,1,2,3,4],date:null},{id:105,h:18,m:30,name:'Babysitter',sound:'rise',days:[],date:ymd(addDays(t,1))},
+  {id:106,h:11,m:0,name:'Hygienist',sound:'tick',days:[],date:ymd(addDays(t,2))}]}
 // alarms left half-way: kept as drafts until they are finished or thrown away
 const DRAFTS=EMBED?'uhr5demodrafts':'uhr5drafts';let drafts={};try{drafts=JSON.parse(localStorage.getItem(DRAFTS))||{}}catch(e){}
 const saveDrafts=()=>{try{localStorage.setItem(DRAFTS,JSON.stringify(drafts))}catch(e){}};
 const dkey=(d,h)=>ymd(d)+'|'+h;
 // once: clear the old example alarms that earlier versions saved on every phone (ids 1–4); real alarms stay
 if(!EMBED&&!localStorage.getItem('uhr5clean')){const EX={1:'training',2:'pill',3:'wake up',4:'babysitter'};
-  alarms=alarms.filter(a=>EX[a.id]!==a.name);try{localStorage.setItem(KEY,JSON.stringify(alarms));localStorage.setItem('uhr5clean','1')}catch(e){}}
+  alarms=alarms.filter(a=>EX[a.id]!==a.name.toLowerCase());try{localStorage.setItem(KEY,JSON.stringify(alarms));localStorage.setItem('uhr5clean','1')}catch(e){}}
 // everyone starts with an empty week; #demo fills in example alarms for presenting
 if(location.hash==='#demo'){alarms=sample();try{localStorage.setItem(KEY,JSON.stringify(alarms))}catch(e){}history.replaceState(null,'',location.pathname+location.search)}
 const store=()=>{try{localStorage.setItem(KEY,JSON.stringify(alarms))}catch(e){}};
@@ -126,14 +129,26 @@ function zoomTo(n,anchorY){if(n===N||busy())return;tipDone('pinch');
   const ay=anchorY==null?PH/2:anchorY;
   const anchor=nearby().flatMap(D=>D.sqs).map(q=>[q,rel(q)]).filter(([,r])=>r.y<=ay+r.h).sort((a,b)=>Math.abs(a[1].y+a[1].h/2-ay)-Math.abs(b[1].y+b[1].h/2-ay))[0];
   const aq=anchor?anchor[0]:sqAt(0,new Date().getHours()),r0=rel(aq);       // as seen now (pinch scale included)
+  // the old picture stays as a ghost and travels with the move while it fades; the new one fades in under it.
+  // type and lines change size between levels, so the cross-fade hides the change — nothing jumps.
+  [...sc.querySelectorAll('.ghost')].forEach(g=>g.remove());[...ph.querySelectorAll('.vl.ghost')].forEach(g=>g.remove());
+  const sc0=sc.scrollTop,tr0=track.style.transform,vl0=vl.style.transform;
+  const gT=track.cloneNode(true),gV=vl.cloneNode(true);gT.classList.add('ghost');gV.classList.add('ghost');
+  gT.style.cssText+=`;position:absolute;left:0;top:0;pointer-events:none;transform:${tr0}`;gV.style.transform=vl0;
+  sc.appendChild(gT);vl.after(gV);
   track.style.transform='';vl.style.transform='';const rFlat=rel(aq);
   N=n;Lc=lay();layoutAll();sc.scrollTop+=rel(aq).y-rFlat.y;                  // keep the anchor hour where it was
-  const r1=rel(aq),k=r0.w/r1.w,dx=r0.x-r1.x,dy=r0.y-r1.y;
+  const r1=rel(aq),k=r0.w/r1.w,dx=r0.x-r1.x,dy=r0.y-r1.y,dS=sc.scrollTop-sc0;
+  gT.style.top=dS+'px';                                                         // the ghost stays where the old picture was
   const o={duration:reduce?1:MOVE,easing:EASE};
   track.style.transformOrigin=`${r1.x}px ${r1.y+sc.scrollTop}px`;
-  track.animate([{transform:`translate(${dx}px,${dy}px) scale(${k})`},{transform:'none'}],o);
+  track.animate([{transform:`translate(${dx}px,${dy}px) scale(${k})`,opacity:0},{opacity:1,offset:.45},{transform:'none',opacity:1}],o);
   vl.style.transformOrigin=`${r1.x}px 0px`;
-  vl.animate([{transform:`translateX(${dx}px) scaleX(${k})`},{transform:'none'}],o);
+  vl.animate([{transform:`translateX(${dx}px) scaleX(${k})`,opacity:0},{opacity:1,offset:.45},{transform:'none',opacity:1}],o);
+  gT.style.transformOrigin=`${r0.x}px ${r0.y+sc0}px`;
+  gT.animate([{transform:tr0||'none',opacity:1},{opacity:0,offset:.55},{transform:`translate(${-dx}px,${-dy}px) scale(${1/k})`,opacity:0}],o).onfinish=()=>gT.remove();
+  gV.style.transformOrigin=`${r0.x}px 0px`;
+  gV.animate([{transform:vl0||'none',opacity:1},{opacity:0,offset:.55},{transform:`translateX(${-dx}px) scaleX(${1/k})`,opacity:0}],o).onfinish=()=>gV.remove();
   buzz(8)}
 const zoomStep=(dir,y)=>{const k=LEVELS.indexOf(N)+dir;if(k>=0&&k<LEVELS.length)zoomTo(LEVELS[k],y)};
 let pz=null;const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
@@ -198,7 +213,9 @@ const SOUNDS=Object.keys(SND),OLD={radar:'tick',chime:'glass',pulse:'drop'},snd=
 const play=(s,v=1)=>{const c=ctx();if(!c)return;try{SND[snd(s)](c.currentTime+.03,v)}catch(e){}};
 const tick=()=>{const c=ctx();if(c)try{click(c.currentTime,.25)}catch(e){};buzz(6)};
 ph.addEventListener('pointerdown',ctx,{passive:true});
-function setName(e,s,max=360){const txt=s||'ühr';e.dir=/[\u0590-\u05FF\u0600-\u06FF]/.test(txt)?'rtl':'ltr';e.innerHTML=[...txt].map((ch,i)=>`<i style="--i:${i}">${ch===' '?' ':esc(ch)}</i>`).join('');
+// ühr is never typed out: it is the logo
+const LOGO='<span class="lg"><span class="u">u<i></i><i></i></span>hr</span>';
+function setName(e,s,max=360){const txt=s||'ühr';e.dir=/[\u0590-\u05FF\u0600-\u06FF]/.test(txt)?'rtl':'ltr';e.innerHTML=txt==='ühr'?LOGO:[...txt].map((ch,i)=>`<i style="--i:${i}">${ch===' '?' ':esc(ch)}</i>`).join('');
   const longest=Math.max(...txt.split(' ').map(w=>w.length),1);e.style.setProperty('--fs',Math.max(40,Math.min(112,max/(longest*.6)))+'px')}
 function animName(e,s){e.classList.remove(...SOUNDS.map(k=>'an-'+k));void e.offsetWidth;e.classList.add('an-'+snd(s))}
 
@@ -236,7 +253,7 @@ function go(n,dir){if(n>0)tipDone('swipe');const from=dir===undefined?(n>step?1:
 function dayTop(){if(!draft.once&&draft.days.length)return draft.days.length===7?'every day':'every '+(draft.days.length===1?DAYS[draft.days[0]]:draft.days.slice().sort().map(x=>DS[x]).join(' '));
   const e=effDate(),d=typeof e==='string'?parse(e):new Date(e);return DAYS[d.getDay()]+' '+d.getDate()+'.'+(d.getMonth()+1)}
 function drawSum(){const parts=[];
-  if(step>0||draft.edit||draft.shared)parts.push(`<b>${esc(draft.name.trim()||'ühr')}</b>`);
+  if(step>0||draft.edit||draft.shared)parts.push(`<b>${draft.name.trim()?esc(draft.name.trim()):LOGO}</b>`);
   if(step>1||draft.edit||draft.shared)parts.push(`<span>${hm(draft.h,draft.m)}</span>`);
   if(step>2||draft.edit||draft.shared)parts.push(`<span>${SPK}${esc(draft.sound)}</span>`);
   sum.innerHTML=parts.join('');lab.textContent=dayTop()}
@@ -261,7 +278,7 @@ const hm=(h,m)=>p2(h)+'<span class="cd"></span>'+p2(m);
 const STEPS=[
   inn=>{const nm=el('nm',inn,'input');nm.id='uhr-name';nm.maxLength=16;nm.placeholder='name it';nm.autocomplete='off';nm.value=draft.name;
     nm.setAttribute('aria-label','name');const fitIn=()=>nm.style.setProperty('--fs',Math.max(36,Math.min(72,360/(Math.max(nm.value.length,6)*.58)))+'px');fitIn();
-    nm.addEventListener('input',()=>{draft.name=nm.value;fitIn()});nm.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();next()}});
+    nm.addEventListener('input',()=>{const c=nm.selectionStart,v=cap(nm.value);if(v!==nm.value){nm.value=v;nm.setSelectionRange(c,c)}draft.name=v;fitIn()});nm.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();next()}});
     el('hint',inn,'p').textContent='what is it? one or two words';setTimeout(()=>{try{nm.focus({preventScroll:true})}catch(e){}},300)},
   inn=>{const pr=el('pair',inn),note=el('hint',inn,'p');const big=el('big small',inn);setName(big,draft.name);inn.insertBefore(big,pr);const upd=()=>note.textContent=dayWord(effDate());
     const dh=wheel(pr,{get:()=>draft.h,set:v=>draft.h=v,mod:24,onchange:upd});pr.firstChild.setAttribute('aria-label','hour');
@@ -363,7 +380,7 @@ async function sendShared(a,cv){
   try{await navigator.clipboard.writeText(text+'\n'+url)}catch(e){prompt('copy this link',url)}}
 function takeShared(){const m=location.hash.match(/^#add=([\w-]+)/);if(!m)return false;history.replaceState(null,'',location.pathname+location.search);
   let o;try{o=dec(m[1])}catch(e){return false}if(!(o.h>=0&&o.h<24&&o.m>=0&&o.m<60))return false;
-  const pre={h:o.h|0,m:o.m|0,name:String(o.n||'').slice(0,16),sound:snd(o.s),days:Array.isArray(o.d)&&o.d.length?o.d.filter(x=>x>=0&&x<7):[],date:o.t||ymd(new Date()),from:String(o.f||'').slice(0,16)};
+  const pre={h:o.h|0,m:o.m|0,name:cap(String(o.n||'').slice(0,16)),sound:snd(o.s),days:Array.isArray(o.d)&&o.d.length?o.d.filter(x=>x>=0&&x<7):[],date:o.t||ymd(new Date()),from:String(o.f||'').slice(0,16)};
   pre.once=!pre.days.length;if(pre.once){pre.days=[parse(pre.date).getDay()];}
   const i=pre.once?Math.max(0,Math.round((parse(pre.date)-base)/864e5)):indexOf({days:pre.days,h:pre.h,m:pre.m});
   setTimeout(()=>{reveal(i,pre.h);openSheet(i,pre.h,null,sqAt(i,pre.h),pre)},reduce?300:THICK+1200);return true}
