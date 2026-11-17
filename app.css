@@ -235,3 +235,5 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .chips[hidden]{display:none}
 /* labels sit in the optical middle whatever the font: the box is trimmed to the x-height, then centred */
 .acts button,.chip{text-box:trim-both ex alphabetic}
+/* names keep their capital: everything else stays lowercase */
+.nm,.big,.rname,.sq .n,.sum b,.pvw .nmx{text-transform:none}

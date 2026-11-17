@@ -383,7 +383,9 @@ function takeShared(){const m=location.hash.match(/^#add=([\w-]+)/);if(!m)return
   const pre={h:o.h|0,m:o.m|0,name:cap(String(o.n||'').slice(0,16)),sound:snd(o.s),days:Array.isArray(o.d)&&o.d.length?o.d.filter(x=>x>=0&&x<7):[],date:o.t||ymd(new Date()),from:String(o.f||'').slice(0,16)};
   pre.once=!pre.days.length;if(pre.once){pre.days=[parse(pre.date).getDay()];}
   const i=pre.once?Math.max(0,Math.round((parse(pre.date)-base)/864e5)):indexOf({days:pre.days,h:pre.h,m:pre.m});
-  setTimeout(()=>{reveal(i,pre.h);openSheet(i,pre.h,null,sqAt(i,pre.h),pre)},reduce?300:THICK+1200);return true}
+  // wait for the splash to finish and the alarms to settle, then open the shared hour
+  const when=f=>document.querySelector('.splash')||sc.classList.contains('hold')||sc.classList.contains('appear')?setTimeout(()=>when(f),120):f();
+  setTimeout(()=>when(()=>{reveal(i,pre.h);openSheet(i,pre.h,null,sqAt(i,pre.h),pre)}),reduce?300:THICK+400);return true}
 // carousel: swipe left = confirm and go on (on the last step it sets the alarm); swipe right = back, to change something
 let sw=null;
 body.addEventListener('pointerdown',e=>{sw={x:e.clientX,y:e.clientY,on:false}},true);
