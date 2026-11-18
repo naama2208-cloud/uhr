@@ -389,13 +389,15 @@ function takeShared(){const m=location.hash.match(/^#add=([\w-]+)/);if(!m)return
 // carousel: swipe left = confirm and go on (on the last step it sets the alarm); swipe right = back, to change something
 let sw=null;
 body.addEventListener('pointerdown',e=>{sw={x:e.clientX,y:e.clientY,on:false}},true);
-body.addEventListener('pointermove',e=>{if(!sw)return;const dx=(e.clientX-sw.x)/S,dy=(e.clientY-sw.y)/S;
+body.addEventListener('pointermove',e=>{if(!sw)return;if(!e.buttons&&e.pointerType==='mouse'){sw=null;return} // a hover is never a swipe
+  const dx=(e.clientX-sw.x)/S,dy=(e.clientY-sw.y)/S;
   if(!sw.on&&Math.abs(dx)>14&&Math.abs(dx)>Math.abs(dy)*1.4)sw.on=true;
   if(sw.on){const inn=body.firstChild,edge=dx>0&&step===0;inn.style.animation='none';inn.style.transform=`translateX(${edge?dx*.25:dx}px)`;inn.style.opacity=1-Math.min(.5,Math.abs(dx)/600)}},true);
 const swEnd=e=>{if(!sw)return;const dx=(e.clientX-sw.x)/S,on=sw.on;sw=null;if(!on)return;const inn=body.firstChild;
   if(dx<-70){tick();next()}else if(dx>70&&step>0){tick();go(step-1,-1)}
   else{inn.style.transition='transform 240ms var(--ease),opacity 240ms';inn.style.transform='';inn.style.opacity=''}};
-body.addEventListener('pointerup',swEnd,true);body.addEventListener('pointercancel',()=>{sw=null},true);
+// the finger may lift anywhere (or the element under it may be redrawn): end the swipe from the window
+addEventListener('pointerup',swEnd,true);addEventListener('pointercancel',()=>{sw=null},true);
 bDel.addEventListener('click',()=>{const q=origin&&origin.closest('.sq');if(step>0){tick();go(step-1,-1);return}
   if(draft&&draft.fromDraft&&!draft.edit){delete drafts[draft.key];saveDrafts();closeSheet(q,paintAll);return}
   if(draft&&draft.edit){const a=alarms.find(x=>x.id===draft.id);logEv('deleted',a);alarms=alarms.filter(x=>x.id!==draft.id);store();
