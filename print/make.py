@@ -29,8 +29,8 @@ i{{position:absolute;background:{C['red']};opacity:.75}}.v{{top:0;bottom:0;width
 .cd{{display:inline-block;position:relative;width:.32em;height:.7em}}.cd b{{position:absolute;left:50%;width:.13em;height:.13em;margin-left:-.065em;border-radius:50%;background:{C['ink']}}}
 </style></head><body><div class="p">{lines}
 <div class="a logo" style="left:{X(0)}mm;top:{Y(0)+1}mm;font-size:{35*W/463.2}mm">uhr</div>
-<span class="dot" style="left:{X(0)+0.118*35*W/463.2}mm;top:{Y(0)+1-0.0*35}mm;width:{0.145*35*W/463.2}mm;height:{0.145*35*W/463.2}mm"></span>
-<span class="dot" style="left:{X(0)+0.342*35*W/463.2}mm;top:{Y(0)+1}mm;width:{0.145*35*W/463.2}mm;height:{0.145*35*W/463.2}mm"></span>
+<span class="dot" style="left:{X(0)+(0.155-0.0725)*35*W/463.2}mm;top:{Y(0)+1+0.078*35*W/463.2}mm;width:{0.145*35*W/463.2}mm;height:{0.145*35*W/463.2}mm"></span>
+<span class="dot" style="left:{X(0)+(0.617-0.0725)*35*W/463.2}mm;top:{Y(0)+1+0.078*35*W/463.2}mm;width:{0.145*35*W/463.2}mm;height:{0.145*35*W/463.2}mm"></span>
 <div class="a" style="left:{X(p['at'][0])}mm;top:{Y(p['at'][1])}mm;width:{F}mm;height:{F}mm;background:{C[p['sq']]}"></div>
 <div class="a" style="left:{X(0)}mm;top:{Y(1)+F}mm;height:{Y(3)+F-(Y(1)+F)}mm;width:{3*F+G}mm;display:flex;flex-direction:column;justify-content:flex-end"><div style="font-weight:700;font-size:{NS}mm;letter-spacing:-.035em;line-height:.95;white-space:nowrap;color:{C['ink']}">{p['name']}</div></div>
 <div class="a" style="left:{X(3)}mm;top:{Y(3)}mm;font-weight:700;font-size:{29*W/463.2}mm;letter-spacing:-.03em;line-height:1;white-space:nowrap">{p['h']}<span class="cd"><b style="top:.2em"></b><b style="top:.5em"></b></span>{p['m']}</div>

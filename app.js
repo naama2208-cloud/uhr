@@ -329,7 +329,7 @@ function poster(a){const W=1080,H=1920,k=W/463.2,M=23.57,F=96.07,G=10.29,T0=44.1
   const wid=(t,fs,w,track=0)=>{g.font=`${w} ${fs}px ${font}`;ls(track*fs);const m=g.measureText(t).width;ls(0);return m};
   const fitTo=(t,fs,w,track,max)=>{const m=wid(t,fs,w,track);return m>max?fs*max/m:fs};
   const logo=(x,top,fs,w=700)=>{put('uhr',x,top,fs,w,col.ink,-.045,type,.8315);g.fillStyle=col.red;const d=.145*fs;
-    [.118,.342].forEach(f=>{g.beginPath();g.arc(x+f*fs+d/2,top-.053*fs+d/2,d/2,0,7);g.fill()})};
+    stems(w).slice(0,2).forEach(c=>{g.beginPath();g.arc(x+c*fs,top+(.283-.06)*fs-d/2,d/2,0,7);g.fill()})};
   logo(24.02,40.32,32.6);
   // the hour's square, in the colour of its kind
   g.fillStyle=col.kind;g.fillRect(X(2),Y(2),F,F);
@@ -444,10 +444,12 @@ setInterval(()=>{const n=new Date(),mk=n.getHours()*60+n.getMinutes();
   if(due){firedAt=key;ring(due)}},1000);
 
 // ---------- splash: ühr (under) breathes thin → black; then now falls into its own square and the grid draws itself ----------
-function umlaut(u){const cs=getComputedStyle(u),fs=parseFloat(cs.fontSize),c=umlaut.c||(umlaut.c=document.createElement('canvas').getContext('2d'));
-  c.font=`${Math.round(parseFloat(cs.fontWeight))} ${fs}px ${cs.fontFamily}`;const m=c.measureText('u');
-  const b=(fs-(m.fontBoundingBoxAscent+m.fontBoundingBoxDescent))/2+m.fontBoundingBoxAscent,mid=(m.actualBoundingBoxRight-m.actualBoundingBoxLeft)/2,d=fs*.12,g=d*.6,top=b-m.actualBoundingBoxAscent-g-d;
-  u.querySelectorAll('i').forEach((i,k)=>Object.assign(i.style,{width:d+'px',height:d+'px',top:top+'px',left:mid+(k?g/2:-g/2-d)+'px'}))}
+// the two dots of the ü sit over the u's two stems, whatever the weight (measured on under: weight → stem centres, in em)
+const STEMS=[[100,.057,.443],[300,.0785,.465],[500,.1115,.5215],[700,.155,.617],[900,.1985,.7115]];
+function stems(w){let i=0;while(i<STEMS.length-2&&w>STEMS[i+1][0])i++;const [w0,a0,b0]=STEMS[i],[w1,a1,b1]=STEMS[i+1],t=Math.max(0,Math.min(1,(w-w0)/(w1-w0)));return [a0+(a1-a0)*t,b0+(b1-b0)*t,(w-100)/800]}
+function umlaut(u){const cs=getComputedStyle(u),fs=parseFloat(cs.fontSize),w=parseFloat(cs.fontWeight)||100,[a,b,t]=stems(w);
+  const d=fs*(.07+.1*t),gap=fs*(.04+.03*t),top=fs*.283-gap-d;
+  u.querySelectorAll('i').forEach((i,k)=>Object.assign(i.style,{width:d+'px',height:d+'px',top:top+'px',left:(k?b:a)*fs-d/2+'px'}))}
 function drawGrid(){const top=sc.scrollTop;let k=0;
   days.forEach(D=>D.bands.forEach(b=>{const y=parseFloat(D.de.style.top)+parseFloat(b.style.top)-top;b.style.setProperty('--d',(y>-80&&y<PH?(8*STEP+(k++)*STEP*1.5):0)+'ms')}));
   void sc.offsetWidth;sc.classList.remove('drawing')}
