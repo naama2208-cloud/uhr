@@ -113,7 +113,10 @@ const yOf=(i,h)=>i*Lc.dayH+Lc.head+Math.floor(h/Lc.n)*Lc.row;
 sc.scrollTop=Math.max(0,yOf(0,new Date().getHours())-Math.round(PH*.3));
 sc.addEventListener('scroll',()=>{if(sc.scrollTop+PH>(days.length-2)*Lc.dayH)for(let k=0;k<7;k++)addDay()},{passive:true});
 // the day you are looking at stays named at the top; the next day's name pushes it out (snap)
-const stick=el('stick',ph);stick.innerHTML='<b></b>';let stickI=-1;
+const stick=el('stick',ph);stick.innerHTML='<b></b>';
+// a small i, top right: the page about ühr (not inside the landing page's own demo)
+if(!EMBED){const inf=el('info',ph,'a');inf.href='landing.html';inf.textContent='i';inf.setAttribute('aria-label','about ühr')}
+let stickI=-1;
 function upStick(){if(!days.length)return;const y=sc.scrollTop,i=Math.max(0,Math.min(days.length-1,Math.floor(y/Lc.dayH)));
   if(i!==stickI){if(days[stickI])days[stickI].hd.style.visibility='';stickI=i;stick.firstChild.textContent=days[i].hd.textContent;days[i].hd.style.visibility='hidden'}
   const push=Math.min(0,(i+1)*Lc.dayH-y-stick.offsetHeight);stick.style.transform=`translateY(${push}px)`}
