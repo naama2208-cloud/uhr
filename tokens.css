@@ -8,7 +8,7 @@
 --fixed:var(--ink);       /* every week */
 --once:var(--blue);       /* just once */
 --shared:var(--yellow);   /* an hour someone shared with you */
---now:var(--red);         /* the hour you are in: just its time, in red — no frame */
+--now:var(--red);         /* the hour you are in: a red square */
 --on-fixed:var(--paper);--on-once:var(--paper);--on-shared:var(--ink);  /* type that reads on each */
 --line:var(--red);--line-o:.55;    /* the grid */
 /* space */
@@ -35,5 +35,5 @@
 .cd::before,.cd::after{content:"";position:absolute;left:50%;width:max(.14em,3px);height:max(.14em,3px);border-radius:50%;background:var(--c,currentColor);transform:translateX(-50%)}
 .cd::before{top:.06em}.cd::after{bottom:0}
 /* the logo, wherever ühr is written: under, black weight, the two dots are circles */
-.lg{font-family:var(--type);font-weight:900;letter-spacing:0;white-space:nowrap;text-transform:none}.lg .u{position:relative;display:inline-block}
+.lg{font-family:var(--type);font-weight:900;letter-spacing:0;white-space:nowrap;text-transform:none;direction:ltr;unicode-bidi:isolate}.lg .u{position:relative;display:inline-block}
 .lg .u i{position:absolute;top:.1em;width:.17em;height:.17em;border-radius:50%;background:var(--orange)}.lg .u i:first-child{left:.1em}.lg .u i:last-child{left:.36em}
