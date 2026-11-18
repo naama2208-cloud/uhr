@@ -126,30 +126,19 @@ const nearby=()=>{const i0=Math.floor(sc.scrollTop/Lc.dayH);return days.slice(Ma
 
 // ---------- zoom: pinch between 2 · 4 · 8 squares a row; everything glides to its new place (flip) ----------
 function zoomTo(n,anchorY){if(n===N||busy())return;tipDone('pinch');
-  // one camera move for the whole grid: measure the anchor hour before and after the new layout,
-  // then scale the track (and the lines) evenly from the old picture to the new one — nothing stretches out of shape
+  // the anchor hour: the one under the fingers (or the middle of the screen)
   const ay=anchorY==null?PH/2:anchorY;
   const anchor=nearby().flatMap(D=>D.sqs).map(q=>[q,rel(q)]).filter(([,r])=>r.y<=ay+r.h).sort((a,b)=>Math.abs(a[1].y+a[1].h/2-ay)-Math.abs(b[1].y+b[1].h/2-ay))[0];
   const aq=anchor?anchor[0]:sqAt(0,new Date().getHours()),r0=rel(aq);       // as seen now (pinch scale included)
-  // the old picture stays as a ghost and travels with the move while it fades; the new one fades in under it.
-  // type and lines change size between levels, so the cross-fade hides the change — nothing jumps.
-  [...sc.querySelectorAll('.ghost')].forEach(g=>g.remove());[...ph.querySelectorAll('.vl.ghost')].forEach(g=>g.remove());
-  const sc0=sc.scrollTop,tr0=track.style.transform,vl0=vl.style.transform;
-  const gT=track.cloneNode(true),gV=vl.cloneNode(true);gT.classList.add('ghost');gV.classList.add('ghost');
-  gT.style.cssText+=`;position:absolute;left:0;top:0;pointer-events:none;transform:${tr0}`;gV.style.transform=vl0;
-  sc.insertBefore(gT,track);vl.after(gV);                                       // the ghost lies under the new picture
-  track.style.transform='';vl.style.transform='';const rFlat=rel(aq);
-  N=n;Lc=lay();layoutAll();sc.scrollTop+=rel(aq).y-rFlat.y;                  // keep the anchor hour where it was
-  const r1=rel(aq),k=r0.w/r1.w,dx=r0.x-r1.x,dy=r0.y-r1.y,dS=sc.scrollTop-sc0;
-  gT.style.top=dS+'px';                                                         // the ghost stays where the old picture was
-  const o={duration:reduce?1:MOVE,easing:EASE};
-  track.style.transformOrigin=`${r1.x}px ${r1.y+sc.scrollTop}px`;
-  // no fades, no double picture: the old picture moves like a camera to where the new one will be, then a clean cut to the new one
-  track.style.visibility='hidden';vl.style.visibility='hidden';
-  gT.style.transformOrigin=`${r0.x}px ${r0.y+sc0}px`;gV.style.transformOrigin=`${r0.x}px 0px`;
-  const end=()=>{gT.remove();gV.remove();track.style.visibility='';vl.style.visibility=''};
-  gT.animate([{transform:tr0||'none'},{transform:`translate(${-dx}px,${-dy}px) scale(${1/k})`}],{...o,fill:'forwards'}).onfinish=end;
-  gV.animate([{transform:vl0||'none'},{transform:`translateX(${-dx}px) scaleX(${1/k})`}],{...o,fill:'forwards'});
+  // a clean cut, then a small settle: the new layout appears at once, the anchor hour keeps its place,
+  // and the grid eases in from just a touch larger (out) or smaller (in). No ghosts, no long travel.
+  track.style.transform='';vl.style.transform='';const rFlat=rel(aq),out=n>N;
+  N=n;Lc=lay();layoutAll();sc.scrollTop+=rel(aq).y-rFlat.y;
+  const r1=rel(aq),k=out?1.06:.94,o={duration:reduce?1:Math.round(MOVE*.55),easing:EASE};
+  track.style.transformOrigin=`${r1.x+r1.w/2}px ${r1.y+r1.h/2+sc.scrollTop}px`;
+  track.animate([{transform:`scale(${k})`},{transform:'none'}],o);
+  vl.style.transformOrigin=`${r1.x+r1.w/2}px 0px`;
+  vl.animate([{transform:`scaleX(${k})`},{transform:'none'}],o);
   buzz(8)}
 const zoomStep=(dir,y)=>{const k=LEVELS.indexOf(N)+dir;if(k>=0&&k<LEVELS.length)zoomTo(LEVELS[k],y)};
 let pz=null;const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
