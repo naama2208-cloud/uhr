@@ -237,3 +237,6 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .acts button,.chip{text-box:trim-both ex alphabetic}
 /* names keep their capital: everything else stays lowercase */
 .nm,.big,.rname,.sq .n,.sum b,.pvw .nmx{text-transform:none}
+/* the splash lands: the hour shrinks into its square first, and only then the square turns red */
+.landing .sq.now{background:transparent}
+.sq.now{transition:background var(--snap) ease}
