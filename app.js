@@ -208,8 +208,13 @@ const tick=()=>{const c=ctx();if(c)try{click(c.currentTime,.25)}catch(e){};buzz(
 ph.addEventListener('pointerdown',ctx,{passive:true});
 // ühr is never typed out: it is the logo
 const LOGO='<span class="lg"><span class="u">u<i></i><i></i></span>hr</span>';
-function setName(e,s,max=360){const txt=s||'ühr';e.dir=/[\u0590-\u05FF\u0600-\u06FF]/.test(txt)?'rtl':'ltr';e.innerHTML=txt==='ühr'?LOGO:[...txt].map((ch,i)=>`<i style="--i:${i}">${ch===' '?' ':esc(ch)}</i>`).join('');
-  const longest=Math.max(...txt.split(' ').map(w=>w.length),1);e.style.setProperty('--fs',Math.max(40,Math.min(112,max/(longest*.6)))+'px')}
+function setName(e,s,max=360){const txt=s||'ühr';e.dir=/[\u0590-\u05FF\u0600-\u06FF]/.test(txt)?'rtl':'ltr';let k=0;e.innerHTML=txt==='ühr'?LOGO:txt.split(' ').map(w=>`<span class="w">${[...w].map(ch=>`<i style="--i:${k++}">${esc(ch)}</i>`).join('')}</span>`).join((k++,' '));
+  const longest=Math.max(...txt.split(' ').map(w=>w.length),1);let fs=Math.max(40,Math.min(112,max/(longest*.6)));
+  // a word never breaks: if the longest word is wider than the line, the name gets smaller
+  try{const cs=getComputedStyle(e),pad=parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight),avail=(e.clientWidth||innerWidth)-pad,cx=(setName.c||(setName.c=document.createElement('canvas').getContext('2d')));
+    cx.font=`${cs.fontWeight||700} 100px ${cs.fontFamily||'Helvetica, Arial, sans-serif'}`;const wmax=Math.max(...txt.split(' ').map(w=>cx.measureText(w).width/100),.01);
+    if(txt!=='ühr'&&avail>0)fs=Math.min(fs,avail*.96/wmax)}catch(_){}
+  e.style.setProperty('--fs',fs+'px')}
 function animName(e,s){e.classList.remove(...SOUNDS.map(k=>'an-'+k));void e.offsetWidth;e.classList.add('an-'+snd(s))}
 
 // ---------- create: four isolated steps inside the stretched hour ----------

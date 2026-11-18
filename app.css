@@ -173,6 +173,7 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .nm:focus{border-color:var(--orange)}
 /* the name, huge — the sound moves through its letters, each sound its own way */
 .big{font:700 var(--fs,96px)/1 var(--font);transform-origin:0 50%}
+.big .w{white-space:nowrap}
 .big i{display:inline-block;font-style:normal;white-space:pre}
 .an-rise i{animation:rise var(--s-rise) var(--ease) both;animation-delay:calc(var(--i) * var(--step) * 1.75)}
 @keyframes rise{40%{transform:translateY(-.2em)}100%{transform:none}}
