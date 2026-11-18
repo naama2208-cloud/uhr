@@ -3,7 +3,7 @@
 <title>ühr — your hour, on a grid</title>
 <meta name="description" content="ühr is an alarm clock built on a grid: every square is an hour of your week.">
 <meta name="theme-color" content="#E6E4DB">
-<link rel="icon" href="icon-192.png"><link rel="stylesheet" href="under.css"><link rel="stylesheet" href="tokens.css?v=11.5">
+<link rel="icon" href="icon-192.png"><link rel="stylesheet" href="under.css"><link rel="stylesheet" href="tokens.css?v=11.6">
 <style>
 /* the landing page: a Swiss poster in five parts. four columns, flush left, one rule between parts, nothing else. */
 *{box-sizing:border-box;margin:0;padding:0}
@@ -12,9 +12,6 @@ body{font-family:var(--font);color:var(--ink);background:var(--paper);-webkit-fo
 a{color:inherit}
 .wrap{width:min(1120px,100vw - 2*var(--margin));margin:0 auto}
 .g{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap)}
-/* the i: the system, for the lecturer and the team */
-.sys{position:fixed;left:16px;top:16px;z-index:50;width:28px;height:28px;border-radius:50%;border:1.5px solid var(--ink);font:700 15px/25px var(--font);text-align:center;text-decoration:none;background:var(--paper)}
-.sys:hover{background:var(--ink);color:var(--paper)}
 header{display:flex;justify-content:flex-end;padding:20px 0}
 .btn{display:inline-flex;align-items:center;justify-content:center;height:48px;padding:0 22px;font:700 16px var(--font);text-decoration:none;border:1.5px solid var(--ink);white-space:nowrap}
 .btn.go{background:var(--ink);color:var(--paper)}
@@ -61,7 +58,6 @@ footer{border-top:1px solid var(--ink);padding:16px 0 28px;font-size:13px;displa
 }
 </style></head>
 <body>
-<a class="sys" href="system.html" target="_blank" rel="noopener" aria-label="the ühr system" title="the system">i</a>
 <div class="wrap">
 <header><a class="btn" href="./">open the app</a></header>
 

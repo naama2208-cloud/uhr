@@ -242,4 +242,4 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .sq.now{transition:background var(--snap) ease}
 
 /* the way to the page about ühr: a small i, top right, over the day header, under every sheet */
-.info{position:absolute;right:var(--margin);top:16px;z-index:5;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--ink);color:var(--ink);font:700 13px/21px var(--font);text-align:center;text-decoration:none;background:var(--paper)}
+.info{position:absolute;right:var(--margin);top:16px;z-index:5;width:24px;height:24px;border-radius:50%;border:1px solid var(--ink);color:var(--ink);opacity:.18;font:700 13px/21px var(--font);text-align:center;text-decoration:none;background:var(--paper)}
