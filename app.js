@@ -29,7 +29,9 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 const KEY=EMBED?'uhr5demo':'uhr5',LOG=EMBED?'uhr5demolog':'uhr5log';
 function sample(){const n=new Date(),t=day0(n),h=(n.getHours()+2)%24,dt=h<n.getHours()?addDays(t,1):t;
   return[{id:1,h,m:0,name:'Training',sound:'drop',days:[],date:ymd(dt)},{id:2,h:20,m:0,name:'Pill',sound:'glass',days:[0,1,2,3,4,5,6],date:null},
-    {id:3,h:7,m:0,name:'Wake up',sound:'rise',days:[],date:ymd(addDays(t,1))},{id:4,h:18,m:30,name:'Babysitter',sound:'tick',days:[],date:ymd(addDays(t,3))}]}
+    {id:3,h:7,m:0,name:'Wake up',sound:'rise',days:[],date:ymd(addDays(t,1))},{id:4,h:18,m:30,name:'Babysitter',sound:'tick',days:[],date:ymd(addDays(t,3))},
+    // a yellow one: an hour a friend shared with you
+    {id:5,h:(h+2)%24,m:30,name:'Lunch with Noa',sound:'glass',days:[],date:ymd((h+2)%24<h?addDays(dt,1):dt),shared:true,from:'noa'}]}
 let alarms=null;try{alarms=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!Array.isArray(alarms))alarms=[];
 // a name always starts with a capital
@@ -135,20 +137,19 @@ function zoomTo(n,anchorY){if(n===N||busy())return;tipDone('pinch');
   const sc0=sc.scrollTop,tr0=track.style.transform,vl0=vl.style.transform;
   const gT=track.cloneNode(true),gV=vl.cloneNode(true);gT.classList.add('ghost');gV.classList.add('ghost');
   gT.style.cssText+=`;position:absolute;left:0;top:0;pointer-events:none;transform:${tr0}`;gV.style.transform=vl0;
-  sc.appendChild(gT);vl.after(gV);
+  sc.insertBefore(gT,track);vl.after(gV);                                       // the ghost lies under the new picture
   track.style.transform='';vl.style.transform='';const rFlat=rel(aq);
   N=n;Lc=lay();layoutAll();sc.scrollTop+=rel(aq).y-rFlat.y;                  // keep the anchor hour where it was
   const r1=rel(aq),k=r0.w/r1.w,dx=r0.x-r1.x,dy=r0.y-r1.y,dS=sc.scrollTop-sc0;
   gT.style.top=dS+'px';                                                         // the ghost stays where the old picture was
   const o={duration:reduce?1:MOVE,easing:EASE};
   track.style.transformOrigin=`${r1.x}px ${r1.y+sc.scrollTop}px`;
-  track.animate([{transform:`translate(${dx}px,${dy}px) scale(${k})`,opacity:0},{opacity:1,offset:.45},{transform:'none',opacity:1}],o);
-  vl.style.transformOrigin=`${r1.x}px 0px`;
-  vl.animate([{transform:`translateX(${dx}px) scaleX(${k})`,opacity:0},{opacity:1,offset:.45},{transform:'none',opacity:1}],o);
-  gT.style.transformOrigin=`${r0.x}px ${r0.y+sc0}px`;
-  gT.animate([{transform:tr0||'none',opacity:1},{opacity:0,offset:.55},{transform:`translate(${-dx}px,${-dy}px) scale(${1/k})`,opacity:0}],o).onfinish=()=>gT.remove();
-  gV.style.transformOrigin=`${r0.x}px 0px`;
-  gV.animate([{transform:vl0||'none',opacity:1},{opacity:0,offset:.55},{transform:`translateX(${-dx}px) scaleX(${1/k})`,opacity:0}],o).onfinish=()=>gV.remove();
+  // no fades, no double picture: the old picture moves like a camera to where the new one will be, then a clean cut to the new one
+  track.style.visibility='hidden';vl.style.visibility='hidden';
+  gT.style.transformOrigin=`${r0.x}px ${r0.y+sc0}px`;gV.style.transformOrigin=`${r0.x}px 0px`;
+  const end=()=>{gT.remove();gV.remove();track.style.visibility='';vl.style.visibility=''};
+  gT.animate([{transform:tr0||'none'},{transform:`translate(${-dx}px,${-dy}px) scale(${1/k})`}],{...o,fill:'forwards'}).onfinish=end;
+  gV.animate([{transform:vl0||'none'},{transform:`translateX(${-dx}px) scaleX(${1/k})`}],{...o,fill:'forwards'});
   buzz(8)}
 const zoomStep=(dir,y)=>{const k=LEVELS.indexOf(N)+dir;if(k>=0&&k<LEVELS.length)zoomTo(LEVELS[k],y)};
 let pz=null;const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);

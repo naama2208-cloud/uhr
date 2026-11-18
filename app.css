@@ -31,7 +31,7 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .dh b{font-size:22px;font-weight:700}
 .z8 .dh{top:12px}.z8 .dh b{font-size:17px}
 .z2 .dh b{font-size:26px}
-.stick{position:absolute;left:0;right:0;top:0;z-index:4;pointer-events:none;padding:18px var(--margin) 10px;background:linear-gradient(var(--paper) 72%,color-mix(in srgb,var(--paper) 0%,transparent))}
+.stick{position:absolute;left:0;right:0;top:0;z-index:4;pointer-events:none;padding:18px var(--margin) 10px;background:var(--paper);}
 .stick b{font-size:22px;font-weight:700;line-height:1}
 .z8 .stick{padding-top:12px}.z8 .stick b{font-size:17px}.z2 .stick b{font-size:26px}
 .sheet.on~.stick,.ring.on~.stick{opacity:0}
