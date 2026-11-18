@@ -470,10 +470,9 @@ function morph(sp,sw2,gv,gh){const xs=[0,1,2,3].flatMap(c=>[Lc.x(c),Lc.x(c)+Lc.F
   sw2.style.transition=`opacity ${MOVE*.6}ms ${EASE},transform ${MOVE}ms ${EASE}`;
   const u=sw2.querySelector('.u'),dots=[...u.querySelectorAll('i')];
   [...sw2.children].forEach(c=>{if(c!==u)c.style.transition=`opacity ${MOVE*.5}ms ${EASE}`;});
-  const ur=u.getBoundingClientRect(),pr=ph.getBoundingClientRect(),cx=r.x+r.w/2,cy=r.y+r.h/2;
   u.style.color='transparent';[...sw2.children].forEach(c=>{if(c!==u)c.style.opacity=0});
-  dots.forEach((d,k)=>{const dr=d.getBoundingClientRect(),dx=(cx-((dr.left+dr.width/2-pr.left)/S))+(k?6:-6),dy=cy-((dr.top+dr.height/2-pr.top)/S);
-    d.style.transition=`transform ${MOVE}ms ${EASE},opacity ${MOVE*.4}ms ${EASE} ${MOVE*.75}ms`;d.style.transform=`translate(${dx}px,${dy}px) scale(.45)`;d.style.opacity=0});
+  // the dots leave with the letters — nothing reaches the square before the hour does
+  dots.forEach(d=>{d.style.transition=`opacity ${MOVE*.5}ms ${EASE}`;d.style.opacity=0});
   setTimeout(()=>{land();sp.classList.add('out');setTimeout(()=>sp.remove(),400)},MOVE*.85)}
 function splash(){const sp=el('splash',ph);sp.innerHTML='<div class="sw"><span class="u">u<i></i><i></i></span><span>h</span><span>r</span></div>';
   const sw2=sp.firstChild,ls=[...sw2.children],TOP=Math.round(PH*.36),G=Lc.g;sw2.style.top=TOP+'px';
