@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:U;src:url(under.woff2);font-weight:100 900}
+*{margin:0;padding:0}body{width:1600px;height:1100px;background:#E6E4DB;overflow:hidden;font-family:U}
+svg{position:absolute;left:0;top:0}
+</style></head><body>
+<svg width="1600" height="1100" viewBox="0 0 1600 1100">
+<defs>
+ <!-- fabric: soft cotton grain -->
+ <filter id="cot" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .07 0"/><feComposite in2="SourceGraphic" operator="in"/><feBlend in2="SourceGraphic" mode="multiply"/></filter>
+ <!-- embroidery: satin stitch texture and a little relief -->
+ <pattern id="stL" width="2.4" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(70)"><rect width="2.4" height="3" fill="#E6E4DB"/><rect width=".7" height="3" fill="#bdbab1"/></pattern>
+ <pattern id="stD" width="2.4" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(70)"><rect width="2.4" height="3" fill="#20201E"/><rect width=".7" height="3" fill="#4a4a46"/></pattern>
+ <filter id="emb"><feGaussianBlur in="SourceAlpha" stdDeviation="1.2"/><feOffset dx="1" dy="1.5"/><feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="sh"/><feFlood flood-color="#000" flood-opacity=".45"/><feComposite in2="sh" operator="in"/><feComposite in2="SourceGraphic" operator="over"/></filter>
+ <filter id="drop"><feDropShadow dx="10" dy="22" stdDeviation="20" flood-opacity=".22"/></filter>
+</defs>
+<!-- shirt 1: ink -->
+<g transform="translate(70,90)" filter="url(#drop)">
+ <path d="M250 40 C300 70 400 70 450 40 L620 110 L700 300 L590 345 L560 280 L560 900 L140 900 L140 280 L110 345 L0 300 L80 110 Z" fill="#20201E"/>
+ <path d="M250 40 C300 70 400 70 450 40 L620 110 L700 300 L590 345 L560 280 L560 900 L140 900 L140 280 L110 345 L0 300 L80 110 Z" fill="#20201E" filter="url(#cot)"/>
+ <path d="M262 46 C310 92 390 92 438 46" stroke="#111" stroke-width="12" fill="none"/>
+ <g transform="translate(420,250)" filter="url(#emb)" >
+  <text x="0" y="0" font-family="U" font-weight="700" font-size="46" letter-spacing="-2" fill="url(#stL)">uhr</text>
+  <circle cx="7.5" cy="-37" r="3.6" fill="#D50023"/><circle cx="17.8" cy="-37" r="3.6" fill="#D50023"/>
+ </g>
+</g>
+<!-- shirt 2: paper white -->
+<g transform="translate(820,90)" filter="url(#drop)">
+ <path d="M250 40 C300 70 400 70 450 40 L620 110 L700 300 L590 345 L560 280 L560 900 L140 900 L140 280 L110 345 L0 300 L80 110 Z" fill="#F4F2EC"/>
+ <path d="M250 40 C300 70 400 70 450 40 L620 110 L700 300 L590 345 L560 280 L560 900 L140 900 L140 280 L110 345 L0 300 L80 110 Z" fill="#F4F2EC" filter="url(#cot)"/>
+ <path d="M262 46 C310 92 390 92 438 46" stroke="#dcd9d0" stroke-width="12" fill="none"/>
+ <g transform="translate(420,250)" filter="url(#emb)" >
+  <text x="0" y="0" font-family="U" font-weight="700" font-size="46" letter-spacing="-2" fill="url(#stD)">uhr</text>
+  <circle cx="7.5" cy="-37" r="3.6" fill="#D50023"/><circle cx="17.8" cy="-37" r="3.6" fill="#D50023"/>
+ </g>
+</g>
+</svg>
+</body></html>

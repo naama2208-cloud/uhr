@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:S;src:url(sans-400.ttf);font-weight:400}@font-face{font-family:S;src:url(sans-700.ttf);font-weight:700}@font-face{font-family:U;src:url(under.woff2);font-weight:100 900}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1600px;height:1100px;overflow:hidden;font-family:S;
+ background:linear-gradient(90deg,#d9d9d6 0,#ecebe8 18%,#f3f2ef 50%,#e7e6e2 85%,#d6d5d1 100%)}
+/* the fridge door: a seam and a handle */
+.seam{position:absolute;left:0;right:0;top:120px;height:3px;background:#c9c8c4}
+.handle{position:absolute;right:120px;top:190px;width:26px;height:620px;border-radius:13px;background:linear-gradient(90deg,#bdbcb8,#efeeea 40%,#b7b6b2);box-shadow:6px 10px 18px rgba(0,0,0,.18)}
+/* a note: one square of the grid, with an hour to fill in */
+.n{position:absolute;width:300px;height:300px;padding:22px;box-shadow:0 1px 0 rgba(0,0,0,.06),8px 14px 22px rgba(0,0,0,.16)}
+.n .lg{font-family:U;font-weight:700;font-size:30px;letter-spacing:-.045em;position:relative;display:inline-block}
+.n .lg i{position:absolute;top:-1px;width:4.4px;height:4.4px;border-radius:50%;background:#D50023}.n .lg i:first-child{left:3.6px}.n .lg i:last-child{left:10.3px}
+.n .tm{position:absolute;left:22px;top:92px;font-weight:700;font-size:58px;letter-spacing:-.02em;line-height:1}
+.n .tm .cd{display:inline-block;position:relative;width:18px;height:40px;margin:0 2px}.n .tm .cd b{position:absolute;left:5px;width:8px;height:8px;border-radius:50%}
+.n .ln{position:absolute;left:22px;right:22px;height:2px}
+.n .hw{position:absolute;left:22px;font-family:'Segoe Script','Bradley Hand',cursive;font-size:30px}
+.n .grid{position:absolute;inset:0;background:linear-gradient(90deg,transparent 0 22px,rgba(213,0,35,.35) 22px 23px,transparent 23px) ,linear-gradient(0deg,transparent 0 22px,rgba(213,0,35,.0) 22px)}
+.ink{background:#20201E;color:#E6E4DB}.blue{background:#0052B5;color:#E6E4DB}.yellow{background:#EEA700;color:#20201E}.red{background:#D50023;color:#E6E4DB}.paper{background:#E6E4DB;color:#20201E}
+.mag{position:absolute;left:50%;top:-14px;width:34px;height:34px;margin-left:-17px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0,#bbb 30%,#666 100%);box-shadow:2px 4px 6px rgba(0,0,0,.3)}
+/* the pad on the shelf */
+.pad{position:absolute;left:150px;top:690px;width:300px;height:300px}
+.pad .sh{position:absolute;inset:0;background:#E6E4DB;box-shadow:0 2px 0 #cfcdc5,0 4px 0 #dcdad2,0 6px 0 #cfcdc5,0 8px 0 #dcdad2,0 10px 0 #cfcdc5,0 12px 0 #d8d6ce,14px 26px 34px rgba(0,0,0,.2)}
+.cap{position:absolute;left:150px;top:1030px;font-size:20px;color:#20201E}
+</style></head><body>
+<div class="seam"></div><div class="handle"></div>
+<div class="n ink" style="left:520px;top:200px;transform:rotate(-2deg)"><span class="mag"></span><span class="lg"><i></i><i></i>uhr</span><div class="tm">07<span class="cd"><b style="top:6px;background:#D50023"></b><b style="top:26px;background:#D50023"></b></span>00</div><div class="hw" style="top:182px">wake up</div><div class="ln" style="top:226px;background:#E6E4DB;opacity:.6"></div></div>
+<div class="n blue" style="left:860px;top:250px;transform:rotate(1.5deg)"><span class="mag"></span><span class="lg"><i></i><i></i>uhr</span><div class="tm">17<span class="cd"><b style="top:6px;background:#E6E4DB"></b><b style="top:26px;background:#E6E4DB"></b></span>00</div><div class="hw" style="top:182px">training</div><div class="ln" style="top:226px;background:#E6E4DB;opacity:.6"></div></div>
+<div class="n yellow" style="left:620px;top:560px;transform:rotate(2.5deg)"><span class="mag"></span><span class="lg"><i></i><i></i>uhr</span><div class="tm">12<span class="cd"><b style="top:6px;background:#D50023"></b><b style="top:26px;background:#D50023"></b></span>30</div><div class="hw" style="top:182px">lunch w/ noa</div><div class="ln" style="top:226px;background:#20201E;opacity:.5"></div></div>
+<div class="n red" style="left:990px;top:600px;transform:rotate(-1.5deg)"><span class="mag"></span><span class="lg" style="color:#E6E4DB"><i style="background:#E6E4DB"></i><i style="background:#E6E4DB"></i>uhr</span><div class="tm">20<span class="cd"><b style="top:6px;background:#E6E4DB"></b><b style="top:26px;background:#E6E4DB"></b></span>00</div><div class="hw" style="top:182px">call mom</div><div class="ln" style="top:226px;background:#E6E4DB;opacity:.6"></div></div>
+<!-- an empty one from the pad -->
+<div class="pad"><div class="sh"></div><div class="n paper" style="left:0;top:0;box-shadow:none"><span class="lg"><i></i><i></i>uhr</span><div class="tm" style="color:rgba(32,32,30,.25)">__<span class="cd"><b style="top:6px;background:#D50023"></b><b style="top:26px;background:#D50023"></b></span>__</div><div class="ln" style="top:226px;background:#20201E;opacity:.35"></div></div></div>
+</body></html>
