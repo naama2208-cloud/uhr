@@ -89,7 +89,7 @@ function addDay(){const i=days.length,d=addDays(base,i%7),de=el('day',track);
   const hd=el('dh',de);hd.innerHTML=`<b>${i%7===0?'today':DAYS[d.getDay()]}</b>`;
   const sqs=[];for(let h=0;h<24;h++){const q=el('sq',de);q.dataset.i=i;q.dataset.h=h;sqs.push(q)}
   const D={d,de,sqs,bands:[],hd};days.push(D);layoutDay(D,i);track.style.height=days.length*Lc.dayH+Lc.row+'px';paint(i)}
-function layoutAll(){days.forEach(layoutDay);track.style.height=days.length*Lc.dayH+Lc.row+'px';setVL();zclass();if(typeof upStick==='function')requestAnimationFrame(upStick)}
+function layoutAll(){ph.style.setProperty('--head-h',Lc.head+'px');days.forEach(layoutDay);track.style.height=days.length*Lc.dayH+Lc.row+'px';setVL();zclass();if(typeof upStick==='function')requestAnimationFrame(upStick)}
 function paint(i){const {d,sqs}=days[i],now=new Date();
   sqs.forEach(q=>{q.className='sq';q.innerHTML='';delete q.dataset.id;q.removeAttribute('aria-label')});
   const by={};occ(d).forEach(a=>(by[a.h]=by[a.h]||[]).push(a));
@@ -120,7 +120,7 @@ let stickI=-1;
 function upStick(){if(!days.length)return;const y=sc.scrollTop,i=Math.max(0,Math.min(days.length-1,Math.floor(y/Lc.dayH)));
   if(i!==stickI){if(days[stickI])days[stickI].hd.style.visibility='';stickI=i;stick.firstChild.textContent=days[i].hd.textContent;days[i].hd.style.visibility='hidden'}
   const push=Math.min(0,(i+1)*Lc.dayH-y-stick.offsetHeight);stick.style.transform=`translateY(${push}px)`}
-sc.addEventListener('scroll',upStick,{passive:true});
+sc.addEventListener('scroll',upStick,{passive:true});requestAnimationFrame(upStick);
 const sqAt=(i,h)=>days[i]&&days[i].sqs[h];
 const indexOf=a=>{const now=new Date();if(!a.days.length)return Math.max(0,Math.round((parse(a.date)-base)/864e5));
   for(let i=0;i<8;i++){const d=addDays(base,i);if(a.days.includes(d.getDay())&&at(d,a.h,a.m)>now)return i}return 0};

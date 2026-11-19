@@ -3,95 +3,257 @@
 <title>ühr — your hour, on a grid</title>
 <meta name="description" content="ühr is an alarm clock built on a grid: every square is an hour of your week.">
 <meta name="theme-color" content="#E6E4DB">
-<link rel="icon" href="icon-192.png"><link rel="stylesheet" href="under.css"><link rel="stylesheet" href="tokens.css?v=11.10">
+<link rel="icon" href="icon-192.png"><link rel="stylesheet" href="under.css"><link rel="stylesheet" href="tokens.css?v=11.11">
 <style>
-/* the landing page: a Swiss poster in five parts. four columns, flush left, one rule between parts, nothing else. */
+/* the landing page, made of the app's own language: four columns, red hairlines, Helvetica and under.
+   motion only stretches or cuts — lines grow from an edge, type is uncovered from the left, squares stretch. nothing fades. */
 *{box-sizing:border-box;margin:0;padding:0}
 html{background:var(--paper)}
 body{font-family:var(--font);color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit}
-.wrap{width:min(1120px,100vw - 2*var(--margin));margin:0 auto}
-.g{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap)}
-header{display:flex;justify-content:flex-end;padding:20px 0}
-.btn{display:inline-flex;align-items:center;justify-content:center;height:48px;padding:0 22px;font:700 16px var(--font);text-decoration:none;border:1.5px solid var(--ink);white-space:nowrap}
-.btn.go{background:var(--ink);color:var(--paper)}
-section{border-top:1px solid var(--ink);padding:18px 0 12vh}
-.k{grid-column:1/-1;font-size:13px;margin-bottom:5vh;display:flex;gap:18px}.k b{color:var(--red);font-weight:400;font-variant-numeric:tabular-nums}
+:root{--W:min(1200px,100vw - 2*var(--margin));--C:calc((var(--W) - 3*var(--gap))/4)}
+.wrap{width:var(--W);margin:0 auto;position:relative}
+.g{display:grid;grid-template-columns:repeat(4,1fr);column-gap:var(--gap)}
+/* the page's grid: the four columns, drawn as the app draws them; on load each line grows from the top or the bottom */
+.cols{position:fixed;inset:0;pointer-events:none;z-index:0}
+.cols .wrap{height:100%}
+.cols i{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.35;transform-origin:top;transform:scaleY(0);transition:transform var(--move) var(--ease) var(--d)}
+.cols i:nth-child(even){transform-origin:bottom}
+.ready .cols i{transform:none}
+main{position:relative;z-index:1}
+/* the uncover: a block is clipped to nothing, and opens from the left when it comes into view */
+.un{clip-path:inset(0 100% 0 0);transition:clip-path var(--move) var(--ease) var(--d,0ms)}
+.in .un,.un.in{clip-path:inset(0 0 0 0)}
+.rule{height:1px;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform var(--move) var(--ease)}
+.in>.rule,.in .rule{transform:none}
+section{padding:0 0 18vh}
+.k{grid-column:1/-1;font-size:13px;display:flex;gap:18px;padding:14px 0 6vh}.k b{color:var(--red);font-weight:400;font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;justify-content:center;height:52px;padding:0 24px;font:700 16px var(--font);text-decoration:none;border:1.5px solid var(--ink);white-space:nowrap;background:var(--paper);position:relative;overflow:hidden}
+.btn::before{content:"";position:absolute;inset:0;background:var(--ink);transform:scaleY(0);transform-origin:bottom;transition:transform var(--quick) var(--ease)}
+.btn span{position:relative}
+.btn:hover{color:var(--paper)}.btn:hover::before{transform:none}
+.btn.go{background:var(--ink);color:var(--paper)}.btn.go::before{background:var(--red)}
+header{display:flex;justify-content:space-between;align-items:center;padding:22px 0}
+header .lg{font-size:32px}
 /* 1 — the poster */
-.hero{border-top:0;padding-top:4vh}
-.hero .big{grid-column:1/3;font-size:clamp(96px,13vw,190px);line-height:.8}
-.hero .big .lg{letter-spacing:-.04em}
-.hero h1{grid-column:1/3;font-size:clamp(36px,4.4vw,62px);font-weight:700;letter-spacing:-.04em;line-height:.98;margin-top:7vh}
-.hero h1 .r{color:var(--red)}
-.hero p{grid-column:1/3;font-size:18px;line-height:1.4;margin-top:20px;max-width:24em}
-.hero .acts{grid-column:1/3;display:flex;gap:var(--gap);margin-top:28px}
-.hero .film{grid-column:3/5;grid-row:1/6;aspect-ratio:9/16;width:100%}
+.hero{min-height:100vh;align-content:start;padding-top:6vh}
+.hero .big{grid-column:1/4;font-size:clamp(140px,21vw,330px);line-height:.8;margin-top:4vh}
+.hero .big .lg{letter-spacing:-.045em}
+.hero .film{grid-column:4/5;grid-row:1/4;aspect-ratio:9/16;width:100%;align-self:start}
 .hero .film video{width:100%;height:100%;object-fit:cover;display:block}
-/* 2 — the live phone, with two short lines on the first and last columns */
-.live .txt{grid-column:1/2;font-size:15px;line-height:1.45}
-.live .txt b{display:block;font-size:22px;letter-spacing:-.02em;line-height:1.1;margin-bottom:8px}
-.live .ph{grid-column:2/4;justify-self:center;width:calc(402px * .82 + 24px);height:calc(874px * .82 + 24px);background:var(--ink);border-radius:54px;padding:12px}
-.live .scr{width:402px;height:874px;transform:scale(.82);transform-origin:0 0;border-radius:48px;overflow:hidden;background:var(--paper)}
+.hero p{grid-column:1/3;font-size:20px;line-height:1.35;margin-top:8vh;max-width:22em}
+.hero .acts{grid-column:1/3;display:flex;gap:var(--gap);margin-top:30px}
+/* 2 — the line, written by the scroll */
+.line{height:240vh;padding:0}
+.line .stick{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:center}
+.line h2{font-size:clamp(80px,10.5vw,170px);letter-spacing:-.045em;line-height:.92;font-weight:700}
+.line h2 span{display:block;clip-path:inset(0 calc(100% - var(--p,0)*100%) 0 0)}
+.line h2 .r{color:var(--red)}
+/* 3 — the app, live; the steps change as you scroll */
+.live .steps{grid-column:1/3}
+.live .step{height:70vh;display:flex;align-items:center;gap:var(--gap)}
+.live .step .sq{width:var(--C);flex:none;aspect-ratio:1;background:var(--sqc,var(--ink));transform:scaleY(0);transform-origin:top;transition:transform var(--move) var(--ease)}
+.live .step.on .sq{transform:none}
+.live .step h3{font-size:clamp(40px,4.4vw,72px);letter-spacing:-.04em;line-height:.95}
+.live .step p{font-size:16px;line-height:1.45;margin-top:12px;max-width:18em}
+.live .step:not(.on) h3,.live .step:not(.on) p{color:transparent;-webkit-text-stroke:1px var(--ink)}
+.live .step:not(.on) p{-webkit-text-stroke:0;color:var(--grey)}
+.live .phone{grid-column:3/5;position:sticky;top:calc(50vh - 437px * var(--ps));height:calc(874px * var(--ps));align-self:start;--ps:min(1,calc((100vh - 60px)/874px))}
+.live .scr{width:402px;height:874px;transform:scale(var(--ps));transform-origin:0 0;outline:1.5px solid var(--ink);overflow:hidden;background:var(--paper)}
 .live iframe{width:402px;height:874px;border:0;display:block}
-.live .txt.r{grid-column:4/5;align-self:end}
-/* 3 — four colours, four meanings */
-.f .sq{aspect-ratio:1;width:100%;position:relative;font-weight:700;font-size:28px;line-height:.9;font-variant-numeric:tabular-nums}
-.f .sq span{position:absolute;left:12px;top:12px}
-.f h3{font-size:20px;letter-spacing:-.02em;margin:16px 0 6px}
-.f p{font-size:15px;line-height:1.45}
-.f.fx .sq{background:var(--fixed);color:var(--on-fixed)}.f.on .sq{background:var(--once);color:var(--on-once)}
-.f.sh .sq{background:var(--shared);color:var(--on-shared)}.f.nw .sq{background:var(--now);color:var(--paper)}
-/* 4 — download */
-.dl h2{grid-column:1/3;font-size:clamp(48px,7vw,104px);letter-spacing:-.05em;line-height:.9}
-.dl p{grid-column:1/3;font-size:15px;line-height:1.5;margin-top:24px;max-width:24em}
-.dl .acts{grid-column:1/3;margin-top:28px;display:flex;gap:var(--gap)}
-.dl .qr{grid-column:4/5;grid-row:2/5;align-self:end}
+/* 4 — type */
+.type .spec{grid-column:1/-1;display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--ink)}
+.type .gl{aspect-ratio:1;display:flex;align-items:flex-end;padding:12px;font-family:var(--type);font-weight:700;font-size:clamp(60px,8vw,128px);line-height:.8;position:relative;border-right:1px solid var(--ink);border-bottom:1px solid var(--ink);cursor:default}
+.type .gl:nth-child(7n){border-right:0}
+.type .gl::before{content:"";position:absolute;inset:0;background:var(--ink);transform:scaleY(0);transform-origin:top;transition:transform var(--quick) var(--ease)}
+.type .gl span{position:relative}
+.type .gl:hover{color:var(--paper)}.type .gl:hover::before{transform:none}
+.type .gl small{position:absolute;top:10px;left:12px;font:400 11px var(--font)}
+.type .logo{grid-column:1/3;font-size:clamp(110px,14vw,220px);line-height:.8;margin-top:10vh}
+.type .logo .lg .u i{transition:transform var(--move) var(--ease)}
+.type .logo:hover .lg .u i{transform:translateY(-1.6em)}
+.type .lnote{grid-column:3/5;font-size:15px;line-height:1.5;margin-top:10vh;align-self:end}
+.type .lnote b{display:block;font-size:22px;letter-spacing:-.02em;margin-bottom:8px}
+.type .hel{grid-column:1/-1;margin-top:14vh}
+.type .row{display:grid;grid-template-columns:var(--C) 1fr;column-gap:var(--gap);align-items:baseline;border-top:1px solid var(--ink);padding:14px 0 18px;cursor:default}
+.type .row .m{font-size:13px;line-height:1.4}.type .row .m b{display:block}
+.type .row .s{letter-spacing:-.03em;line-height:1;white-space:nowrap;overflow:hidden}
+.type .row:hover .s{font-weight:400}.type .row.rg:hover .s{font-weight:700}
+/* 5 — the colours: hover stretches the square down a whole column */
+.col .f{position:relative;cursor:default}
+.col .sq{width:100%;aspect-ratio:1;position:relative;transition:aspect-ratio var(--move) var(--ease);font-weight:700;font-size:clamp(28px,3vw,44px);line-height:.9;font-variant-numeric:tabular-nums}
+.col .f:hover .sq{aspect-ratio:1/2}
+.col .sq span{position:absolute;left:14px;top:14px}
+.col .sq em{position:absolute;left:14px;bottom:14px;font:400 13px/1.45 var(--font);clip-path:inset(0 100% 0 0);transition:clip-path var(--move) var(--ease)}
+.col .f:hover .sq em{clip-path:inset(0)}
+.col h3{font-size:22px;letter-spacing:-.02em;margin:16px 0 6px}
+.col p{font-size:15px;line-height:1.45}
+.col .fx .sq{background:var(--fixed);color:var(--on-fixed)}.col .on .sq{background:var(--once);color:var(--on-once)}
+.col .sh .sq{background:var(--shared);color:var(--on-shared)}.col .nw .sq{background:var(--now);color:var(--paper)}
+/* 6 — the grid itself */
+.grid .cells{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap)}
+.grid .c{aspect-ratio:1;outline:1px solid var(--line);position:relative;font-size:13px;padding:10px;cursor:default}
+.grid .c::before{content:"";position:absolute;inset:0;background:var(--cc,var(--ink));transform:scaleY(0);transform-origin:top;transition:transform var(--move) var(--ease)}
+.grid .c:hover::before{transform:none}
+.grid .c span{position:relative;font-weight:700;font-size:clamp(22px,2.4vw,36px);line-height:.9;font-variant-numeric:tabular-nums}
+.grid .c:hover span{color:var(--paper)}
+.grid .rules{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:var(--gap);margin-top:6vh;font-size:15px;line-height:1.45}
+.grid .rules b{display:block;font-size:22px;letter-spacing:-.02em;margin-bottom:6px}
+/* 7 — the posters: hover plays their motion */
+.posters .p{position:relative;aspect-ratio:9/16;cursor:pointer}
+.posters .p video{width:100%;height:100%;display:block;object-fit:cover;outline:1px solid var(--ink)}
+.posters .p figcaption{font-size:13px;margin-top:12px}
+.posters .note{grid-column:4/5;font-size:15px;line-height:1.5;align-self:end}
+.posters .note b{display:block;font-size:22px;letter-spacing:-.02em;margin-bottom:8px}
+/* 8 — things to wear */
+.wear .w{overflow:hidden;aspect-ratio:3/4}
+.wear .w img{width:100%;height:100%;object-fit:cover;display:block;transition:transform var(--move) var(--ease)}
+.wear .w:hover img{transform:scale(1.08)}
+.wear figcaption{font-size:13px;margin-top:12px}
+/* 9 — download */
+.dl h2{grid-column:1/3;font-size:clamp(64px,8vw,128px);letter-spacing:-.05em;line-height:.9}
+.dl p{grid-column:1/3;font-size:16px;line-height:1.5;margin-top:24px;max-width:24em}
+.dl .acts{grid-column:1/3;margin-top:30px;display:flex;gap:var(--gap)}
+.dl .qr{grid-column:4/5;grid-row:3/6;align-self:end}
 .dl .qr svg{display:block;width:100%;height:auto}
 .dl .url{font-size:13px;margin-top:10px;display:block;text-decoration:none}
-footer{border-top:1px solid var(--ink);padding:16px 0 28px;font-size:13px;display:flex;justify-content:space-between}
+footer{padding:16px 0 28px;font-size:13px;display:flex;justify-content:space-between}
 @media (max-width:820px){
-  .hero .big,.hero h1,.hero p,.hero .acts,.dl h2,.dl p,.dl .acts{grid-column:1/-1}
+  .hero .big,.hero p,.hero .acts,.dl h2,.dl p,.dl .acts,.type .logo,.type .lnote{grid-column:1/-1}
   .hero .film{grid-column:1/-1;grid-row:auto;margin-top:6vh}
-  .live .txt,.live .txt.r{grid-column:1/-1}.live .ph{grid-column:1/-1;transform:scale(.9);transform-origin:top center}
-  .f{grid-column:span 2}
+  .live .steps{grid-column:1/-1}.live .phone{display:none}
+  .col .f,.posters .p,.wear figure{grid-column:span 2}.posters .note{grid-column:1/-1}
+  .type .spec{grid-template-columns:repeat(4,1fr)}
   .dl .qr{grid-column:1/3;grid-row:auto;margin-top:5vh}
 }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head>
 <body>
-<div class="wrap">
-<header><a class="btn" href="./">open the app</a></header>
+<div class="cols" aria-hidden="true"><div class="wrap"></div></div>
+<main><div class="wrap">
+<header class="un in"><span class="lg"><span class="u">u<i></i><i></i></span>hr</span><a class="btn" href="./"><span>open the app</span></a></header>
 
+<!-- 1 — the poster -->
 <section class="hero g">
-  <div class="big" aria-label="ühr"><span class="lg"><span class="u">u<i></i><i></i></span>hr</span></div>
-  <h1>your hour,<br>on a <span class="r">grid.</span></h1>
-  <p>an alarm clock built on a grid. every square is an hour of your week — tap one, name it, and it rings.</p>
-  <div class="acts"><a class="btn go" href="./">open&nbsp;<span class="lg"><span class="u">u<i></i><i></i></span>hr</span></a><a class="btn" href="#download">on your phone</a></div>
-  <div class="film"><video src="teaser.mp4" poster="teaser-poster.jpg" autoplay muted loop playsinline aria-label="the ühr teaser"></video></div>
+  <div class="big un" style="--d:200ms" aria-label="ühr"><span class="lg"><span class="u">u<i></i><i></i></span>hr</span></div>
+  <div class="film un" style="--d:500ms"><video src="site/teaser-15.mp4" poster="site/teaser-15.jpg" autoplay muted loop playsinline aria-label="the ühr teaser"></video></div>
+  <p class="un" style="--d:700ms">an alarm clock built on a grid. every square is an hour of your week — tap one, name it, and it rings.</p>
+  <div class="acts un" style="--d:850ms"><a class="btn go" href="./"><span>open ühr</span></a><a class="btn" href="#download"><span>on your phone</span></a></div>
 </section>
 
+<!-- 2 — the line -->
+<section class="line" id="line"><div class="wrap stick"><h2><span>your hour,</span><span>on a <span class="r" style="display:inline">grid.</span></span></h2></div></section>
+
+<!-- 3 — the app, live -->
 <section class="live g">
-  <div class="k"><b>01</b>try it</div>
-  <div class="txt"><b>your week, as squares.</b>tap an empty hour to set an alarm. pinch — or press + and − — for the whole week.</div>
-  <div class="ph"><div class="scr"><iframe src="./?embed" title="ühr — live demo" loading="lazy"></iframe></div></div>
-  <div class="txt r"><b>it’s live.</b>a demo week — nothing is saved to your own <span class="lg"><span class="u">u<i></i><i></i></span>hr</span>.</div>
+  <div class="k"><b>01</b>how it works — the app is live, try it</div>
+  <div class="steps">
+    <div class="step" style="--sqc:var(--red)"><div class="sq"></div><div><h3>tap an hour.</h3><p>every square is an hour. the red one is now.</p></div></div>
+    <div class="step" style="--sqc:var(--ink)"><div class="sq"></div><div><h3>name it.</h3><p>one or two words — Training, Coffee, Submission.</p></div></div>
+    <div class="step" style="--sqc:var(--ink)"><div class="sq"></div><div><h3>pick a sound.</h3><p>rise, drop, glass or tick. tap to hear it.</p></div></div>
+    <div class="step" style="--sqc:var(--blue)"><div class="sq"></div><div><h3>set.</h3><p>once is blue. every week is black.</p></div></div>
+    <div class="step" style="--sqc:var(--yellow)"><div class="sq"></div><div><h3>share an hour.</h3><p>your friend gets a poster — and the hour lands in her week, yellow.</p></div></div>
+  </div>
+  <div class="phone"><div class="scr"><iframe src="./?embed" title="ühr — live demo" loading="lazy"></iframe></div></div>
 </section>
 
-<section class="g">
-  <div class="k"><b>02</b>four colours</div>
-  <div class="f fx"><div class="sq"><span>09<br>00</span></div><h3>black — every week</h3><p>the hours that come back.</p></div>
-  <div class="f on"><div class="sq"><span>17<br>00</span></div><h3>blue — just once</h3><p>the hours that happen one time.</p></div>
-  <div class="f sh"><div class="sq"><span>12<br>30</span></div><h3>yellow — shared</h3><p>an hour a friend sent you. it arrives as a poster.</p></div>
-  <div class="f nw"><div class="sq"><span>08<br>58</span></div><h3>red — now</h3><p>the hour you are in.</p></div>
+<!-- 4 — type -->
+<section class="type g">
+  <div class="rule" style="grid-column:1/-1"></div>
+  <div class="k"><b>02</b>two typefaces</div>
+  <div class="spec un">
+    <div class="gl"><small>u</small><span>u</span></div><div class="gl"><small>h</small><span>h</span></div><div class="gl"><small>r</small><span>r</span></div>
+    <div class="gl"><small>0</small><span>0</span></div><div class="gl"><small>1</small><span>1</span></div><div class="gl"><small>7</small><span>7</span></div><div class="gl"><small>:</small><span>:</span></div>
+  </div>
+  <div class="logo un" title="hover: the dots"><span class="lg"><span class="u">u<i></i><i></i></span>hr</span></div>
+  <div class="lnote un"><b>under — only for the logo.</b>three letters, ten digits and a colon. the dots of the ü are two red circles that sit exactly over the stems of the u — the same circles as the colon.</div>
+  <div class="hel">
+    <div class="row un"><div class="m"><b>helvetica bold 112</b>the hour</div><div class="s" style="font-size:clamp(72px,8vw,112px);font-weight:700">17:00</div></div>
+    <div class="row un"><div class="m"><b>helvetica bold 58</b>a name</div><div class="s" style="font-size:clamp(44px,4.6vw,58px);font-weight:700">Training</div></div>
+    <div class="row un"><div class="m"><b>helvetica bold 22</b>a title</div><div class="s" style="font-size:22px;font-weight:700">your hour, on a grid.</div></div>
+    <div class="row rg un"><div class="m"><b>helvetica regular 15</b>the text</div><div class="s" style="font-size:15px;font-weight:400;letter-spacing:0">tap to hear it · what is it? one or two words · drag each number up or down</div></div>
+    <div class="row rg un"><div class="m"><b>helvetica regular 11</b>a label</div><div class="s" style="font-size:11px;font-weight:400;letter-spacing:0">monday 23/11 · once · sound: glass</div></div>
+  </div>
 </section>
 
+<!-- 5 — four colours -->
+<section class="col g">
+  <div class="rule" style="grid-column:1/-1"></div>
+  <div class="k"><b>03</b>four colours, four meanings</div>
+  <div class="f nw un"><div class="sq"><span>08<br>58</span><em>red — #D50023<br>the hour you are in</em></div><h3>red — now</h3><p>the hour you are in.</p></div>
+  <div class="f on un" style="--d:80ms"><div class="sq"><span>17<br>00</span><em>blue — #0052B5<br>one time only</em></div><h3>blue — once</h3><p>the hours that happen one time.</p></div>
+  <div class="f fx un" style="--d:160ms"><div class="sq"><span>09<br>00</span><em>black — #20201E<br>every week</em></div><h3>black — every week</h3><p>the hours that come back.</p></div>
+  <div class="f sh un" style="--d:240ms"><div class="sq"><span>10<br>30</span><em>yellow — #EEA700<br>shared with you</em></div><h3>yellow — shared</h3><p>an hour a friend sent you.</p></div>
+</section>
+
+<!-- 6 — the grid -->
+<section class="grid g">
+  <div class="rule" style="grid-column:1/-1"></div>
+  <div class="k"><b>04</b>the grid — after josef müller-brockmann</div>
+  <div class="cells un">
+    <div class="c" style="--cc:var(--ink)"><span>00<br>00</span></div><div class="c" style="--cc:var(--ink)"><span>01<br>00</span></div><div class="c" style="--cc:var(--ink)"><span>02<br>00</span></div><div class="c" style="--cc:var(--ink)"><span>03<br>00</span></div>
+    <div class="c" style="--cc:var(--ink)"><span>04<br>00</span></div><div class="c" style="--cc:var(--blue)"><span>05<br>00</span></div><div class="c" style="--cc:var(--ink)"><span>06<br>00</span></div><div class="c" style="--cc:var(--red)"><span>07<br>00</span></div>
+  </div>
+  <div class="rules">
+    <div class="un"><b>four columns.</b>one hour is one square. a day is six rows — twenty-four hours.</div>
+    <div class="un" style="--d:80ms"><b>margin 21, gutter 24.</b>the same numbers on the phone, the posters and this page.</div>
+    <div class="un" style="--d:160ms"><b>flush left.</b>every word starts on a column line; every baseline stands on a row line.</div>
+    <div class="un" style="--d:240ms"><b>stretch or cut.</b>things move like a square opening — never a fade, never a shadow.</div>
+  </div>
+</section>
+
+<!-- 7 — posters -->
+<section class="posters g">
+  <div class="rule" style="grid-column:1/-1"></div>
+  <div class="k"><b>05</b>an hour, as a poster — hover to play</div>
+  <figure class="p un"><video src="site/uhr-screen-training.mp4" poster="site/uhr-screen-training.jpg" muted playsinline preload="metadata"></video><figcaption>Training — once, blue</figcaption></figure>
+  <figure class="p un" style="--d:80ms"><video src="site/uhr-screen-coffee.mp4" poster="site/uhr-screen-coffee.jpg" muted playsinline preload="metadata"></video><figcaption>Coffee with Noa — shared, yellow</figcaption></figure>
+  <figure class="p un" style="--d:160ms"><video src="site/uhr-screen-submission.mp4" poster="site/uhr-screen-submission.jpg" muted playsinline preload="metadata"></video><figcaption>Submission — now, red</figcaption></figure>
+  <div class="note un" style="--d:240ms"><b>every share is a poster.</b>when you share an hour, your friend gets it set on the same grid — 50×70 printed, or on her phone.</div>
+</section>
+
+<!-- 8 — to wear -->
+<section class="wear g">
+  <div class="rule" style="grid-column:1/-1"></div>
+  <div class="k"><b>06</b>to wear</div>
+  <figure class="un"><div class="w"><img src="site/cap2.jpg" alt="a cream cap with the ühr logo"></div><figcaption>cap</figcaption></figure>
+  <figure class="un" style="--d:80ms"><div class="w"><img src="site/cap.jpg" alt="the ühr cap"></div><figcaption>cap, embroidered</figcaption></figure>
+  <figure class="un" style="--d:160ms"><div class="w"><img src="site/shirt-chest.jpg" alt="the ühr logo embroidered on a white t-shirt"></div><figcaption>t-shirt, chest</figcaption></figure>
+  <figure class="un" style="--d:240ms"><div class="w"><img src="site/shirt-back.jpg" alt="the ü embroidered under the collar"></div><figcaption>t-shirt, under the collar</figcaption></figure>
+</section>
+
+<!-- 9 — download -->
 <section class="dl g" id="download">
-  <div class="k"><b>03</b>download</div>
-  <h2>free.<br>on your phone.</h2>
-  <p>scan the code with your phone’s camera. <span class="lg"><span class="u">u<i></i><i></i></span>hr</span> opens in the browser — add it to your home screen and it works like an app.</p>
-  <div class="acts"><a class="btn go" href="./">open&nbsp;<span class="lg"><span class="u">u<i></i><i></i></span>hr</span></a></div>
-  <div class="qr"><svg viewBox="0 0 29 29" shape-rendering="crispEdges" aria-label="QR code: naama2208-cloud.github.io/uhr"><path d="M0,0h1v1h-1zM1,0h1v1h-1zM2,0h1v1h-1zM3,0h1v1h-1zM4,0h1v1h-1zM5,0h1v1h-1zM6,0h1v1h-1zM8,0h1v1h-1zM9,0h1v1h-1zM10,0h1v1h-1zM12,0h1v1h-1zM13,0h1v1h-1zM17,0h1v1h-1zM18,0h1v1h-1zM22,0h1v1h-1zM23,0h1v1h-1zM24,0h1v1h-1zM25,0h1v1h-1zM26,0h1v1h-1zM27,0h1v1h-1zM28,0h1v1h-1zM0,1h1v1h-1zM6,1h1v1h-1zM9,1h1v1h-1zM11,1h1v1h-1zM13,1h1v1h-1zM18,1h1v1h-1zM20,1h1v1h-1zM22,1h1v1h-1zM28,1h1v1h-1zM0,2h1v1h-1zM2,2h1v1h-1zM3,2h1v1h-1zM4,2h1v1h-1zM6,2h1v1h-1zM8,2h1v1h-1zM10,2h1v1h-1zM12,2h1v1h-1zM13,2h1v1h-1zM14,2h1v1h-1zM15,2h1v1h-1zM16,2h1v1h-1zM17,2h1v1h-1zM18,2h1v1h-1zM19,2h1v1h-1zM22,2h1v1h-1zM24,2h1v1h-1zM25,2h1v1h-1zM26,2h1v1h-1zM28,2h1v1h-1zM0,3h1v1h-1zM2,3h1v1h-1zM3,3h1v1h-1zM4,3h1v1h-1zM6,3h1v1h-1zM10,3h1v1h-1zM13,3h1v1h-1zM15,3h1v1h-1zM17,3h1v1h-1zM20,3h1v1h-1zM22,3h1v1h-1zM24,3h1v1h-1zM25,3h1v1h-1zM26,3h1v1h-1zM28,3h1v1h-1zM0,4h1v1h-1zM2,4h1v1h-1zM3,4h1v1h-1zM4,4h1v1h-1zM6,4h1v1h-1zM9,4h1v1h-1zM11,4h1v1h-1zM14,4h1v1h-1zM18,4h1v1h-1zM22,4h1v1h-1zM24,4h1v1h-1zM25,4h1v1h-1zM26,4h1v1h-1zM28,4h1v1h-1zM0,5h1v1h-1zM6,5h1v1h-1zM8,5h1v1h-1zM13,5h1v1h-1zM14,5h1v1h-1zM16,5h1v1h-1zM17,5h1v1h-1zM18,5h1v1h-1zM20,5h1v1h-1zM22,5h1v1h-1zM28,5h1v1h-1zM0,6h1v1h-1zM1,6h1v1h-1zM2,6h1v1h-1zM3,6h1v1h-1zM4,6h1v1h-1zM5,6h1v1h-1zM6,6h1v1h-1zM8,6h1v1h-1zM10,6h1v1h-1zM12,6h1v1h-1zM14,6h1v1h-1zM16,6h1v1h-1zM18,6h1v1h-1zM20,6h1v1h-1zM22,6h1v1h-1zM23,6h1v1h-1zM24,6h1v1h-1zM25,6h1v1h-1zM26,6h1v1h-1zM27,6h1v1h-1zM28,6h1v1h-1zM9,7h1v1h-1zM10,7h1v1h-1zM11,7h1v1h-1zM12,7h1v1h-1zM14,7h1v1h-1zM16,7h1v1h-1zM19,7h1v1h-1zM20,7h1v1h-1zM0,8h1v1h-1zM2,8h1v1h-1zM6,8h1v1h-1zM7,8h1v1h-1zM9,8h1v1h-1zM10,8h1v1h-1zM12,8h1v1h-1zM13,8h1v1h-1zM14,8h1v1h-1zM15,8h1v1h-1zM20,8h1v1h-1zM23,8h1v1h-1zM26,8h1v1h-1zM28,8h1v1h-1zM0,9h1v1h-1zM1,9h1v1h-1zM2,9h1v1h-1zM3,9h1v1h-1zM5,9h1v1h-1zM7,9h1v1h-1zM10,9h1v1h-1zM13,9h1v1h-1zM15,9h1v1h-1zM16,9h1v1h-1zM19,9h1v1h-1zM20,9h1v1h-1zM22,9h1v1h-1zM23,9h1v1h-1zM27,9h1v1h-1zM28,9h1v1h-1zM2,10h1v1h-1zM3,10h1v1h-1zM4,10h1v1h-1zM5,10h1v1h-1zM6,10h1v1h-1zM7,10h1v1h-1zM10,10h1v1h-1zM11,10h1v1h-1zM12,10h1v1h-1zM15,10h1v1h-1zM19,10h1v1h-1zM20,10h1v1h-1zM21,10h1v1h-1zM22,10h1v1h-1zM24,10h1v1h-1zM25,10h1v1h-1zM26,10h1v1h-1zM28,10h1v1h-1zM8,11h1v1h-1zM13,11h1v1h-1zM15,11h1v1h-1zM16,11h1v1h-1zM18,11h1v1h-1zM20,11h1v1h-1zM21,11h1v1h-1zM23,11h1v1h-1zM24,11h1v1h-1zM25,11h1v1h-1zM6,12h1v1h-1zM8,12h1v1h-1zM9,12h1v1h-1zM10,12h1v1h-1zM13,12h1v1h-1zM16,12h1v1h-1zM20,12h1v1h-1zM21,12h1v1h-1zM22,12h1v1h-1zM23,12h1v1h-1zM28,12h1v1h-1zM0,13h1v1h-1zM1,13h1v1h-1zM4,13h1v1h-1zM5,13h1v1h-1zM7,13h1v1h-1zM9,13h1v1h-1zM12,13h1v1h-1zM15,13h1v1h-1zM17,13h1v1h-1zM19,13h1v1h-1zM20,13h1v1h-1zM21,13h1v1h-1zM22,13h1v1h-1zM23,13h1v1h-1zM27,13h1v1h-1zM28,13h1v1h-1zM0,14h1v1h-1zM6,14h1v1h-1zM10,14h1v1h-1zM11,14h1v1h-1zM12,14h1v1h-1zM13,14h1v1h-1zM14,14h1v1h-1zM15,14h1v1h-1zM17,14h1v1h-1zM18,14h1v1h-1zM19,14h1v1h-1zM21,14h1v1h-1zM22,14h1v1h-1zM24,14h1v1h-1zM28,14h1v1h-1zM2,15h1v1h-1zM4,15h1v1h-1zM5,15h1v1h-1zM8,15h1v1h-1zM14,15h1v1h-1zM15,15h1v1h-1zM16,15h1v1h-1zM18,15h1v1h-1zM19,15h1v1h-1zM22,15h1v1h-1zM0,16h1v1h-1zM2,16h1v1h-1zM3,16h1v1h-1zM5,16h1v1h-1zM6,16h1v1h-1zM7,16h1v1h-1zM8,16h1v1h-1zM9,16h1v1h-1zM10,16h1v1h-1zM11,16h1v1h-1zM13,16h1v1h-1zM14,16h1v1h-1zM16,16h1v1h-1zM19,16h1v1h-1zM20,16h1v1h-1zM21,16h1v1h-1zM22,16h1v1h-1zM23,16h1v1h-1zM28,16h1v1h-1zM1,17h1v1h-1zM2,17h1v1h-1zM7,17h1v1h-1zM9,17h1v1h-1zM11,17h1v1h-1zM13,17h1v1h-1zM14,17h1v1h-1zM15,17h1v1h-1zM16,17h1v1h-1zM18,17h1v1h-1zM19,17h1v1h-1zM20,17h1v1h-1zM21,17h1v1h-1zM22,17h1v1h-1zM23,17h1v1h-1zM26,17h1v1h-1zM27,17h1v1h-1zM28,17h1v1h-1zM0,18h1v1h-1zM1,18h1v1h-1zM3,18h1v1h-1zM4,18h1v1h-1zM6,18h1v1h-1zM7,18h1v1h-1zM8,18h1v1h-1zM10,18h1v1h-1zM12,18h1v1h-1zM15,18h1v1h-1zM17,18h1v1h-1zM19,18h1v1h-1zM21,18h1v1h-1zM22,18h1v1h-1zM24,18h1v1h-1zM25,18h1v1h-1zM28,18h1v1h-1zM2,19h1v1h-1zM3,19h1v1h-1zM4,19h1v1h-1zM5,19h1v1h-1zM8,19h1v1h-1zM13,19h1v1h-1zM20,19h1v1h-1zM22,19h1v1h-1zM0,20h1v1h-1zM1,20h1v1h-1zM2,20h1v1h-1zM6,20h1v1h-1zM7,20h1v1h-1zM8,20h1v1h-1zM13,20h1v1h-1zM16,20h1v1h-1zM20,20h1v1h-1zM21,20h1v1h-1zM22,20h1v1h-1zM23,20h1v1h-1zM24,20h1v1h-1zM25,20h1v1h-1zM27,20h1v1h-1zM8,21h1v1h-1zM9,21h1v1h-1zM15,21h1v1h-1zM16,21h1v1h-1zM17,21h1v1h-1zM20,21h1v1h-1zM24,21h1v1h-1zM25,21h1v1h-1zM26,21h1v1h-1zM28,21h1v1h-1zM0,22h1v1h-1zM1,22h1v1h-1zM2,22h1v1h-1zM3,22h1v1h-1zM4,22h1v1h-1zM5,22h1v1h-1zM6,22h1v1h-1zM8,22h1v1h-1zM9,22h1v1h-1zM10,22h1v1h-1zM13,22h1v1h-1zM14,22h1v1h-1zM15,22h1v1h-1zM16,22h1v1h-1zM17,22h1v1h-1zM18,22h1v1h-1zM20,22h1v1h-1zM22,22h1v1h-1zM24,22h1v1h-1zM28,22h1v1h-1zM0,23h1v1h-1zM6,23h1v1h-1zM9,23h1v1h-1zM10,23h1v1h-1zM11,23h1v1h-1zM14,23h1v1h-1zM15,23h1v1h-1zM16,23h1v1h-1zM20,23h1v1h-1zM24,23h1v1h-1zM28,23h1v1h-1zM0,24h1v1h-1zM2,24h1v1h-1zM3,24h1v1h-1zM4,24h1v1h-1zM6,24h1v1h-1zM9,24h1v1h-1zM13,24h1v1h-1zM14,24h1v1h-1zM16,24h1v1h-1zM19,24h1v1h-1zM20,24h1v1h-1zM21,24h1v1h-1zM22,24h1v1h-1zM23,24h1v1h-1zM24,24h1v1h-1zM25,24h1v1h-1zM28,24h1v1h-1zM0,25h1v1h-1zM2,25h1v1h-1zM3,25h1v1h-1zM4,25h1v1h-1zM6,25h1v1h-1zM11,25h1v1h-1zM12,25h1v1h-1zM14,25h1v1h-1zM15,25h1v1h-1zM18,25h1v1h-1zM24,25h1v1h-1zM25,25h1v1h-1zM26,25h1v1h-1zM28,25h1v1h-1zM0,26h1v1h-1zM2,26h1v1h-1zM3,26h1v1h-1zM4,26h1v1h-1zM6,26h1v1h-1zM8,26h1v1h-1zM10,26h1v1h-1zM11,26h1v1h-1zM12,26h1v1h-1zM15,26h1v1h-1zM16,26h1v1h-1zM17,26h1v1h-1zM19,26h1v1h-1zM24,26h1v1h-1zM27,26h1v1h-1zM28,26h1v1h-1zM0,27h1v1h-1zM6,27h1v1h-1zM10,27h1v1h-1zM11,27h1v1h-1zM13,27h1v1h-1zM15,27h1v1h-1zM18,27h1v1h-1zM19,27h1v1h-1zM20,27h1v1h-1zM24,27h1v1h-1zM25,27h1v1h-1zM0,28h1v1h-1zM1,28h1v1h-1zM2,28h1v1h-1zM3,28h1v1h-1zM4,28h1v1h-1zM5,28h1v1h-1zM6,28h1v1h-1zM8,28h1v1h-1zM9,28h1v1h-1zM13,28h1v1h-1zM14,28h1v1h-1zM15,28h1v1h-1zM16,28h1v1h-1zM19,28h1v1h-1zM20,28h1v1h-1zM21,28h1v1h-1zM22,28h1v1h-1zM25,28h1v1h-1zM28,28h1v1h-1z" fill="currentColor"/></svg><a class="url" href="./">naama2208-cloud.github.io/uhr</a></div>
+  <div class="rule" style="grid-column:1/-1"></div>
+  <div class="k"><b>07</b>download</div>
+  <h2 class="un">free.<br>on your phone.</h2>
+  <p class="un">scan the code with your phone’s camera. <span class="lg"><span class="u">u<i></i><i></i></span>hr</span> opens in the browser — add it to your home screen and it works like an app.</p>
+  <div class="acts un"><a class="btn go" href="./"><span>open ühr</span></a></div>
+  <div class="qr un"><svg viewBox="0 0 29 29" shape-rendering="crispEdges" aria-label="QR code: naama2208-cloud.github.io/uhr"><path d="M0,0h1v1h-1zM1,0h1v1h-1zM2,0h1v1h-1zM3,0h1v1h-1zM4,0h1v1h-1zM5,0h1v1h-1zM6,0h1v1h-1zM8,0h1v1h-1zM9,0h1v1h-1zM10,0h1v1h-1zM12,0h1v1h-1zM13,0h1v1h-1zM17,0h1v1h-1zM18,0h1v1h-1zM22,0h1v1h-1zM23,0h1v1h-1zM24,0h1v1h-1zM25,0h1v1h-1zM26,0h1v1h-1zM27,0h1v1h-1zM28,0h1v1h-1zM0,1h1v1h-1zM6,1h1v1h-1zM9,1h1v1h-1zM11,1h1v1h-1zM13,1h1v1h-1zM18,1h1v1h-1zM20,1h1v1h-1zM22,1h1v1h-1zM28,1h1v1h-1zM0,2h1v1h-1zM2,2h1v1h-1zM3,2h1v1h-1zM4,2h1v1h-1zM6,2h1v1h-1zM8,2h1v1h-1zM10,2h1v1h-1zM12,2h1v1h-1zM13,2h1v1h-1zM14,2h1v1h-1zM15,2h1v1h-1zM16,2h1v1h-1zM17,2h1v1h-1zM18,2h1v1h-1zM19,2h1v1h-1zM22,2h1v1h-1zM24,2h1v1h-1zM25,2h1v1h-1zM26,2h1v1h-1zM28,2h1v1h-1zM0,3h1v1h-1zM2,3h1v1h-1zM3,3h1v1h-1zM4,3h1v1h-1zM6,3h1v1h-1zM10,3h1v1h-1zM13,3h1v1h-1zM15,3h1v1h-1zM17,3h1v1h-1zM20,3h1v1h-1zM22,3h1v1h-1zM24,3h1v1h-1zM25,3h1v1h-1zM26,3h1v1h-1zM28,3h1v1h-1zM0,4h1v1h-1zM2,4h1v1h-1zM3,4h1v1h-1zM4,4h1v1h-1zM6,4h1v1h-1zM9,4h1v1h-1zM11,4h1v1h-1zM14,4h1v1h-1zM18,4h1v1h-1zM22,4h1v1h-1zM24,4h1v1h-1zM25,4h1v1h-1zM26,4h1v1h-1zM28,4h1v1h-1zM0,5h1v1h-1zM6,5h1v1h-1zM8,5h1v1h-1zM13,5h1v1h-1zM14,5h1v1h-1zM16,5h1v1h-1zM17,5h1v1h-1zM18,5h1v1h-1zM20,5h1v1h-1zM22,5h1v1h-1zM28,5h1v1h-1zM0,6h1v1h-1zM1,6h1v1h-1zM2,6h1v1h-1zM3,6h1v1h-1zM4,6h1v1h-1zM5,6h1v1h-1zM6,6h1v1h-1zM8,6h1v1h-1zM10,6h1v1h-1zM12,6h1v1h-1zM14,6h1v1h-1zM16,6h1v1h-1zM18,6h1v1h-1zM20,6h1v1h-1zM22,6h1v1h-1zM23,6h1v1h-1zM24,6h1v1h-1zM25,6h1v1h-1zM26,6h1v1h-1zM27,6h1v1h-1zM28,6h1v1h-1zM9,7h1v1h-1zM10,7h1v1h-1zM11,7h1v1h-1zM12,7h1v1h-1zM14,7h1v1h-1zM16,7h1v1h-1zM19,7h1v1h-1zM20,7h1v1h-1zM0,8h1v1h-1zM2,8h1v1h-1zM6,8h1v1h-1zM7,8h1v1h-1zM9,8h1v1h-1zM10,8h1v1h-1zM12,8h1v1h-1zM13,8h1v1h-1zM14,8h1v1h-1zM15,8h1v1h-1zM20,8h1v1h-1zM23,8h1v1h-1zM26,8h1v1h-1zM28,8h1v1h-1zM0,9h1v1h-1zM1,9h1v1h-1zM2,9h1v1h-1zM3,9h1v1h-1zM5,9h1v1h-1zM7,9h1v1h-1zM10,9h1v1h-1zM13,9h1v1h-1zM15,9h1v1h-1zM16,9h1v1h-1zM19,9h1v1h-1zM20,9h1v1h-1zM22,9h1v1h-1zM23,9h1v1h-1zM27,9h1v1h-1zM28,9h1v1h-1zM2,10h1v1h-1zM3,10h1v1h-1zM4,10h1v1h-1zM5,10h1v1h-1zM6,10h1v1h-1zM7,10h1v1h-1zM10,10h1v1h-1zM11,10h1v1h-1zM12,10h1v1h-1zM15,10h1v1h-1zM19,10h1v1h-1zM20,10h1v1h-1zM21,10h1v1h-1zM22,10h1v1h-1zM24,10h1v1h-1zM25,10h1v1h-1zM26,10h1v1h-1zM28,10h1v1h-1zM8,11h1v1h-1zM13,11h1v1h-1zM15,11h1v1h-1zM16,11h1v1h-1zM18,11h1v1h-1zM20,11h1v1h-1zM21,11h1v1h-1zM23,11h1v1h-1zM24,11h1v1h-1zM25,11h1v1h-1zM6,12h1v1h-1zM8,12h1v1h-1zM9,12h1v1h-1zM10,12h1v1h-1zM13,12h1v1h-1zM16,12h1v1h-1zM20,12h1v1h-1zM21,12h1v1h-1zM22,12h1v1h-1zM23,12h1v1h-1zM28,12h1v1h-1zM0,13h1v1h-1zM1,13h1v1h-1zM4,13h1v1h-1zM5,13h1v1h-1zM7,13h1v1h-1zM9,13h1v1h-1zM12,13h1v1h-1zM15,13h1v1h-1zM17,13h1v1h-1zM19,13h1v1h-1zM20,13h1v1h-1zM21,13h1v1h-1zM22,13h1v1h-1zM23,13h1v1h-1zM27,13h1v1h-1zM28,13h1v1h-1zM0,14h1v1h-1zM6,14h1v1h-1zM10,14h1v1h-1zM11,14h1v1h-1zM12,14h1v1h-1zM13,14h1v1h-1zM14,14h1v1h-1zM15,14h1v1h-1zM17,14h1v1h-1zM18,14h1v1h-1zM19,14h1v1h-1zM21,14h1v1h-1zM22,14h1v1h-1zM24,14h1v1h-1zM28,14h1v1h-1zM2,15h1v1h-1zM4,15h1v1h-1zM5,15h1v1h-1zM8,15h1v1h-1zM14,15h1v1h-1zM15,15h1v1h-1zM16,15h1v1h-1zM18,15h1v1h-1zM19,15h1v1h-1zM22,15h1v1h-1zM0,16h1v1h-1zM2,16h1v1h-1zM3,16h1v1h-1zM5,16h1v1h-1zM6,16h1v1h-1zM7,16h1v1h-1zM8,16h1v1h-1zM9,16h1v1h-1zM10,16h1v1h-1zM11,16h1v1h-1zM13,16h1v1h-1zM14,16h1v1h-1zM16,16h1v1h-1zM19,16h1v1h-1zM20,16h1v1h-1zM21,16h1v1h-1zM22,16h1v1h-1zM23,16h1v1h-1zM28,16h1v1h-1zM1,17h1v1h-1zM2,17h1v1h-1zM7,17h1v1h-1zM9,17h1v1h-1zM11,17h1v1h-1zM13,17h1v1h-1zM14,17h1v1h-1zM15,17h1v1h-1zM16,17h1v1h-1zM18,17h1v1h-1zM19,17h1v1h-1zM20,17h1v1h-1zM21,17h1v1h-1zM22,17h1v1h-1zM23,17h1v1h-1zM26,17h1v1h-1zM27,17h1v1h-1zM28,17h1v1h-1zM0,18h1v1h-1zM1,18h1v1h-1zM3,18h1v1h-1zM4,18h1v1h-1zM6,18h1v1h-1zM7,18h1v1h-1zM8,18h1v1h-1zM10,18h1v1h-1zM12,18h1v1h-1zM15,18h1v1h-1zM17,18h1v1h-1zM19,18h1v1h-1zM21,18h1v1h-1zM22,18h1v1h-1zM24,18h1v1h-1zM25,18h1v1h-1zM28,18h1v1h-1zM2,19h1v1h-1zM3,19h1v1h-1zM4,19h1v1h-1zM5,19h1v1h-1zM8,19h1v1h-1zM13,19h1v1h-1zM20,19h1v1h-1zM22,19h1v1h-1zM0,20h1v1h-1zM1,20h1v1h-1zM2,20h1v1h-1zM6,20h1v1h-1zM7,20h1v1h-1zM8,20h1v1h-1zM13,20h1v1h-1zM16,20h1v1h-1zM20,20h1v1h-1zM21,20h1v1h-1zM22,20h1v1h-1zM23,20h1v1h-1zM24,20h1v1h-1zM25,20h1v1h-1zM27,20h1v1h-1zM8,21h1v1h-1zM9,21h1v1h-1zM15,21h1v1h-1zM16,21h1v1h-1zM17,21h1v1h-1zM20,21h1v1h-1zM24,21h1v1h-1zM25,21h1v1h-1zM26,21h1v1h-1zM28,21h1v1h-1zM0,22h1v1h-1zM1,22h1v1h-1zM2,22h1v1h-1zM3,22h1v1h-1zM4,22h1v1h-1zM5,22h1v1h-1zM6,22h1v1h-1zM8,22h1v1h-1zM9,22h1v1h-1zM10,22h1v1h-1zM13,22h1v1h-1zM14,22h1v1h-1zM15,22h1v1h-1zM16,22h1v1h-1zM17,22h1v1h-1zM18,22h1v1h-1zM20,22h1v1h-1zM22,22h1v1h-1zM24,22h1v1h-1zM28,22h1v1h-1zM0,23h1v1h-1zM6,23h1v1h-1zM9,23h1v1h-1zM10,23h1v1h-1zM11,23h1v1h-1zM14,23h1v1h-1zM15,23h1v1h-1zM16,23h1v1h-1zM20,23h1v1h-1zM24,23h1v1h-1zM28,23h1v1h-1zM0,24h1v1h-1zM2,24h1v1h-1zM3,24h1v1h-1zM4,24h1v1h-1zM6,24h1v1h-1zM9,24h1v1h-1zM13,24h1v1h-1zM14,24h1v1h-1zM16,24h1v1h-1zM19,24h1v1h-1zM20,24h1v1h-1zM21,24h1v1h-1zM22,24h1v1h-1zM23,24h1v1h-1zM24,24h1v1h-1zM25,24h1v1h-1zM28,24h1v1h-1zM0,25h1v1h-1zM2,25h1v1h-1zM3,25h1v1h-1zM4,25h1v1h-1zM6,25h1v1h-1zM11,25h1v1h-1zM12,25h1v1h-1zM14,25h1v1h-1zM15,25h1v1h-1zM18,25h1v1h-1zM24,25h1v1h-1zM25,25h1v1h-1zM26,25h1v1h-1zM28,25h1v1h-1zM0,26h1v1h-1zM2,26h1v1h-1zM3,26h1v1h-1zM4,26h1v1h-1zM6,26h1v1h-1zM8,26h1v1h-1zM10,26h1v1h-1zM11,26h1v1h-1zM12,26h1v1h-1zM15,26h1v1h-1zM16,26h1v1h-1zM17,26h1v1h-1zM19,26h1v1h-1zM24,26h1v1h-1zM27,26h1v1h-1zM28,26h1v1h-1zM0,27h1v1h-1zM6,27h1v1h-1zM10,27h1v1h-1zM11,27h1v1h-1zM13,27h1v1h-1zM15,27h1v1h-1zM18,27h1v1h-1zM19,27h1v1h-1zM20,27h1v1h-1zM24,27h1v1h-1zM25,27h1v1h-1zM0,28h1v1h-1zM1,28h1v1h-1zM2,28h1v1h-1zM3,28h1v1h-1zM4,28h1v1h-1zM5,28h1v1h-1zM6,28h1v1h-1zM8,28h1v1h-1zM9,28h1v1h-1zM13,28h1v1h-1zM14,28h1v1h-1zM15,28h1v1h-1zM16,28h1v1h-1zM19,28h1v1h-1zM20,28h1v1h-1zM21,28h1v1h-1zM22,28h1v1h-1zM25,28h1v1h-1zM28,28h1v1h-1z" fill="currentColor"/></svg><a class="url" href="https://naama2208-cloud.github.io/uhr/">naama2208-cloud.github.io/uhr</a></div>
 </section>
 
+<div class="rule in"></div>
 <footer><span><span class="lg"><span class="u">u<i></i><i></i></span>hr</span></span><span>inspired by josef müller-brockmann</span></footer>
-</div>
+</div></main>
+<script>
+// the page grid: four columns, each drawn as two hairlines (its left and right edge), growing in one after another
+(()=>{const w=document.querySelector('.cols .wrap'),C=getComputedStyle(document.documentElement);
+  function draw(){w.innerHTML='';const W=w.clientWidth,g=parseFloat(C.getPropertyValue('--gap'))||24,c=(W-3*g)/4;let n=0;
+    for(let k=0;k<4;k++)for(const x of [k*(c+g),k*(c+g)+c]){const i=document.createElement('i');i.style.left=x+'px';i.style.setProperty('--d',(n++*70)+'ms');w.appendChild(i)}}
+  draw();addEventListener('resize',draw);requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.add('ready')))})();
+// uncover each block when it comes into view (and the rules of each section)
+(()=>{const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
+  document.querySelectorAll('.un:not(.in),section').forEach(el=>io.observe(el))})();
+// the line: the scroll writes it, word by word
+(()=>{const s=document.getElementById('line'),sp=[...s.querySelectorAll('h2>span')];
+  function f(){const r=s.getBoundingClientRect(),p=Math.min(1,Math.max(0,-r.top/(r.height-innerHeight)));sp.forEach((el,i)=>el.style.setProperty('--p',Math.min(1,Math.max(0,p*sp.length*1.15-i))))}
+  addEventListener('scroll',f,{passive:true});f()})();
+// the steps: the one in the middle of the screen is on — its square stretches in
+(()=>{const st=[...document.querySelectorAll('.live .step')];
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){st.forEach(x=>x.classList.toggle('on',x===e.target))}}),{rootMargin:'-45% 0px -45% 0px'});
+  st.forEach(x=>io.observe(x));st[0].classList.add('on')})();
+// the posters: hover plays the motion from its start; leaving cuts back to the still
+document.querySelectorAll('.posters .p').forEach(p=>{const v=p.querySelector('video');
+  p.addEventListener('mouseenter',()=>{v.currentTime=0;v.play().catch(()=>{})});p.addEventListener('mouseleave',()=>{v.pause();v.currentTime=0;v.load()})});
+</script>
 </body></html>

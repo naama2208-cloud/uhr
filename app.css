@@ -27,14 +27,17 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .vl.glide i{transition:left var(--move) var(--ease),opacity var(--move) var(--ease)}
 .drawing .vl i{transform:scaleY(0);transition:none}
 .day{position:absolute;left:0;width:402px}
-.dh{position:absolute;left:var(--margin);right:var(--margin);top:18px;display:flex;align-items:baseline}
+/* the day's name stands on the grid: its baseline on the top line of the day's first row, its left edge on the first column line */
+.dh{position:absolute;left:var(--margin);right:var(--margin);top:0;height:var(--head-h,62px);display:flex;align-items:flex-end}
+.dh b,.stick b{display:block;line-height:1;text-box:trim-both cap alphabetic}
 .dh b{font-size:22px;font-weight:700}
-.z8 .dh{top:12px}.z8 .dh b{font-size:17px}
+.z8 .dh b{font-size:17px}
 .z2 .dh b{font-size:26px}
-.stick{position:absolute;left:0;right:0;top:0;z-index:4;pointer-events:none;padding:18px var(--margin) 10px;background:var(--paper);}
+.stick{position:absolute;left:0;right:0;top:0;z-index:4;pointer-events:none;height:var(--head-h,62px);padding:0 var(--margin);box-sizing:border-box;display:flex;align-items:flex-end;background:var(--paper);}
 .stick b{font-size:22px;font-weight:700;line-height:1}
-.z8 .stick{padding-top:12px}.z8 .stick b{font-size:17px}.z2 .stick b{font-size:26px}
+.z8 .stick b{font-size:17px}.z2 .stick b{font-size:26px}
 .sheet.on~.stick,.ring.on~.stick{opacity:0}
+.stick:has(b:empty){background:transparent}
 .band{position:absolute;left:0;width:402px;pointer-events:none}
 .band::before,.band::after{content:"";position:absolute;left:0;right:0;height:var(--hair);background:var(--line);opacity:var(--line-o);transform-origin:left;transition:transform var(--fall) var(--gravity) var(--d,0ms)}
 .band::before{top:0}
