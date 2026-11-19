@@ -14,7 +14,7 @@ a{color:inherit}
 :root{--W:min(1200px,100vw - 2*var(--margin));--C:calc((var(--W) - 3*var(--gap))/4)}
 .wrap{width:var(--W);margin:0 auto;position:relative}
 .g{display:grid;grid-template-columns:repeat(4,1fr);column-gap:var(--gap)}
-/* the page's grid: the four columns, drawn as the app draws them; on load each line grows from the top or the bottom */
+/* the page's grid is not drawn: the four columns are there only in where things stand */
 .cols{position:fixed;inset:0;pointer-events:none;z-index:0}
 .cols .wrap{height:100%}
 .cols i{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.35;transform-origin:top;transform:scaleY(0);transition:transform var(--move) var(--ease) var(--d)}
@@ -139,7 +139,6 @@ footer{padding:16px 0 28px;font-size:13px;display:flex;justify-content:space-bet
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head>
 <body>
-<div class="cols" aria-hidden="true"><div class="wrap"></div></div>
 <main><div class="wrap">
 <header class="un in"><span class="lg"><span class="u">u<i></i><i></i></span>hr</span><a class="btn" href="./"><span>open the app</span></a></header>
 
@@ -253,11 +252,7 @@ footer{padding:16px 0 28px;font-size:13px;display:flex;justify-content:space-bet
 <footer><span><span class="lg"><span class="u">u<i></i><i></i></span>hr</span></span><span>inspired by josef müller-brockmann</span></footer>
 </div></main>
 <script>
-// the page grid: four columns, each drawn as two hairlines (its left and right edge), growing in one after another
-(()=>{const w=document.querySelector('.cols .wrap'),C=getComputedStyle(document.documentElement);
-  function draw(){w.innerHTML='';const W=w.clientWidth,g=parseFloat(C.getPropertyValue('--gap'))||24,c=(W-3*g)/4;let n=0;
-    for(let k=0;k<4;k++)for(const x of [k*(c+g),k*(c+g)+c]){const i=document.createElement('i');i.style.left=x+'px';i.style.setProperty('--d',(n++*70)+'ms');w.appendChild(i)}}
-  draw();addEventListener('resize',draw);requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.add('ready')))})();
+requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.add('ready')));
 // uncover each block when it comes into view (and the rules of each section)
 (()=>{const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.15});
   document.querySelectorAll('.un:not(.in),section').forEach(el=>io.observe(el))})();
