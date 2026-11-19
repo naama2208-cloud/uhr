@@ -36,5 +36,6 @@
 .cd::before{top:.06em}.cd::after{bottom:0}
 /* the logo, wherever ühr is written: under, black weight, the two dots are circles */
 .lg{font-family:var(--type);font-weight:900;letter-spacing:0;white-space:nowrap;text-transform:none;direction:ltr;unicode-bidi:isolate}.lg .u{position:relative;display:inline-block;line-height:1}
-/* measured on the u of under at 900: stems centred at .199em and .712em, x-height at .283em */
-.lg .u i{position:absolute;top:.043em;width:.17em;height:.17em;border-radius:50%;background:var(--orange)}.lg .u i:first-child{left:.114em}.lg .u i:last-child{left:.627em}
+/* Naama's logo (Frame 2), measured on under 900: the dots are .142em, a gap of .065em above the x-height (.286em),
+   set close together over the u — the first from .208em, the second from .433em */
+.lg .u i{position:absolute;top:.079em;width:.142em;height:.142em;border-radius:50%;background:var(--orange)}.lg .u i:first-child{left:.208em}.lg .u i:last-child{left:.433em}
