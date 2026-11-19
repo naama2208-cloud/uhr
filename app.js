@@ -341,8 +341,9 @@ function poster(a,o={}){const S=o.s||1,PW=500,PH=PW*16/9,k=1080*S/PW,W=Math.roun
   const wid=(t,fs,w,track=0)=>{g.font=`${w} ${fs}px ${font}`;ls(track*fs);const m=g.measureText(t).width;ls(0);return m};
   const T=1.75; // the type starts once the grid is in
   // the logo, row 1 (under, the dots over the u's stems)
-  const LS=37.78,lb=Y(0)+32.8,lp=at(T,.5);
-  if(lp>0){g.save();g.beginPath();g.rect(X(0)-5,Y(0)-5,(LS*1.9+10)*lp,F);g.clip();put('uhr',X(0),lb,LS,700,-.045,type);g.fillStyle=col.red;const d=.145*LS;
+  // the logo stands on the grid: its baseline on the top line of row 1
+  const LS=37.78,lb=Y(0),lp=at(T,.5);
+  if(lp>0){g.save();g.beginPath();g.rect(X(0)-5,lb-LS*1.2,(LS*1.9+10)*lp,LS*1.5);g.clip();put('uhr',X(0),lb,LS,700,-.045,type);g.fillStyle=col.red;const d=.145*LS;
     stems(700).slice(0,2).forEach(c=>{g.beginPath();g.arc(X(0)+c*LS,lb-.8315*LS+.078*LS+d/2,d/2,0,7);g.fill()});g.restore()}
   // the hour's square, in the colour of its kind, each alarm in its own cell (rows 2–5); it stretches down from its top line
   let hs=[...(a.name+a.h+a.m)].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);hs^=hs>>>15;hs=Math.imul(hs,0x2c1b3c6d)>>>0;hs=(hs^hs>>>12)>>>0;const cell=hs%16,[sc,sr]=a.cell||[cell%4,1+(cell>>2)];
@@ -358,10 +359,10 @@ function poster(a,o={}){const S=o.s||1,PW=500,PH=PW*16/9,k=1080*S/PW,W=Math.roun
   const tx=X(3),tf=31.31,tb=Y(5)+.73*tf+1.6,tp=at(T+.4,.5);
   if(tp>0){g.save();g.beginPath();g.rect(tx-2,Y(5)-2,(F+4)*tp,tf*1.2);g.clip();const hw=put(p2(a.h),tx,tb,tf,700,-.02),cd=tf*.13,cx=tx+hw+tf*.07;g.fillStyle=col.ink;
     [.42,.12].forEach(f=>{g.beginPath();g.arc(cx+cd/2,tb-tf*f-cd/2,cd/2,0,7);g.fill()});put(p2(a.m),cx+cd+tf*.07,tb,tf,700,-.02);g.restore()}
-  // the facts: the day, how often, the sound (9.93 on a 150% line)
+  // the facts: the day, how often, the sound (9.93 on a 150% line); the last line on the name's baseline
   const now=new Date(),d=a.days.length?now:parse(a.date),dn=ymd(d)===ymd(now)?'today':DAYS[d.getDay()],dd=`${dn} ${p2(d.getDate())}/${p2(d.getMonth()+1)}`;
   const often=a.shared?'shared with you':a.days.length?(a.days.length===7?'every day':'every '+(a.days.length===1?DAYS[a.days[0]]:a.days.map(x=>DS[x]).join(' '))):'once';
-  const ff=9.93,fp=at(T+.55,.5);(a.facts||[a.days.length?often:dd,a.days.length?'every week':often,'sound: '+a.sound]).forEach((t,i)=>put(t,tx,Y(5)+52.9+i*ff*1.5,ff,400,0,font,fp));
+  const ff=9.93,fp=at(T+.55,.5);(a.facts||[a.days.length?often:dd,a.days.length?'every week':often,'sound: '+a.sound]).forEach((t,i)=>put(t,tx,Y(5)+F-(2-i)*ff*1.5,ff,400,0,font,fp));
   // the foot: the line and the invitation, on the last line of row 7
   const fo=15.11,fb=Y(6)+F,ftp=at(T+.7,.5);put('your hour, on a grid.',X(0),fb-16.6,fo,700,-.02,font,ftp);put('Download the app for free.',X(0),fb-3.8,fo,400,0,font,ftp);
   // the QR to the app, a third of a square, in the corner of the last cell; it comes in with a cut
