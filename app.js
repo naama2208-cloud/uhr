@@ -342,9 +342,9 @@ function poster(a,o={}){const S=o.s||1,PW=500,PH=PW*16/9,k=1080*S/PW,W=Math.roun
   const T=1.75; // the type starts once the grid is in
   // the logo, row 1 (under, the dots over the u's stems)
   // the logo stands on the grid: its baseline on the top line of row 1
-  const LS=31.1,lx=X(0)-.03*LS,lb=Y(0),lp=at(T,.5); // 900: the ink is 2.44em wide — 76 mm, as on the 50×70; its first stem on the column line
-  if(lp>0){g.save();g.beginPath();g.rect(X(0)-5,lb-LS*1.2,(LS*2.6+10)*lp,LS*1.5);g.clip();put('uhr',lx,lb,LS,900,0,type);g.fillStyle=col.red;const d=.142*LS;
-    [.208,.433].forEach(l=>{g.beginPath();g.arc(lx+(l+.071)*LS,lb-.8315*LS+.079*LS+d/2,d/2,0,7);g.fill()});g.restore()}
+  const LS=30.9,lx=X(0)-.03*LS,lb=Y(0),lp=at(T,.5); // 900: the ink is 2.44em wide — 76 mm, as on the 50×70; its first stem on the column line
+  if(lp>0){g.save();g.beginPath();g.rect(X(0)-5,lb-LS*1.2,(LS*2.6+10)*lp,LS*1.5);g.clip();put('uhr',lx,lb,LS,900,.009,type);g.fillStyle=col.red;const d=.144*LS;
+    [.255,.51].forEach(l=>{g.beginPath();g.arc(lx+(l+.072)*LS,lb-.8315*LS+.096*LS+d/2,d/2,0,7);g.fill()});g.restore()}
   // the hour's square, in the colour of its kind, each alarm in its own cell (rows 2–5); it stretches down from its top line
   let hs=[...(a.name+a.h+a.m)].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);hs^=hs>>>15;hs=Math.imul(hs,0x2c1b3c6d)>>>0;hs=(hs^hs>>>12)>>>0;const cell=hs%16,[sc,sr]=a.cell||[cell%4,1+(cell>>2)];
   const sp=at(T-.25,.64);if(sp>0){g.fillStyle=col.kind;g.fillRect(X(sc),Y(sr),F,F*sp)}
@@ -460,11 +460,11 @@ setInterval(()=>{const n=new Date(),mk=n.getHours()*60+n.getMinutes();
 // the two dots of the ü sit over the u's two stems, whatever the weight (measured on under: weight → stem centres, in em)
 const STEMS=[[100,.057,.443],[300,.0785,.465],[500,.1115,.5215],[700,.155,.617],[900,.1985,.7115]];
 function stems(w){let i=0;while(i<STEMS.length-2&&w>STEMS[i+1][0])i++;const [w0,a0,b0]=STEMS[i],[w1,a1,b1]=STEMS[i+1],t=Math.max(0,Math.min(1,(w-w0)/(w1-w0)));return [a0+(a1-a0)*t,b0+(b1-b0)*t,(w-100)/800]}
-// the dots of the logo: at 900 exactly Naama's Frame 2 (d .142em, gap .062em over the x-height, centres .279em and .504em);
+// the dots of the logo: at 900 exactly Naama's Frame 2 (d .144em, tops at .096em, centres .328em and .582em);
 // at lighter weights the same proportions between the stems
-const DOTS=(a,b)=>[a+.157*(b-a),a+.595*(b-a)];
+const DOTS=(a,b)=>[a+.2515*(b-a),a+.7476*(b-a)];
 function umlaut(u){const cs=getComputedStyle(u),fs=parseFloat(cs.fontSize),w=parseFloat(cs.fontWeight)||100,[a0,b0,t]=stems(w),[a,b]=DOTS(a0,b0);
-  const d=fs*(.07+.072*t),gap=fs*(.04+.022*t),top=fs*.283-gap-d;
+  const d=fs*(.07+.074*t),gap=fs*(.04+.0026*t),top=fs*.283-gap-d;
   u.querySelectorAll('i').forEach((i,k)=>Object.assign(i.style,{width:d+'px',height:d+'px',top:top+'px',left:(k?b:a)*fs-d/2+'px'}))}
 function drawGrid(){const top=sc.scrollTop;let k=0;
   days.forEach(D=>D.bands.forEach(b=>{const y=parseFloat(D.de.style.top)+parseFloat(b.style.top)-top;b.style.setProperty('--d',(y>-80&&y<PH?(8*STEP+(k++)*STEP*1.5):0)+'ms')}));
