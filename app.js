@@ -320,8 +320,8 @@ const CV=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim(
 const QR='1fdd8c7f,104a8541,1755fe5d,1744a95d,174a445d,1050dd41,1fd5557f,f5300,146de125,1ea4b363,7e723dd,10b5b8,5c91e1,19a92be3,1047eed1,5907640,16fed3e1,c2af7e7,1b752ad9,7908140,1c7091fa,18391d,1fdcfd51,104e7111,1748d3f9,1743641d,17573a13,1046a718,1fd8f3c9'.split(',').map(h=>parseInt(h,16).toString(2).padStart(29,'0'));
 const bez=(x1,y1,x2,y2)=>t=>{let u=t;for(let i=0;i<8;i++){const x=3*(1-u)**2*u*x1+3*(1-u)*u*u*x2+u**3-t,dx=3*(1-u)**2*x1+6*(1-u)*u*(x2-x1)+3*u*u*(1-x2);if(Math.abs(dx)<1e-6)break;u=Math.min(1,Math.max(0,u-x/dx))}return 3*(1-u)**2*u*y1+3*(1-u)*u*u*y2+u**3};
 const EZ=bez(.7,0,.2,1);
-function poster(a,o={}){const S=o.s||1,PW=500,PH=PW*16/9,k=1080*S/PW,W=Math.round(PW*k),H=Math.round(PH*k);
-  const M=25.4,G=11.1,F=(PW-2*M-3*G)/4,R=7,T0=(PH-(R*F+(R-1)*G))/2,X=c=>M+c*(F+G),Y=r=>T0+r*(F+G);
+function poster(a,o={}){const S=o.s||1,PW=500,PH=o.print?700:PW*16/9,k=1080*S/PW,W=Math.round(PW*k),H=Math.round(PH*k); // o.print: the 50×70 itself (5 rows)
+  const M=25.4,G=11.1,F=(PW-2*M-3*G)/4,R=o.print?5:7,T0=(PH-(R*F+(R-1)*G))/2,X=c=>M+c*(F+G),Y=r=>T0+r*(F+G);
   // the motion: 0 → 1 for a part that starts at t0 and lasts d seconds; without o.t everything is in place
   const at=(t0,d=.64)=>o.t==null?1:EZ(Math.min(1,Math.max(0,(o.t-t0)/d)));
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');g.scale(k,k);
@@ -342,29 +342,29 @@ function poster(a,o={}){const S=o.s||1,PW=500,PH=PW*16/9,k=1080*S/PW,W=Math.roun
   const T=1.75; // the type starts once the grid is in
   // the logo, row 1 (under, the dots over the u's stems)
   // the logo stands on the grid: its baseline on the top line of row 1
-  const LS=30.9,lx=X(0)-.03*LS,lb=Y(0),lp=at(T,.5); // 900: the ink is 2.44em wide — 76 mm, as on the 50×70; its first stem on the column line
+  const LS=32.66,lx=X(0)-.03*LS,lb=Y(0),lp=at(T,.5); // 900: the ink is 2.46em wide — 80.3 mm, as on the 50×70; its first stem on the column line
   if(lp>0){g.save();g.beginPath();g.rect(X(0)-5,lb-LS*1.2,(LS*2.6+10)*lp,LS*1.5);g.clip();put('uhr',lx,lb,LS,900,.009,type);g.fillStyle=col.red;const d=.144*LS;
     [.255,.51].forEach(l=>{g.beginPath();g.arc(lx+(l+.072)*LS,lb-.8315*LS+.096*LS+d/2,d/2,0,7);g.fill()});g.restore()}
   // the hour's square, in the colour of its kind, each alarm in its own cell (rows 2–5); it stretches down from its top line
-  let hs=[...(a.name+a.h+a.m)].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);hs^=hs>>>15;hs=Math.imul(hs,0x2c1b3c6d)>>>0;hs=(hs^hs>>>12)>>>0;const cell=hs%16,[sc,sr]=a.cell||[cell%4,1+(cell>>2)];
+  let hs=[...(a.name+a.h+a.m)].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);hs^=hs>>>15;hs=Math.imul(hs,0x2c1b3c6d)>>>0;hs=(hs^hs>>>12)>>>0;const cell=hs%16,[sc,sr]=a.cell||[cell%4,1+(cell>>2)%(R-3)];
   const sp=at(T-.25,.64);if(sp>0){g.fillStyle=col.kind;g.fillRect(X(sc),Y(sr),F,F*sp)}
   // the name: bold, its baseline on the bottom line of row 6; as large as the poster's (45.4), smaller only if three columns are too narrow; a long name takes two lines, upward
-  const three=3*F+2*G,NS=45.39,nb=Y(5)+F;let lines=[a.name],nf=NS;
+  const three=3*F+2*G,NS=45.39,nb=Y(R-2)+F;let lines=[a.name],nf=NS;
   // up to a fifth smaller stays on one line; beyond that it breaks
   if(wid(a.name,NS,700,-.02)>three*1.25){const w=a.name.split(/\s+/);if(w.length>1){let best=null;for(let i=1;i<w.length;i++){const L=[w.slice(0,i).join(' '),w.slice(i).join(' ')],f=Math.min(NS,...L.map(t=>NS*three/wid(t,NS,700,-.02)));if(!best||f>best.f)best={L,f}}lines=best.L;nf=best.f}
     else nf=NS*three/wid(a.name,NS,700,-.02)}
   else nf=Math.min(NS,NS*three/wid(a.name,NS,700,-.02))
   const np=at(T+.25,.5);lines.forEach((t,i)=>put(t,X(0),nb-(lines.length-1-i)*nf*.95,nf,700,-.02,font,np));
   // the time, top of row 6, fourth column; the colon is two circles
-  const tx=X(3),tf=31.31,tb=Y(5)+.73*tf+1.6,tp=at(T+.4,.5);
-  if(tp>0){g.save();g.beginPath();g.rect(tx-2,Y(5)-2,(F+4)*tp,tf*1.2);g.clip();const hw=put(p2(a.h),tx,tb,tf,700,-.02),cd=tf*.13,cx=tx+hw+tf*.07;g.fillStyle=col.ink;
+  const tx=X(3),tf=31.31,tb=Y(R-2)+.72*tf,tp=at(T+.4,.5);
+  if(tp>0){g.save();g.beginPath();g.rect(tx-2,Y(R-2)-2,(F+4)*tp,tf*1.2);g.clip();const hw=put(p2(a.h),tx,tb,tf,700,-.02),cd=tf*.13,cx=tx+hw+tf*.07;g.fillStyle=col.ink;
     [.42,.12].forEach(f=>{g.beginPath();g.arc(cx+cd/2,tb-tf*f-cd/2,cd/2,0,7);g.fill()});put(p2(a.m),cx+cd+tf*.07,tb,tf,700,-.02);g.restore()}
   // the facts: the day, how often, the sound (9.93 on a 150% line); the last line on the name's baseline
   const now=new Date(),d=a.days.length?now:parse(a.date),dn=ymd(d)===ymd(now)?'today':DAYS[d.getDay()],dd=`${dn} ${p2(d.getDate())}/${p2(d.getMonth()+1)}`;
   const often=a.shared?'shared with you':a.days.length?(a.days.length===7?'every day':'every '+(a.days.length===1?DAYS[a.days[0]]:a.days.map(x=>DS[x]).join(' '))):'once';
-  const ff=9.93,fp=at(T+.55,.5);(a.facts||[a.days.length?often:dd,a.days.length?'every week':often,'sound: '+a.sound]).forEach((t,i)=>put(t,tx,Y(5)+F-(2-i)*ff*1.5,ff,400,0,font,fp));
+  const ff=9.93,fp=at(T+.55,.5);(a.facts||[a.days.length?often:dd,a.days.length?'every week':often,'sound: '+a.sound]).forEach((t,i)=>put(t,tx,Y(R-2)+F-(2-i)*ff*1.5,ff,400,0,font,fp));
   // the foot: the line and the invitation, on the last line of row 7
-  const fo=15.11,fb=Y(6)+F,ftp=at(T+.7,.5);put('your hour, on a grid.',X(0),fb-16.6,fo,700,-.02,font,ftp);put('Download the app for free.',X(0),fb-3.8,fo,400,0,font,ftp);
+  const fo=15.11,fb=Y(R-1)+F,ftp=at(T+.7,.5);put('your hour, on a grid.',X(0),fb-17.3,fo,700,-.02,font,ftp);put('Download the app for free.',X(0),fb-.6,fo,400,0,font,ftp); // as measured on the 50×70: the second line stands on the row line
   // the QR to the app, a third of a square, in the corner of the last cell; it comes in with a cut
   if(at(T+.9,.01)>=1){const q=F/3,u=q/29;g.fillStyle=col.ink;QR.forEach((row,y)=>[...row].forEach((b,x)=>{if(b==='1')g.fillRect(tx+x*u,fb-q+y*u,u+.02,u+.02)}))}
   return cv}
