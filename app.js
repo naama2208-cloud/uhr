@@ -313,52 +313,59 @@ const enc=o=>btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g
 const dec=t=>JSON.parse(decodeURIComponent(escape(atob(t.replace(/-/g,'+').replace(/_/g,'/')))));
 // new alarm on its last step: share = set it, then send it on
 bSh.addEventListener('click',()=>{const a=draft.edit?alarms.find(x=>x.id===draft.id):commit();if(a)shareAlarm(a,!draft.edit)});
-// ---------- the share poster (Figma: "share poster · A2"): type on the app's grid, and the one square of the shared hour ----------
+// ---------- the share poster: Naama's 50×70 poster, set on a 9:16 page. One source for the share, the screen and the motion. ----------
 const CV=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-// the poster — frame 07 in figma, 1:1. Drawn in the frame's own units (463.2 wide) and scaled to 1080×1920.
-// The home grid: 4 columns of squares; the hour's square, the name, how often and with whom, the time and the facts.
-function poster(a){const W=1080,H=1920,k=W/463.2,M=23.57,F=96.07,G=10.29,T0=44.15,X=c=>M+c*(F+G),Y=r=>T0+r*(F+G);
+// drawn in millimetres of a poster 500 wide (the 50×70's own grid: margin 25.4, gutter 11.1, four columns), 9:16 tall, so 7 rows.
+// o.s = scale (1 → 1080×1920, 2 → 2160×3840); o.t = seconds into the motion (none = the still poster)
+const QR='1fdd8c7f,104a8541,1755fe5d,1744a95d,174a445d,1050dd41,1fd5557f,f5300,146de125,1ea4b363,7e723dd,10b5b8,5c91e1,19a92be3,1047eed1,5907640,16fed3e1,c2af7e7,1b752ad9,7908140,1c7091fa,18391d,1fdcfd51,104e7111,1748d3f9,1743641d,17573a13,1046a718,1fd8f3c9'.split(',').map(h=>parseInt(h,16).toString(2).padStart(29,'0'));
+const bez=(x1,y1,x2,y2)=>t=>{let u=t;for(let i=0;i<8;i++){const x=3*(1-u)**2*u*x1+3*(1-u)*u*u*x2+u**3-t,dx=3*(1-u)**2*x1+6*(1-u)*u*(x2-x1)+3*u*u*(1-x2);if(Math.abs(dx)<1e-6)break;u=Math.min(1,Math.max(0,u-x/dx))}return 3*(1-u)**2*u*y1+3*(1-u)*u*u*y2+u**3};
+const EZ=bez(.7,0,.2,1);
+function poster(a,o={}){const S=o.s||1,PW=500,PH=PW*16/9,k=1080*S/PW,W=Math.round(PW*k),H=Math.round(PH*k);
+  const M=25.4,G=11.1,F=(PW-2*M-3*G)/4,R=7,T0=(PH-(R*F+(R-1)*G))/2,X=c=>M+c*(F+G),Y=r=>T0+r*(F+G);
+  // the motion: 0 → 1 for a part that starts at t0 and lasts d seconds; without o.t everything is in place
+  const at=(t0,d=.64)=>o.t==null?1:EZ(Math.min(1,Math.max(0,(o.t-t0)/d)));
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');g.scale(k,k);
   const kind=a.shared?'shared':a.days.length?'fixed':'once';
-  const col={paper:CV('--paper'),ink:CV('--ink'),line:CV('--line'),red:CV('--red'),kind:CV('--'+kind)};
+  const col={paper:CV('--paper'),ink:CV('--ink'),line:CV('--line')||CV('--red'),red:CV('--red'),kind:CV('--'+(a.sq||kind))};
   const font=CV('--font')||'Helvetica,Arial,sans-serif',type=CV('--type')||font;
-  g.fillStyle=col.paper;g.fillRect(0,0,W/k,H/k);
-  // the grid: a pair of hairlines at both edges of every column and every row
-  g.globalAlpha=.75;g.fillStyle=col.line;const hl=2/k;
-  for(let c=0;c<4;c++)for(const x of [X(c),X(c)+F])g.fillRect(x-hl/2,0,hl,H/k);
-  for(let r=0;r<7;r++)for(const y of [Y(r),Y(r)+F])g.fillRect(0,y-hl/2,W/k,hl);
+  g.fillStyle=col.paper;g.fillRect(0,0,PW,PH);
+  // the grid comes in from the edges: verticals from the top or the bottom, horizontals from the left or the right, one after another
+  g.globalAlpha=.75;g.fillStyle=col.line;const hl=.35;let n=0;
+  for(let c=0;c<4;c++)for(const x of [X(c),X(c)+F]){const p=at(n++*.07);if(n%2)g.fillRect(x-hl/2,0,hl,PH*p);else g.fillRect(x-hl/2,PH*(1-p),hl,PH*p)}
+  for(let r=0;r<R;r++)for(const y of [Y(r),Y(r)+F]){const p=at(.3+n++*.05);if(n%2)g.fillRect(0,y-hl/2,PW*p,hl);else g.fillRect(PW*(1-p),y-hl/2,PW*p,hl)}
   g.globalAlpha=1;
-  // text by the top of its line box, as figma places it (line height 100%: helvetica's baseline sits .77 under the top)
   const ls=v=>{try{g.letterSpacing=v+'px'}catch(e){}};
-  const put=(t,x,top,fs,w,color,track=0,fam=font,asc=.77)=>{g.font=`${w} ${fs}px ${fam}`;ls(track*fs);g.fillStyle=color;g.textBaseline='alphabetic';g.fillText(t,x,top+asc*fs);const m=g.measureText(t).width;ls(0);return m};
+  // text by its baseline; each piece is uncovered from the left (p = how much)
+  const put=(t,x,base,fs,w,track=0,fam=font,p=1)=>{if(p<=0)return 0;g.font=`${w} ${fs}px ${fam}`;ls(track*fs);const m=g.measureText(t).width;
+    g.save();g.beginPath();g.rect(x-fs,base-fs*1.2,(m+fs)*p+fs*(p>=1?1:0),fs*1.6);g.clip();g.fillStyle=col.ink;g.textBaseline='alphabetic';g.fillText(t,x,base);g.restore();ls(0);return m};
   const wid=(t,fs,w,track=0)=>{g.font=`${w} ${fs}px ${font}`;ls(track*fs);const m=g.measureText(t).width;ls(0);return m};
-  const fitTo=(t,fs,w,track,max)=>{const m=wid(t,fs,w,track);return m>max?fs*max/m:fs};
-  const logo=(x,top,fs,w=700)=>{put('uhr',x,top,fs,w,col.ink,-.045,type,.8315);g.fillStyle=col.red;const d=.145*fs;
-    stems(w).slice(0,2).forEach(c=>{g.beginPath();g.arc(x+c*fs,top+(.283-.06)*fs-d/2,d/2,0,7);g.fill()})};
-  logo(24.02,40.32,32.6);
-  // the hour's square, in the colour of its kind
-  g.fillStyle=col.kind;g.fillRect(X(2),Y(2),F,F);
-  // the name: as large as two columns allow; a long name may take a third
-  // a long name breaks onto a second line rather than shrinking; the last line keeps its baseline, extra lines grow upward
-  const two=2*F+G,three=3*F+2*G,nb=525.02+60.12*.77;let lines=[a.name],nf=fitTo(a.name,60.12,700,-.035,two);
-  if(nf<45){const w=a.name.split(/\s+/);if(w.length>1){let best=null;for(let i=1;i<w.length;i++){const L=[w.slice(0,i).join(' '),w.slice(i).join(' ')],f=Math.min(...L.map(t=>fitTo(t,60.12,700,-.035,two)));if(!best||f>best.f)best={L,f}}lines=best.L;nf=best.f}
-    else nf=fitTo(a.name,60.12,700,-.035,three)}
-  // the name takes its own colour: red, blue or black, never the square's; each alarm keeps its own, next to its neighbours' different ones
-  const pal=['red','once','ink'],hs=(h=>{h^=h>>>16;h=Math.imul(h,0x45d9f3b);h^=h>>>16;return h>>>0})([...a.name].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261)),ix=alarms.indexOf(a),k0=(ix>=0?ix:hs)%3;let ncol=CV('--'+pal[k0]);if(ncol===col.kind)ncol=CV('--'+pal[(k0+1)%3]);
-  lines.forEach((t,i)=>put(t,X(0),nb-(lines.length-1-i)*nf-.77*nf,nf,700,ncol,-.035));
-  const d=a.days.length?parse(ymd(new Date())):parse(a.date),dn=DAYS[a.days.length?(a.days.includes(new Date().getDay())?new Date().getDay():a.days[0]):d.getDay()];
-  const often=a.days.length?(a.days.length===7?'every day':'every '+(a.days.length===1?DAYS[a.days[0]]:a.days.map(x=>DS[x]).join(' '))):`${dn}, ${d.getDate()}.${d.getMonth()+1}`;
-  put(often,X(0),606,fitTo(often,30.88,300,-.035,three),300,col.ink,-.035);
-  if(me){const w='with '+me.replace(/^./,c=>c.toUpperCase());put(w,X(0),642,fitTo(w,37.5,400,-.035,three),400,col.ink,-.035)}
-  // the time, in the fourth column; the colon is two circles
-  const tx=X(3),tt=539.96,tf=29.11,hw=put(p2(a.h),tx,tt,tf,700,col.ink,-.03),cx=tx+hw+5.73,cd=3.88;
-  g.fillStyle=col.red;[8.65,17.96].forEach(o=>{g.beginPath();g.arc(cx+cd/2,tt+o+cd/2,cd/2,0,7);g.fill()});
-  put(p2(a.m),cx+cd+5.17,tt,tf,700,col.ink,-.03);
-  // the facts, line by line (9.19 on a 150% line)
-  const ff=9.19,lh=ff*1.5,pad=(lh-ff)/2;
-  [dn,a.days.length?'every week':'once','sound: '+a.sound].forEach((t,i)=>put(t,tx,593+i*lh+pad,ff,400,col.ink));
-  [`${me||'someone'} shared`,'this hour.'].forEach((t,i)=>put(t,tx,635.85+i*lh+pad,ff,700,col.ink));
-  const cw=put('add it to your ',tx,663.12,ff,400,col.ink);logo(tx+cw,663.12-.4,ff,900);
+  const T=1.75; // the type starts once the grid is in
+  // the logo, row 1 (under, the dots over the u's stems)
+  const LS=37.78,lb=Y(0)+32.8,lp=at(T,.5);
+  if(lp>0){g.save();g.beginPath();g.rect(X(0)-5,Y(0)-5,(LS*1.9+10)*lp,F);g.clip();put('uhr',X(0),lb,LS,700,-.045,type);g.fillStyle=col.red;const d=.145*LS;
+    stems(700).slice(0,2).forEach(c=>{g.beginPath();g.arc(X(0)+c*LS,lb-.8315*LS+.078*LS+d/2,d/2,0,7);g.fill()});g.restore()}
+  // the hour's square, in the colour of its kind, each alarm in its own cell (rows 2–5); it stretches down from its top line
+  let hs=[...(a.name+a.h+a.m)].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);hs^=hs>>>15;hs=Math.imul(hs,0x2c1b3c6d)>>>0;hs=(hs^hs>>>12)>>>0;const cell=hs%16,[sc,sr]=a.cell||[cell%4,1+(cell>>2)];
+  const sp=at(T-.25,.64);if(sp>0){g.fillStyle=col.kind;g.fillRect(X(sc),Y(sr),F,F*sp)}
+  // the name: bold, its baseline on the bottom line of row 6; as large as the poster's (45.4), smaller only if three columns are too narrow; a long name takes two lines, upward
+  const three=3*F+2*G,NS=45.39,nb=Y(5)+F;let lines=[a.name],nf=NS;
+  // up to a fifth smaller stays on one line; beyond that it breaks
+  if(wid(a.name,NS,700,-.02)>three*1.25){const w=a.name.split(/\s+/);if(w.length>1){let best=null;for(let i=1;i<w.length;i++){const L=[w.slice(0,i).join(' '),w.slice(i).join(' ')],f=Math.min(NS,...L.map(t=>NS*three/wid(t,NS,700,-.02)));if(!best||f>best.f)best={L,f}}lines=best.L;nf=best.f}
+    else nf=NS*three/wid(a.name,NS,700,-.02)}
+  else nf=Math.min(NS,NS*three/wid(a.name,NS,700,-.02))
+  const np=at(T+.25,.5);lines.forEach((t,i)=>put(t,X(0),nb-(lines.length-1-i)*nf*.95,nf,700,-.02,font,np));
+  // the time, top of row 6, fourth column; the colon is two circles
+  const tx=X(3),tf=31.31,tb=Y(5)+.73*tf+1.6,tp=at(T+.4,.5);
+  if(tp>0){g.save();g.beginPath();g.rect(tx-2,Y(5)-2,(F+4)*tp,tf*1.2);g.clip();const hw=put(p2(a.h),tx,tb,tf,700,-.02),cd=tf*.13,cx=tx+hw+tf*.07;g.fillStyle=col.ink;
+    [.42,.12].forEach(f=>{g.beginPath();g.arc(cx+cd/2,tb-tf*f-cd/2,cd/2,0,7);g.fill()});put(p2(a.m),cx+cd+tf*.07,tb,tf,700,-.02);g.restore()}
+  // the facts: the day, how often, the sound (9.93 on a 150% line)
+  const now=new Date(),d=a.days.length?now:parse(a.date),dn=ymd(d)===ymd(now)?'today':DAYS[d.getDay()],dd=`${dn} ${p2(d.getDate())}/${p2(d.getMonth()+1)}`;
+  const often=a.shared?'shared with you':a.days.length?(a.days.length===7?'every day':'every '+(a.days.length===1?DAYS[a.days[0]]:a.days.map(x=>DS[x]).join(' '))):'once';
+  const ff=9.93,fp=at(T+.55,.5);(a.facts||[a.days.length?often:dd,a.days.length?'every week':often,'sound: '+a.sound]).forEach((t,i)=>put(t,tx,Y(5)+52.9+i*ff*1.5,ff,400,0,font,fp));
+  // the foot: the line and the invitation, on the last line of row 7
+  const fo=15.11,fb=Y(6)+F,ftp=at(T+.7,.5);put('your hour, on a grid.',X(0),fb-16.6,fo,700,-.02,font,ftp);put('Download the app for free.',X(0),fb-3.8,fo,400,0,font,ftp);
+  // the QR to the app, a third of a square, in the corner of the last cell; it comes in with a cut
+  if(at(T+.9,.01)>=1){const q=F/3,u=q/29;g.fillStyle=col.ink;QR.forEach((row,y)=>[...row].forEach((b,x)=>{if(b==='1')g.fillRect(tx+x*u,fb-q+y*u,u+.02,u+.02)}))}
   return cv}
 // a canvas → a File without waiting, so the share still counts as part of the tap
 const posterFile=cv=>{const b=atob(cv.toDataURL('image/png').split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new File([u],'uhr-hour.png',{type:'image/png'})};
@@ -530,7 +537,7 @@ if(!takeShared()&&!EMBED)setTimeout(()=>askName(tipNow),reduce?400:THICK+1000+MO
 
 addEventListener('resize',()=>{fit();if(!busy())layoutAll()});
 // presenting + the live system page
-window.uhr={poster:(i=0)=>poster(alarms[i]).toDataURL('image/png'),posterOf:o=>poster({date:ymd(new Date()),...o}).toDataURL('image/png'),ring:()=>{const n=new Date(),a=alarms.slice().sort((x,y)=>(indexOf(x)*1440+x.h*60+x.m)-(indexOf(y)*1440+y.h*60+y.m))[0];
+window.uhr={poster:(i=0)=>poster(alarms[i]).toDataURL('image/png'),posterOf:(o,opt)=>poster({date:ymd(new Date()),days:[],sound:'glass',...o},opt).toDataURL('image/png'),ring:()=>{const n=new Date(),a=alarms.slice().sort((x,y)=>(indexOf(x)*1440+x.h*60+x.m)-(indexOf(y)*1440+y.h*60+y.m))[0];
     ring(a?{...a,id:-1,h:n.getHours(),m:n.getMinutes()}:{id:-1,h:n.getHours(),m:n.getMinutes(),name:'ühr',sound:'rise',days:[]})},
   reset:()=>{alarms=sample();store();paintAll()},
   first:()=>{alarms=[];store();try{localStorage.removeItem(TIPS)}catch(e){}location.reload()},
