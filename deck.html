@@ -21,7 +21,7 @@ html,body{margin:0;height:100%;background:#20201E;overflow:hidden}
 const N=18, stage=document.getElementById('stage'), num=document.getElementById('n');
 for(let i=1;i<=N;i++){const d=document.createElement('div');d.className='s';
  const p=String(i).padStart(2,'0');d.innerHTML='<img src="deck/s'+p+'.jpg" alt="שקף '+i+'">';
- if(i===14)d.innerHTML+='<video src="site/uhr-teaser-final.mp4" poster="site/uhr-teaser-final.jpg" muted loop playsinline controls></video>';
+ if(i===14)d.innerHTML+='<video src="deck/teaser.mp4" poster="deck/teaser.jpg" muted loop playsinline controls></video>';
  stage.appendChild(d);}
 const S=[...stage.children];
 let cur=Math.min(N,Math.max(1,parseInt(location.hash.slice(1))||1));
