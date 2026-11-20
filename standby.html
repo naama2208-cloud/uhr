@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#20201E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ühr — night</title>
+<link rel="stylesheet" href="under.css">
+<style>
+/* ühr at night: the phone is charging, the day sits on the grid. dark on purpose: a night screen must not light the room. */
+:root{--ink:#20201E;--paper:#E6E4DB;--red:#D50023;--blue:#0052B5;--yellow:#EEA700;--dim:#6E6C66;
+  --font:"Helvetica Neue",Helvetica,Arial,sans-serif;--move:640ms;--ease:cubic-bezier(.7,0,.2,1);
+  --m:6vw;--sq:calc((100vw - 2*var(--m))/4)}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--ink);color:var(--paper);font-family:var(--font);overflow:hidden;-webkit-user-select:none;user-select:none}
+#wrap{position:absolute;inset:0;padding:calc(env(safe-area-inset-top) + var(--m)) var(--m) var(--m);display:flex;flex-direction:column}
+header{display:flex;justify-content:space-between;align-items:baseline}
+.lg{font-family:under;font-weight:900;font-size:7vw;line-height:1;letter-spacing:-.045em;position:relative;color:var(--paper)}
+.lg .u{position:relative;display:inline-block}
+.lg .u i{position:absolute;top:-.02em;width:.13em;height:.13em;border-radius:50%;background:var(--red)}
+.lg .u i:first-child{left:calc(.199em - .065em)}.lg .u i:last-child{left:calc(.712em - .065em)}
+#date{font-size:3.6vw;color:var(--dim);text-transform:lowercase}
+#clock{margin-top:auto;font-weight:700;font-size:31vw;line-height:.82;letter-spacing:-.05em;display:flex;align-items:center}
+#clock .c{display:inline-flex;flex-direction:column;justify-content:center;gap:.16em;margin:0 .07em;height:.7em}
+#clock .c i{width:.11em;height:.11em;border-radius:50%;background:var(--red)}
+#next{margin:3vw 0 4vw;font-size:3.6vw;color:var(--dim);min-height:1.3em;text-transform:lowercase}
+#next b{color:var(--paper);font-weight:700;text-transform:none}
+#grid{position:relative;width:calc(4*var(--sq));height:calc(6*var(--sq));flex:none}
+#grid .l{position:absolute;background:var(--red);opacity:.42}
+.h{position:absolute;width:var(--sq);height:var(--sq);padding:1.6vw;font-size:3vw;line-height:1.05;color:var(--dim);font-weight:700;letter-spacing:-.02em}
+.h.past{color:#45443F}
+.h.a{color:var(--paper)}
+.h.a.once{background:var(--blue)}
+.h.a.shared{background:var(--yellow);color:var(--ink)}
+/* a fixed hour is ink by day; on the night's ink it turns to paper, so it still reads */
+.h.a.fixed{background:var(--paper);color:var(--ink)}
+.h .n{display:block;margin-top:.5em;font-weight:400;font-size:2.4vw;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#now{position:absolute;background:var(--red);z-index:2;transition:left var(--move) var(--ease),top var(--move) var(--ease),width var(--move) var(--ease),height var(--move) var(--ease)}
+#now span{position:absolute;left:1.6vw;top:1.6vw;font-size:3vw;font-weight:700;line-height:1.05;letter-spacing:-.02em;color:var(--paper)}
+#tap{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 2vw);text-align:center;font-size:2.6vw;color:var(--dim)}
+@media (min-aspect-ratio:3/4){:root{--sq:calc((100vh - 2*var(--m))/12);--m:3vh}#wrap{left:50%;width:calc(4*var(--sq) + 2*var(--m));transform:translateX(-50%)}
+ .lg{font-size:4vh}#date,#next{font-size:2vh}#clock{font-size:17vh}.h,#now span{font-size:1.6vh;padding:.8vh}.h .n{font-size:1.3vh}#tap{font-size:1.4vh}}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <header><span class="lg"><span class="u">u<i></i><i></i></span>hr</span><span id="date"></span></header>
+  <div id="clock"></div>
+  <div id="next"></div>
+  <div id="grid"><div id="now"><span></span></div></div>
+</div>
+<div id="tap">tap to keep the screen on</div>
+<script>
+const p2=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+const DAYS=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+// the same week the app keeps (same address, same storage); #demo or an empty week shows a sample night
+function load(){let a=null;try{a=JSON.parse(localStorage.getItem('uhr5'))}catch(e){}
+  if(location.hash==='#demo'||!Array.isArray(a)||!a.length){const t=ymd(new Date());
+    a=[{h:7,m:0,name:'Wake up',days:[0,1,2,3,4,5,6]},{h:10,m:30,name:'Coffee with Noa',date:t,shared:true},
+       {h:14,m:0,name:'Submission',date:t},{h:17,m:0,name:'Training',days:[0,1,2,3,4,5,6]},{h:20,m:0,name:'Call mom',date:t}]}
+  return a}
+function today(a,d){const k=ymd(d),w=d.getDay();
+  return a.filter(x=>(x.days&&x.days.length)?x.days.includes(w):x.date===k)}
+const grid=document.getElementById('grid'),now=document.getElementById('now');
+// the grid: 4 columns, 6 rows, every square an hour
+for(let i=1;i<4;i++){const l=document.createElement('div');l.className='l';l.style.cssText='left:calc('+i+'*var(--sq));top:0;width:1px;height:100%';grid.appendChild(l)}
+for(let i=1;i<6;i++){const l=document.createElement('div');l.className='l';l.style.cssText='top:calc('+i+'*var(--sq));left:0;height:1px;width:100%';grid.appendChild(l)}
+const cells=[];for(let h=0;h<24;h++){const c=document.createElement('div');c.className='h';
+  c.style.left='calc('+(h%4)+'*var(--sq))';c.style.top='calc('+Math.floor(h/4)+'*var(--sq))';grid.appendChild(c);cells.push(c)}
+const pos=h=>({x:h%4,y:Math.floor(h/4)});
+function place(r){now.style.left='calc('+r.x+'*var(--sq))';now.style.top='calc('+r.y+'*var(--sq))';
+  now.style.width='calc('+r.w+'*var(--sq))';now.style.height='calc('+r.h+'*var(--sq))'}
+let lastH=null,lastDay=null;
+function render(){const d=new Date(),H=d.getHours(),M=d.getMinutes();
+  document.getElementById('clock').innerHTML=p2(H)+'<span class="c"><i></i><i></i></span>'+p2(M);
+  document.getElementById('date').textContent=DAYS[d.getDay()]+' '+d.getDate()+'.'+(d.getMonth()+1);
+  const list=today(load(),d);
+  cells.forEach((c,h)=>{const a=list.filter(x=>x.h===h).sort((x,y)=>x.m-y.m)[0];
+    c.className='h'+(h<H?' past':'')+(a?' a '+(a.shared?'shared':(a.days&&a.days.length)?'fixed':'once'):'');
+    c.innerHTML=a?p2(h)+'<br>'+p2(a.m)+'<span class="n">'+a.name.replace(/</g,'&lt;')+'</span>':p2(h)});
+  const up=list.filter(x=>x.h*60+x.m>H*60+M).sort((x,y)=>(x.h*60+x.m)-(y.h*60+y.m))[0];
+  document.getElementById('next').innerHTML=up?'next · '+p2(up.h)+':'+p2(up.m)+' <b>'+up.name.replace(/</g,'&lt;')+'</b>':'nothing more today';
+  now.querySelector('span').innerHTML=p2(H)+'<br>'+p2(M);
+  // the hour you are in: a red square. when the hour turns, it stretches over to the next one and lets go of the old
+  if(lastH===null||ymd(d)!==lastDay){now.style.transition='none';place({...pos(H),w:1,h:1});now.offsetWidth;now.style.transition=''}
+  else if(H!==lastH){const a=pos(lastH),b=pos(H),x=Math.min(a.x,b.x),y=Math.min(a.y,b.y);
+    place({x,y,w:Math.max(a.x,b.x)-x+1,h:Math.max(a.y,b.y)-y+1});setTimeout(()=>place({...b,w:1,h:1}),640)}
+  lastH=H;lastDay=ymd(d)}
+render();setInterval(render,1000*15);
+// a tap asks the phone to stay awake while it charges
+let lock=null;document.addEventListener('click',async()=>{try{lock=await navigator.wakeLock.request('screen');document.getElementById('tap').style.visibility='hidden'}catch(e){}
+  if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{})});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&lock)navigator.wakeLock.request('screen').then(l=>lock=l).catch(()=>{})});
+</script>
+</body>
+</html>
