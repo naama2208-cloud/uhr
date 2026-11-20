@@ -14,6 +14,7 @@ const el=(c,p,tag='div')=>{const e=document.createElement(tag);if(c)e.className=
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const W=402;
 const DAYS=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'],DS=['su','mo','tu','we','th','fr','sa'];
+const MONTHS=['january','february','march','april','may','june','july','august','september','october','november','december'];
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const EMBED=new URLSearchParams(location.search).has('embed');
 document.documentElement.classList.toggle('embed',EMBED);
@@ -86,7 +87,8 @@ function layoutDay(D,i){const de=D.de;de.style.top=i*Lc.dayH+'px';de.style.heigh
   D.bands.forEach((b,r)=>{b.style.top=Lc.head+r*Lc.row+'px';b.style.height=Lc.F+'px'});
   D.sqs.forEach((q,h)=>{q.style.left=Lc.x(h%Lc.n)+'px';q.style.top=Lc.head+Math.floor(h/Lc.n)*Lc.row+'px';q.style.width=q.style.height=Lc.F+'px'})}
 function addDay(){const i=days.length,d=addDays(base,i%7),de=el('day',track);
-  const hd=el('dh',de);hd.innerHTML=`<b>${i%7===0?'today':DAYS[d.getDay()]}</b>`;
+  // the day's name on the left; zoomed out, the month instead (on the first day shown and on every 1st); a small date on the right, on the same baseline
+  const hd=el('dh',de);hd.innerHTML=`<b class="dn">${i%7===0?'today':DAYS[d.getDay()]}</b><b class="mn">${i%7===0||d.getDate()===1?MONTHS[d.getMonth()]:''}</b><small class="dt">${d.getDate()}.${d.getMonth()+1}</small>`;
   const sqs=[];for(let h=0;h<24;h++){const q=el('sq',de);q.dataset.i=i;q.dataset.h=h;sqs.push(q)}
   const D={d,de,sqs,bands:[],hd};days.push(D);layoutDay(D,i);track.style.height=days.length*Lc.dayH+Lc.row+'px';paint(i)}
 function layoutAll(){ph.style.setProperty('--head-h',Lc.head+'px');days.forEach(layoutDay);track.style.height=days.length*Lc.dayH+Lc.row+'px';setVL();zclass();if(typeof upStick==='function')requestAnimationFrame(upStick)}
@@ -113,12 +115,12 @@ const yOf=(i,h)=>i*Lc.dayH+Lc.head+Math.floor(h/Lc.n)*Lc.row;
 sc.scrollTop=Math.max(0,yOf(0,new Date().getHours())-Math.round(PH*.3));
 sc.addEventListener('scroll',()=>{if(sc.scrollTop+PH>(days.length-2)*Lc.dayH)for(let k=0;k<7;k++)addDay()},{passive:true});
 // the day you are looking at stays named at the top; the next day's name pushes it out (snap)
-const stick=el('stick',ph);stick.innerHTML='<b></b>';
+const stick=el('stick',ph);
 // a small i, top right: the page about ühr (not inside the landing page's own demo)
 if(!EMBED){const inf=el('info',ph,'a');inf.href='landing.html';inf.textContent='i';inf.setAttribute('aria-label','about ühr')}
 let stickI=-1;
 function upStick(){if(!days.length)return;const y=sc.scrollTop,i=Math.max(0,Math.min(days.length-1,Math.floor(y/Lc.dayH)));
-  if(i!==stickI){if(days[stickI])days[stickI].hd.style.visibility='';stickI=i;stick.firstChild.textContent=days[i].hd.textContent;days[i].hd.style.visibility='hidden'}
+  if(i!==stickI){if(days[stickI])days[stickI].hd.style.visibility='';stickI=i;stick.innerHTML=days[i].hd.innerHTML;days[i].hd.style.visibility='hidden'}
   const push=Math.min(0,(i+1)*Lc.dayH-y-stick.offsetHeight);stick.style.transform=`translateY(${push}px)`}
 sc.addEventListener('scroll',upStick,{passive:true});requestAnimationFrame(upStick);
 const sqAt=(i,h)=>days[i]&&days[i].sqs[h];
@@ -505,7 +507,11 @@ function splash(){const sp=el('splash',ph);sp.innerHTML='<div class="sw"><span c
     requestAnimationFrame(stepF);
     setTimeout(()=>morph(sp,sw2,gv,gh),THICK+1000)};
   (document.fonts&&document.fonts.load?document.fonts.load(`100 ${TSPL}px under`).then(()=>document.fonts.ready):Promise.resolve()).then(go2,go2)}
-if(reduce||EMBED){sc.classList.remove('drawing')}else{sc.classList.add('hold');splash();setTimeout(showAlarms,THICK+5000)} // safety: never leave alarms hidden
+// the very first time (no name on this phone, not opening a shared hour): the name comes first, then the splash opens onto an empty week
+const FIRST=!EMBED&&!(()=>{try{return localStorage.getItem('uhr5me')}catch(e){return 1}})()&&!/^#add=/.test(location.hash);
+const SPLASHED=THICK+1000+MOVE*.85+500+MOVE*1.4+400; // when the splash has handed over to the week
+function startSplash(){if(reduce||EMBED){sc.classList.remove('drawing')}else{sc.classList.add('hold');splash();setTimeout(showAlarms,THICK+5000)}} // safety: never leave alarms hidden
+if(!FIRST)startSplash();
 
 // ---------- first time: the app teaches by doing — one hint at a time, each gone for good once done ----------
 const TIPS='uhr5tips';let tips={};try{tips=JSON.parse(localStorage.getItem(TIPS))||{}}catch(e){}
@@ -537,7 +543,8 @@ function askName(then){if(me||EMBED){then&&then();return}
     me=v;try{localStorage.setItem(ME,me)}catch(e){}tick();w.classList.remove('on');setTimeout(()=>{w.remove();then&&then()},260)};
   w.querySelector('.b-go').onclick=go;nm.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go()}});
   setTimeout(()=>{try{nm.focus({preventScroll:true})}catch(e){}},300)}
-if(!takeShared()&&!EMBED)setTimeout(()=>askName(tipNow),reduce?400:THICK+1000+MOVE*.85+500+MOVE*1.4+400);
+if(FIRST){alarms=[];drafts={};store();paintAll();askName(()=>{startSplash();setTimeout(tipNow,reduce?400:SPLASHED)})}
+else if(!takeShared()&&!EMBED)setTimeout(()=>askName(tipNow),reduce?400:SPLASHED);
 
 addEventListener('resize',()=>{fit();if(!busy())layoutAll()});
 // presenting + the live system page

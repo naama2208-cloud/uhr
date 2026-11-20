@@ -160,7 +160,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--font);text-trans
 @media (prefers-reduced-motion:reduce){.ring .c .w{animation-duration:calc(var(--ring) * 2)}}
 /* ringing in helvetica: stripes = grid hairlines inside the digit */
 @property --lw{syntax:'<length>';inherits:false;initial-value:6px}
-@property --lc{syntax:'<color>';inherits:false;initial-value:#221D1A} /* @property can't read a variable: same as --ink */
+@property --lc{syntax:'<color>';inherits:false;initial-value:#20201E} /* @property can't read a variable: same as --ink */
 .ring .rt{font-family:var(--font);font-weight:700;font-variant-numeric:tabular-nums;margin:0;line-height:.74;letter-spacing:0}
 .ring .rw{gap:var(--gap)}.ring .rw+.rw{margin-top:0}
 .ring .c .w{font-family:var(--font);font-weight:700;color:transparent;-webkit-text-stroke:0;paint-order:normal;--lw:var(--stripe);--lc:var(--ink);
