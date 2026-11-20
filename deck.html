@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ühr — הגשה</title>
+<style>
+html,body{margin:0;height:100%;background:#20201E;overflow:hidden}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:0 0}
+.s{position:absolute;inset:0;display:none}
+.s.on{display:block}
+.s img{width:1920px;height:1080px;display:block}
+.s video{position:absolute;left:730px;top:130px;width:461px;height:820px;background:#000;object-fit:cover}
+#n{position:fixed;left:16px;bottom:12px;font:12px/1 Helvetica,Arial,sans-serif;color:#A9A79F;opacity:.6;direction:ltr}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="n"></div>
+<script>
+const N=18, stage=document.getElementById('stage'), num=document.getElementById('n');
+for(let i=1;i<=N;i++){const d=document.createElement('div');d.className='s';
+ const p=String(i).padStart(2,'0');d.innerHTML='<img src="deck/s'+p+'.jpg" alt="שקף '+i+'">';
+ if(i===14)d.innerHTML+='<video src="site/uhr-teaser-final.mp4" poster="site/uhr-teaser-final.jpg" muted loop playsinline controls></video>';
+ stage.appendChild(d);}
+const S=[...stage.children];
+let cur=Math.min(N,Math.max(1,parseInt(location.hash.slice(1))||1));
+function fit(){const k=Math.min(innerWidth/1920,innerHeight/1080);stage.style.transform='scale('+k+') translate(-50%,-50%)';}
+function go(i){cur=Math.min(N,Math.max(1,i));S.forEach((s,j)=>{const on=j===cur-1;s.classList.toggle('on',on);const v=s.querySelector('video');if(v){on?v.play().catch(()=>{}):v.pause();}});num.textContent=cur+' / '+N;history.replaceState(null,'','#'+cur);}
+addEventListener('resize',fit);
+addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();go(cur+1)}
+ else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){e.preventDefault();go(cur-1)}
+ else if(e.key==='Home')go(1);else if(e.key==='End')go(N);
+ else if(e.key==='f'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}});
+addEventListener('click',e=>{if(e.target.tagName==='VIDEO')return;go(e.clientX>innerWidth/2?cur-1:cur+1)});
+let tx=null;addEventListener('touchstart',e=>tx=e.touches[0].clientX);
+addEventListener('touchend',e=>{if(tx===null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40)go(dx>0?cur+1:cur-1);tx=null});
+fit();go(cur);
+</script>
+</body>
+</html>
