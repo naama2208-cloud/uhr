@@ -32,8 +32,9 @@ button{font-family:var(--font);text-transform:lowercase;-webkit-tap-highlight-co
 .dh b,.stick b,.dh .dt,.stick .dt{display:block;line-height:1;text-box:trim-both cap alphabetic}
 /* the small date: Helvetica regular, flush right on the last column line, on the day's baseline */
 .dh .dt,.stick .dt{font-size:13px;font-weight:400;font-variant-numeric:tabular-nums;margin-left:auto}
-/* zoomed out to the whole week, the heading is the month */
-.dh .mn,.stick .mn{display:none}.z8 .dh .dn,.z8 .stick .dn{display:none}.z8 .dh .mn,.z8 .stick .mn{display:block}
+/* zoomed all the way out: the months — each square a day; only one of the two grids is shown */
+.mtrack{position:relative;display:none}.months .mtrack{display:block}.months .track{display:none}
+.dq{cursor:pointer}
 .dh b{font-size:22px;font-weight:700}
 .stick{justify-content:space-between}
 .z8 .dh b{font-size:17px}

@@ -86,9 +86,9 @@ function layoutDay(D,i){const de=D.de;de.style.top=i*Lc.dayH+'px';de.style.heigh
   while(D.bands.length>Lc.rows)D.bands.pop().remove();while(D.bands.length<Lc.rows)D.bands.push(el('band',de));
   D.bands.forEach((b,r)=>{b.style.top=Lc.head+r*Lc.row+'px';b.style.height=Lc.F+'px'});
   D.sqs.forEach((q,h)=>{q.style.left=Lc.x(h%Lc.n)+'px';q.style.top=Lc.head+Math.floor(h/Lc.n)*Lc.row+'px';q.style.width=q.style.height=Lc.F+'px'})}
-function addDay(){const i=days.length,d=addDays(base,i%7),de=el('day',track);
-  // the day's name on the left; zoomed out, the month instead (on the first day shown and on every 1st); a small date on the right, on the same baseline
-  const hd=el('dh',de);hd.innerHTML=`<b class="dn">${i%7===0?'today':DAYS[d.getDay()]}</b><b class="mn">${i%7===0||d.getDate()===1?MONTHS[d.getMonth()]:''}</b><small class="dt">${d.getDate()}.${d.getMonth()+1}</small>`;
+function addDay(){const i=days.length,d=addDays(base,i),de=el('day',track);
+  // the day's name on the left; a small date on the right, on the same baseline
+  const hd=el('dh',de);hd.innerHTML=`<b class="dn">${i===0?'today':DAYS[d.getDay()]}</b><small class="dt">${d.getDate()}.${d.getMonth()+1}</small>`;
   const sqs=[];for(let h=0;h<24;h++){const q=el('sq',de);q.dataset.i=i;q.dataset.h=h;sqs.push(q)}
   const D={d,de,sqs,bands:[],hd};days.push(D);layoutDay(D,i);track.style.height=days.length*Lc.dayH+Lc.row+'px';paint(i)}
 function layoutAll(){ph.style.setProperty('--head-h',Lc.head+'px');days.forEach(layoutDay);track.style.height=days.length*Lc.dayH+Lc.row+'px';setVL();zclass();if(typeof upStick==='function')requestAnimationFrame(upStick)}
@@ -101,7 +101,7 @@ function paint(i){const {d,sqs}=days[i],now=new Date();
     q.classList.add('al','multi');const k=100/list.length;
     q.innerHTML=list.map((a,j)=>`<div class="part ${a.days.length?'fixed':'temp'}${a.shared?' shared':''}${list.length>2?' thin':''}" data-id="${a.id}" style="top:${j*k}%;height:${k}%"><b><span class="cd"></span>${p2(a.m)}</b><span>${esc(a.name)}</span></div>`).join('');
     q.setAttribute('aria-label',list.map(a=>`${p2(a.h)}:${p2(a.m)} ${a.name}`).join(', '))});
-  if(i%7===0){const h=now.getHours(),q=sqs[h];q.classList.add('now');
+  if(i===0){const h=now.getHours(),q=sqs[h];q.classList.add('now');
     if(!q.dataset.id)q.insertAdjacentHTML('beforeend',`<span class="nt"><b>${p2(h)}</b><b>${p2(now.getMinutes())}</b></span>`);
     q.insertAdjacentHTML('beforeend',`<i class="nb" style="width:${(now.getMinutes()+1)/60*100}%"></i>`)}
   Object.entries(drafts).forEach(([k,v])=>{const [dt,h]=k.split('|');if(dt!==ymd(d))return;const q=sqs[+h];if(!q||q.dataset.id)return;
@@ -113,17 +113,40 @@ function rebuild(){track.innerHTML='';days=[];base=day0(new Date());for(let k=0;
 rebuild();
 const yOf=(i,h)=>i*Lc.dayH+Lc.head+Math.floor(h/Lc.n)*Lc.row;
 sc.scrollTop=Math.max(0,yOf(0,new Date().getHours())-Math.round(PH*.3));
-sc.addEventListener('scroll',()=>{if(sc.scrollTop+PH>(days.length-2)*Lc.dayH)for(let k=0;k<7;k++)addDay()},{passive:true});
+sc.addEventListener('scroll',()=>{if(N!==8&&sc.scrollTop+PH>(days.length-2)*Lc.dayH)for(let k=0;k<7;k++)addDay()},{passive:true});
 // the day you are looking at stays named at the top; the next day's name pushes it out (snap)
 const stick=el('stick',ph);
 // a small i, top right: the page about ühr (not inside the landing page's own demo)
 if(!EMBED){const inf=el('info',ph,'a');inf.href='landing.html';inf.textContent='i';inf.setAttribute('aria-label','about ühr')}
 let stickI=-1;
-function upStick(){if(!days.length)return;const y=sc.scrollTop,i=Math.max(0,Math.min(days.length-1,Math.floor(y/Lc.dayH)));
-  if(i!==stickI){if(days[stickI])days[stickI].hd.style.visibility='';stickI=i;stick.innerHTML=days[i].hd.innerHTML;days[i].hd.style.visibility='hidden'}
+function upStick(){if(N===8&&months.length){const y=sc.scrollTop;let i=months.findIndex(m=>m.y+m.h>y);if(i<0)i=months.length-1;
+    if(i!==stickI){months.forEach(m=>m.hd.style.visibility='');days.forEach(D=>D.hd.style.visibility='');stickI=i;stick.innerHTML=months[i].hd.innerHTML;months[i].hd.style.visibility='hidden'}
+    stick.style.transform=`translateY(${Math.min(0,months[i].y+months[i].h-y-stick.offsetHeight)}px)`;return}
+  if(!days.length)return;const y=sc.scrollTop,i=Math.max(0,Math.min(days.length-1,Math.floor(y/Lc.dayH)));
+  if(i!==stickI){if(days[stickI])days[stickI].hd.style.visibility='';months.forEach(m=>m.hd.style.visibility='');stickI=i;stick.innerHTML=days[i].hd.innerHTML;days[i].hd.style.visibility='hidden'}
   const push=Math.min(0,(i+1)*Lc.dayH-y-stick.offsetHeight);stick.style.transform=`translateY(${push}px)`}
 sc.addEventListener('scroll',upStick,{passive:true});requestAnimationFrame(upStick);
 const sqAt=(i,h)=>days[i]&&days[i].sqs[h];
+// ---------- zoomed all the way out: the months. The same grid, but each square is a day; where the days' names stood, the months' names stand.
+// No dates. The red square is today; a day that holds a one-time or shared hour takes its colour. Zoom in (or tap a day) and you are inside that day.
+const MV=el('mtrack',sc);let months=[];
+function buildMonths(){MV.innerHTML='';months=[];const t=day0(new Date());let y=0;
+  for(let k=0;k<12;k++){const m0=new Date(t.getFullYear(),t.getMonth()+k,1),len=new Date(m0.getFullYear(),m0.getMonth()+1,0).getDate(),rows=Math.ceil(len/Lc.n),h=Lc.head+rows*Lc.row;
+    const me=el('day mon',MV);me.style.top=y+'px';me.style.height=h+'px';const hd=el('dh',me);hd.innerHTML=`<b class="dn">${MONTHS[m0.getMonth()]}</b>`;
+    for(let r=0;r<rows;r++){const b=el('band',me);b.style.top=Lc.head+r*Lc.row+'px';b.style.height=Lc.F+'px'}
+    for(let d=1;d<=len;d++){const date=new Date(m0.getFullYear(),m0.getMonth(),d),key=ymd(date),q=el('sq dq',me);q.dataset.date=key;
+      q.style.left=Lc.x((d-1)%Lc.n)+'px';q.style.top=Lc.head+Math.floor((d-1)/Lc.n)*Lc.row+'px';q.style.width=q.style.height=Lc.F+'px';
+      if(key===ymd(t))q.classList.add('now');else{const a=alarms.find(x=>!x.days.length&&x.date===key);if(a){q.classList.add('al','temp');if(a.shared)q.classList.add('shared')}}
+      if(date<t)q.classList.add('past');q.setAttribute('aria-label',DAYS[date.getDay()]+' '+d+' '+MONTHS[m0.getMonth()])}
+    months.push({m0,me,hd,y,h});y+=h}
+  MV.style.height=y+Lc.row+'px'}
+const dayIdx=key=>Math.max(0,Math.round((parse(key)-base)/864e5));
+// into a day from the months: the hour grid opens on that day (today: on this hour)
+function openDay(key,y){const i=dayIdx(key),h=i===0?new Date().getHours():8;N=4;Lc=lay();ph.classList.remove('months');layoutAll();while(i+1>=days.length)addDay();
+  sc.scrollTop=Math.max(0,yOf(i,h)-Math.round((y==null?PH*.32:y)));settleTo(sqAt(i,h),false);stickI=-1;upStick()}
+function settleTo(q,out){if(!q)return;const r=rel(q),k=out?1.06:.94,o={duration:reduce?1:Math.round(MOVE*.55),easing:EASE},t=N===8?MV:track;
+  t.style.transformOrigin=`${r.x+r.w/2}px ${r.y+r.h/2+sc.scrollTop}px`;t.animate([{transform:`scale(${k})`},{transform:'none'}],o);
+  vl.style.transformOrigin=`${r.x+r.w/2}px 0px`;vl.animate([{transform:`scaleX(${k})`},{transform:'none'}],o);buzz(8)}
 const indexOf=a=>{const now=new Date();if(!a.days.length)return Math.max(0,Math.round((parse(a.date)-base)/864e5));
   for(let i=0;i<8;i++){const d=addDays(base,i);if(a.days.includes(d.getDay())&&at(d,a.h,a.m)>now)return i}return 0};
 function reveal(i,h){while(i+1>=days.length)addDay();sc.scrollTop=Math.max(0,yOf(i,h)-Math.round(PH*.32))}
@@ -131,6 +154,13 @@ const nearby=()=>{const i0=Math.floor(sc.scrollTop/Lc.dayH);return days.slice(Ma
 
 // ---------- zoom: pinch between 2 · 4 · 8 squares a row; everything glides to its new place (flip) ----------
 function zoomTo(n,anchorY){if(n===N||busy())return;tipDone('pinch');
+  const ay0=anchorY==null?PH/2:anchorY;
+  if(n===8){ // out to the months: the day under the fingers keeps its place as a square of its month
+    const i=Math.max(0,Math.min(days.length-1,Math.floor((sc.scrollTop+ay0)/Lc.dayH))),key=ymd(days[i].d);N=8;Lc=lay();zclass();setVL();buildMonths();ph.classList.add('months');
+    const q=MV.querySelector(`.dq[data-date="${key}"]`)||MV.querySelector('.dq.now');sc.scrollTop=Math.max(0,parseFloat(q.parentNode.style.top)+parseFloat(q.style.top)-ay0+Lc.F/2);settleTo(q,true);stickI=-1;upStick();return}
+  if(N===8){ // in from the months: into the day under the fingers
+    const qs=[...MV.querySelectorAll('.dq')].map(q=>[q,rel(q)]).sort((a,b)=>Math.abs(a[1].y+a[1].h/2-ay0)-Math.abs(b[1].y+b[1].h/2-ay0));const key=qs.length?qs[0][0].dataset.date:ymd(new Date());
+    openDay(key<ymd(new Date())?ymd(new Date()):key,ay0);if(n===2)zoomTo(2,ay0);return}
   // the anchor hour: the one under the fingers (or the middle of the screen)
   const ay=anchorY==null?PH/2:anchorY;
   const anchor=nearby().flatMap(D=>D.sqs).map(q=>[q,rel(q)]).filter(([,r])=>r.y<=ay+r.h).sort((a,b)=>Math.abs(a[1].y+a[1].h/2-ay)-Math.abs(b[1].y+b[1].h/2-ay))[0];
@@ -149,10 +179,10 @@ const zoomStep=(dir,y)=>{const k=LEVELS.indexOf(N)+dir;if(k>=0&&k<LEVELS.length)
 let pz=null;const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
 const midP=t=>{const b=ph.getBoundingClientRect();return{x:((t[0].clientX+t[1].clientX)/2-b.left)/S,y:((t[0].clientY+t[1].clientY)/2-b.top)/S}};
 ph.addEventListener('touchstart',e=>{if(e.touches.length===2&&!ringing){pz={d:dist(e.touches),c:midP(e.touches),k:1};
-  if(!sh.classList.contains('on')){track.style.transformOrigin=`${pz.c.x}px ${pz.c.y+sc.scrollTop}px`;vl.style.transformOrigin=`${pz.c.x}px 0px`}}},{passive:true});
+  if(!sh.classList.contains('on')){(N===8?MV:track).style.transformOrigin=`${pz.c.x}px ${pz.c.y+sc.scrollTop}px`;vl.style.transformOrigin=`${pz.c.x}px 0px`}}},{passive:true});
 ph.addEventListener('touchmove',e=>{if(!pz||e.touches.length!==2)return;e.preventDefault();pz.k=dist(e.touches)/pz.d;
   if(sh.classList.contains('on')){if(pz.k<.75&&!pz.done){pz.done=true;closeSheet(null)}return}
-  const z=Math.max(.55,Math.min(1.8,pz.k));track.style.transform=`scale(${z})`;vl.style.transform=`scaleX(${z})`},{passive:false}); // the lines follow the fingers too
+  const z=Math.max(.55,Math.min(1.8,pz.k));(N===8?MV:track).style.transform=`scale(${z})`;vl.style.transform=`scaleX(${z})`},{passive:false}); // the lines follow the fingers too
 let pinchT=0; // a pinch must never end as a tap on the square under the fingers
 ph.addEventListener('touchend',e=>{if(!pz||e.touches.length>=2)return;const {k,c,done}=pz;pz=null;pinchT=Date.now();if(done||sh.classList.contains('on'))return;
   // pinch open past the largest squares = open that hour
@@ -161,8 +191,8 @@ ph.addEventListener('touchend',e=>{if(!pz||e.touches.length>=2)return;const {k,c
   const j=LEVELS.indexOf(N)+(k>1.18?-1:k<.85?1:0);
   if(j!==LEVELS.indexOf(N)&&j>=0&&j<LEVELS.length&&!busy())zoomTo(LEVELS[j],c.y);else unpinch()});
 ph.addEventListener('touchcancel',()=>{pz=null;unpinch()});
-function unpinch(){const t=track.style.transform,u=vl.style.transform;if(!t)return;track.style.transform='';vl.style.transform='';const o={duration:V('--snap')||180,easing:EASE};
-  track.animate([{transform:t},{transform:'none'}],o);if(u)vl.animate([{transform:u},{transform:'none'}],o)}
+function unpinch(){const g=N===8?MV:track,t=g.style.transform,u=vl.style.transform;if(!t)return;g.style.transform='';vl.style.transform='';const o={duration:V('--snap')||180,easing:EASE};
+  g.animate([{transform:t},{transform:'none'}],o);if(u)vl.animate([{transform:u},{transform:'none'}],o)}
 // the browser's own page zoom fights ours and breaks the proportions — keep it off
 ['gesturestart','gesturechange'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
 const client=p=>{const b=ph.getBoundingClientRect();return[b.left+p.x*S,b.top+p.y*S]};
@@ -410,11 +440,11 @@ bDel.addEventListener('click',()=>{const q=origin&&origin.closest('.sq');if(step
   if(draft&&draft.fromDraft&&!draft.edit){delete drafts[draft.key];saveDrafts();closeSheet(q,paintAll);return}
   if(draft&&draft.edit){const a=alarms.find(x=>x.id===draft.id);logEv('deleted',a);alarms=alarms.filter(x=>x.id!==draft.id);store();
     closeSheet(q,()=>{const g=origin.classList.contains('part')?origin:q;g.classList.add('vanish');setTimeout(paintAll,700)})}else closeSheet(q)});
-sc.addEventListener('click',e=>{if(lpFired){lpFired=false;return}if(Date.now()-pinchT<600)return;const q=e.target.closest('.sq');if(!q||busy())return;
+sc.addEventListener('click',e=>{if(lpFired){lpFired=false;return}if(Date.now()-pinchT<600)return;const q=e.target.closest('.sq');if(!q||busy())return;if(q.dataset.date){openDay(q.dataset.date<ymd(new Date())?ymd(new Date()):q.dataset.date);return}
   const pt=e.target.closest('.part'),id=pt?pt.dataset.id:q.dataset.id,i=+q.dataset.i,h=+q.dataset.h,a=id?alarms.find(x=>String(x.id)===id):null;openSheet(i,h,a,pt||q)});
 let lpT=null,lpFired=false;
 let lpX=0,lpY=0;const downs=new Set();
-sc.addEventListener('pointerdown',e=>{downs.add(e.pointerId);const q=e.target.closest('.sq');clearTimeout(lpT);if(!q||downs.size>1)return;lpX=e.clientX;lpY=e.clientY;
+sc.addEventListener('pointerdown',e=>{downs.add(e.pointerId);const q=e.target.closest('.sq');clearTimeout(lpT);if(!q||q.dataset.date||downs.size>1)return;lpX=e.clientX;lpY=e.clientY;
   lpT=setTimeout(()=>{if(busy()||pz)return;lpFired=true;buzz(20);openSheet(+q.dataset.i,+q.dataset.h,null,q)},550)});
 ['pointerup','pointercancel','pointerleave'].forEach(t=>sc.addEventListener(t,e=>{clearTimeout(lpT);downs.delete(e.pointerId)}));
 // a long press is one still finger: moving, or a second finger (a pinch), cancels it
@@ -453,7 +483,7 @@ addEventListener('pointerup',e=>{if(sy!=null&&ringing&&(sy-e.clientY)/S>PH*.2)st
 let lastMin=-1;
 setInterval(()=>{const n=new Date(),mk=n.getHours()*60+n.getMinutes();
   if(ymd(day0(n))!==ymd(base)&&!busy()){const y=sc.scrollTop;rebuild();sc.scrollTop=Math.max(0,y-Lc.dayH)}
-  if(mk!==lastMin){lastMin=mk;days.forEach((_,i)=>i%7===0&&paint(i))}
+  if(mk!==lastMin){lastMin=mk;paint(0);if(N===8)buildMonths()}
   if(ringing||EMBED)return;const key=ymd(n)+' '+mk;if(firedAt===key)return;
   const due=alarms.find(a=>a.h===n.getHours()&&a.m===n.getMinutes()&&((a.date===ymd(n)&&!a.days.length)||a.days.includes(n.getDay())));
   if(due){firedAt=key;ring(due)}},1000);
@@ -531,7 +561,7 @@ function tipTap(){if(seen('tap')){setTimeout(tipPinch,600);return}if(busy()){set
   while(sqAt(i,h)&&sqAt(i,h).dataset.id){h++;if(h>23){i++;h=0}}
   beck={i,h};const q=sqAt(i,h);q.classList.add('beckon');tipAt('tap','<b>tap an hour</b> to set an <span class="lg"><span class="u">u<i></i><i></i></span>hr</span>.',q)}
 function tipSwipe(){if(seen('swipe'))return;const t=el('tip swipe',sh);t.dataset.k='swipe';t.innerHTML='<i></i><b>swipe</b> to continue';}
-function tipPinch(){if(seen('pinch')||busy())return;const t=el('tip pinch',ph);t.dataset.k='pinch';t.innerHTML='<span class="pd"><i></i><i></i></span><span><b>two fingers</b><br>apart · bigger hours<br>together · the whole week</span>';
+function tipPinch(){if(seen('pinch')||busy())return;const t=el('tip pinch',ph);t.dataset.k='pinch';t.innerHTML='<span class="pd"><i></i><i></i></span><span><b>two fingers</b><br>apart · bigger hours<br>together · the months</span>';
   setTimeout(()=>{const off=()=>{removeEventListener('pointerdown',off,true);if(!tips.pinch){t.classList.add('out');setTimeout(()=>t.remove(),300)}};addEventListener('pointerdown',off,true)},600)}
 // ---------- who you are: asked once, kept on this phone, travels with what you share ----------
 const ME='uhr5me';let me='';try{me=localStorage.getItem(ME)||''}catch(e){}
@@ -546,7 +576,7 @@ function askName(then){if(me||EMBED){then&&then();return}
 if(FIRST){alarms=[];drafts={};store();paintAll();askName(()=>{startSplash();setTimeout(tipNow,reduce?400:SPLASHED)})}
 else if(!takeShared()&&!EMBED)setTimeout(()=>askName(tipNow),reduce?400:SPLASHED);
 
-addEventListener('resize',()=>{fit();if(!busy())layoutAll()});
+addEventListener('resize',()=>{fit();if(!busy()){layoutAll();if(N===8)buildMonths()}});
 // presenting + the live system page
 window.uhr={poster:(i=0)=>poster(alarms[i]).toDataURL('image/png'),posterOf:(o,opt)=>poster({date:ymd(new Date()),days:[],sound:'glass',...o},opt).toDataURL('image/png'),ring:()=>{const n=new Date(),a=alarms.slice().sort((x,y)=>(indexOf(x)*1440+x.h*60+x.m)-(indexOf(y)*1440+y.h*60+y.m))[0];
     ring(a?{...a,id:-1,h:n.getHours(),m:n.getMinutes()}:{id:-1,h:n.getHours(),m:n.getMinutes(),name:'ühr',sound:'rise',days:[]})},
