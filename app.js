@@ -177,7 +177,7 @@ function toMonths(ay0){if(mon||busy())return;tipDone('pinch');ay0=ay0==null?PH/2
 function fromMonths(ay0){if(!mon)return;ay0=ay0==null?PH/2:ay0;MV.style.transform='';vl.style.transform='';
   const qs=[...MV.querySelectorAll('.dq')].map(q=>[q,rel(q)]).sort((a,b)=>Math.abs(a[1].y+a[1].h/2-ay0)-Math.abs(b[1].y+b[1].h/2-ay0));const key=qs.length?qs[0][0].dataset.date:ymd(new Date());
   openDay(key<ymd(new Date())?ymd(new Date()):key,ay0)}
-const zoomStep=(dir,y)=>{if(mon){if(dir<0)fromMonths(y);return}if(N===8&&dir>0){toMonths(y);return}const k=LEVELS.indexOf(N)+dir;if(k>=0&&k<LEVELS.length)zoomTo(LEVELS[k],y)};
+const zoomStep=(dir,y)=>{const k=LEVELS.indexOf(N)+dir;if(k>=0&&k<LEVELS.length)zoomTo(LEVELS[k],y)};
 let pz=null;const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
 const midP=t=>{const b=ph.getBoundingClientRect();return{x:((t[0].clientX+t[1].clientX)/2-b.left)/S,y:((t[0].clientY+t[1].clientY)/2-b.top)/S}};
 ph.addEventListener('touchstart',e=>{if(e.touches.length===2&&!ringing){pz={d:dist(e.touches),c:midP(e.touches),k:1};
@@ -190,8 +190,6 @@ ph.addEventListener('touchend',e=>{if(!pz||e.touches.length>=2)return;const {k,c
   // pinch open past the largest squares = open that hour
   if(k>1.2&&N===2){track.style.transform='';const q=document.elementsFromPoint(...client(c)).find(n=>n.classList&&n.classList.contains('sq'));if(q)q.click();return}
   // zoom only when a level exists that way; otherwise the grid always glides back to its true size
-  if(mon){if(k>1.18&&!busy())fromMonths(c.y);else unpinch();return}
-  if(N===8&&k<.85&&!busy()){toMonths(c.y);return}
   const j=LEVELS.indexOf(N)+(k>1.18?-1:k<.85?1:0);
   if(j!==LEVELS.indexOf(N)&&j>=0&&j<LEVELS.length&&!busy())zoomTo(LEVELS[j],c.y);else unpinch()});
 ph.addEventListener('touchcancel',()=>{pz=null;unpinch()});
@@ -565,7 +563,7 @@ function tipTap(){if(seen('tap')){setTimeout(tipPinch,600);return}if(busy()){set
   while(sqAt(i,h)&&sqAt(i,h).dataset.id){h++;if(h>23){i++;h=0}}
   beck={i,h};const q=sqAt(i,h);q.classList.add('beckon');tipAt('tap','<b>tap an hour</b> to set an <span class="lg"><span class="u">u<i></i><i></i></span>hr</span>.',q)}
 function tipSwipe(){if(seen('swipe'))return;const t=el('tip swipe',sh);t.dataset.k='swipe';t.innerHTML='<i></i><b>swipe</b> to continue';}
-function tipPinch(){if(seen('pinch')||busy())return;const t=el('tip pinch',ph);t.dataset.k='pinch';t.innerHTML='<span class="pd"><i></i><i></i></span><span><b>two fingers</b><br>apart · bigger hours<br>together · the months</span>';
+function tipPinch(){if(seen('pinch')||busy())return;const t=el('tip pinch',ph);t.dataset.k='pinch';t.innerHTML='<span class="pd"><i></i><i></i></span><span><b>two fingers</b><br>apart · bigger hours<br>together · the whole week</span>';
   setTimeout(()=>{const off=()=>{removeEventListener('pointerdown',off,true);if(!tips.pinch){t.classList.add('out');setTimeout(()=>t.remove(),300)}};addEventListener('pointerdown',off,true)},600)}
 // ---------- who you are: asked once, kept on this phone, travels with what you share ----------
 const ME='uhr5me';let me='';try{me=localStorage.getItem(ME)||''}catch(e){}
@@ -586,7 +584,7 @@ window.uhr={poster:(i=0)=>poster(alarms[i]).toDataURL('image/png'),posterOf:(o,o
     ring(a?{...a,id:-1,h:n.getHours(),m:n.getMinutes()}:{id:-1,h:n.getHours(),m:n.getMinutes(),name:'ühr',sound:'rise',days:[]})},
   reset:()=>{alarms=sample();store();paintAll()},
   first:()=>{alarms=[];store();try{localStorage.removeItem(TIPS)}catch(e){}location.reload()},
-  zoom:n=>zoomTo(n),months:()=>toMonths(),
+  zoom:n=>zoomTo(n),
   relayout:()=>{MOVE=V('--move')||640;const y=sc.scrollTop/Lc.dayH;Lc=lay();layoutAll();sc.scrollTop=y*Lc.dayH}};
 if(location.hash==='#ring')setTimeout(()=>window.uhr.ring(),reduce?300:THICK+3200);
 })();
