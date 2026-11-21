@@ -88,7 +88,7 @@ function layoutDay(D,i){const de=D.de;de.style.top=i*Lc.dayH+'px';de.style.heigh
   D.sqs.forEach((q,h)=>{q.style.left=Lc.x(h%Lc.n)+'px';q.style.top=Lc.head+Math.floor(h/Lc.n)*Lc.row+'px';q.style.width=q.style.height=Lc.F+'px'})}
 function addDay(force){if(!force&&days.length>=9)return;const i=days.length,d=addDays(base,i),de=el('day',track);
   // the day's name on the left; a small date on the right, on the same baseline
-  const hd=el('dh',de);hd.innerHTML=`<b class="dn">${i===0?'today':DAYS[d.getDay()]}</b><small class="dt">${d.getDate()}.${d.getMonth()+1}</small>`;
+  const hd=el('dh',de);hd.innerHTML=`<b class="dn">${cap(i===0?'today':DAYS[d.getDay()])}</b><small class="dt">${d.getDate()}.${d.getMonth()+1}</small>`;
   const sqs=[];for(let h=0;h<24;h++){const q=el('sq',de);q.dataset.i=i;q.dataset.h=h;sqs.push(q)}
   const D={d,de,sqs,bands:[],hd};days.push(D);layoutDay(D,i);track.style.height=days.length*Lc.dayH+Lc.row+'px';paint(i)}
 function layoutAll(){ph.style.setProperty('--head-h',Lc.head+'px');days.forEach(layoutDay);track.style.height=days.length*Lc.dayH+Lc.row+'px';setVL();zclass();if(typeof upStick==='function')requestAnimationFrame(upStick)}
