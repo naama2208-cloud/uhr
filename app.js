@@ -71,7 +71,7 @@ fit();
 const rel=e=>{const a=e.getBoundingClientRect(),b=ph.getBoundingClientRect();return{x:(a.left-b.left)/S,y:(a.top-b.top)/S,w:a.width/S,h:a.height/S}};
 
 // ---------- layout: one rule for every zoom level, read from the tokens ----------
-const LEVELS=[2,4,8];let N=4;
+const LEVELS=[2,4,8];let N=8,mon=false; // home: zoomed out, today and 8 days on; past that, the months
 function lay(n=N){const M=V('--margin')||21,Gb=V('--gap')||24,g=n===8?Math.round(Gb/3):Gb,F=(W-2*M-(n-1)*g)/n,head=n===8?46:62,row=F+g;
   return{n,M,g,F,head,row,rows:24/n,dayH:head+24/n*row,x:c=>M+c*(F+g)}}
 let Lc=lay();
@@ -86,7 +86,7 @@ function layoutDay(D,i){const de=D.de;de.style.top=i*Lc.dayH+'px';de.style.heigh
   while(D.bands.length>Lc.rows)D.bands.pop().remove();while(D.bands.length<Lc.rows)D.bands.push(el('band',de));
   D.bands.forEach((b,r)=>{b.style.top=Lc.head+r*Lc.row+'px';b.style.height=Lc.F+'px'});
   D.sqs.forEach((q,h)=>{q.style.left=Lc.x(h%Lc.n)+'px';q.style.top=Lc.head+Math.floor(h/Lc.n)*Lc.row+'px';q.style.width=q.style.height=Lc.F+'px'})}
-function addDay(){const i=days.length,d=addDays(base,i),de=el('day',track);
+function addDay(force){if(!force&&days.length>=9)return;const i=days.length,d=addDays(base,i),de=el('day',track);
   // the day's name on the left; a small date on the right, on the same baseline
   const hd=el('dh',de);hd.innerHTML=`<b class="dn">${i===0?'today':DAYS[d.getDay()]}</b><small class="dt">${d.getDate()}.${d.getMonth()+1}</small>`;
   const sqs=[];for(let h=0;h<24;h++){const q=el('sq',de);q.dataset.i=i;q.dataset.h=h;sqs.push(q)}
@@ -109,17 +109,16 @@ function paint(i){const {d,sqs}=days[i],now=new Date();
   if(beck&&beck.i===i)sqs[beck.h].classList.add('beckon')}
 let beck=null;
 const paintAll=()=>days.forEach((_,i)=>paint(i));
-function rebuild(){track.innerHTML='';days=[];base=day0(new Date());for(let k=0;k<14;k++)addDay();setVL();zclass()}
+function rebuild(){track.innerHTML='';days=[];base=day0(new Date());for(let k=0;k<9;k++)addDay();setVL();zclass()}
 rebuild();
 const yOf=(i,h)=>i*Lc.dayH+Lc.head+Math.floor(h/Lc.n)*Lc.row;
 sc.scrollTop=Math.max(0,yOf(0,new Date().getHours())-Math.round(PH*.3));
-sc.addEventListener('scroll',()=>{if(N!==8&&sc.scrollTop+PH>(days.length-2)*Lc.dayH)for(let k=0;k<7;k++)addDay()},{passive:true});
 // the day you are looking at stays named at the top; the next day's name pushes it out (snap)
 const stick=el('stick',ph);
 // a small i, top right: the page about ühr (not inside the landing page's own demo)
 if(!EMBED){const inf=el('info',ph,'a');inf.href='landing.html';inf.textContent='i';inf.setAttribute('aria-label','about ühr')}
 let stickI=-1;
-function upStick(){if(N===8&&months.length){const y=sc.scrollTop;let i=months.findIndex(m=>m.y+m.h>y);if(i<0)i=months.length-1;
+function upStick(){if(mon&&months.length){const y=sc.scrollTop;let i=months.findIndex(m=>m.y+m.h>y);if(i<0)i=months.length-1;
     if(i!==stickI){months.forEach(m=>m.hd.style.visibility='');days.forEach(D=>D.hd.style.visibility='');stickI=i;stick.innerHTML=months[i].hd.innerHTML;months[i].hd.style.visibility='hidden'}
     stick.style.transform=`translateY(${Math.min(0,months[i].y+months[i].h-y-stick.offsetHeight)}px)`;return}
   if(!days.length)return;const y=sc.scrollTop,i=Math.max(0,Math.min(days.length-1,Math.floor(y/Lc.dayH)));
@@ -142,25 +141,20 @@ function buildMonths(){MV.innerHTML='';months=[];const t=day0(new Date());let y=
   MV.style.height=y+Lc.row+'px'}
 const dayIdx=key=>Math.max(0,Math.round((parse(key)-base)/864e5));
 // into a day from the months: the hour grid opens on that day (today: on this hour)
-function openDay(key,y){const i=dayIdx(key),h=i===0?new Date().getHours():8;N=4;Lc=lay();ph.classList.remove('months');layoutAll();while(i+1>=days.length)addDay();
+function openDay(key,y){const i=dayIdx(key),h=i===0?new Date().getHours():8;mon=false;MV.style.transform='';N=8;Lc=lay();ph.classList.remove('months');layoutAll();while(i+1>=days.length)addDay(true);
   sc.scrollTop=Math.max(0,yOf(i,h)-Math.round((y==null?PH*.32:y)));settleTo(sqAt(i,h),false);stickI=-1;upStick()}
-function settleTo(q,out){if(!q)return;const r=rel(q),k=out?1.06:.94,o={duration:reduce?1:Math.round(MOVE*.55),easing:EASE},t=N===8?MV:track;
+function settleTo(q,out){if(!q)return;const r=rel(q),k=out?1.06:.94,o={duration:reduce?1:Math.round(MOVE*.55),easing:EASE},t=mon?MV:track;
   t.style.transformOrigin=`${r.x+r.w/2}px ${r.y+r.h/2+sc.scrollTop}px`;t.animate([{transform:`scale(${k})`},{transform:'none'}],o);
   vl.style.transformOrigin=`${r.x+r.w/2}px 0px`;vl.animate([{transform:`scaleX(${k})`},{transform:'none'}],o);buzz(8)}
 const indexOf=a=>{const now=new Date();if(!a.days.length)return Math.max(0,Math.round((parse(a.date)-base)/864e5));
-  for(let i=0;i<8;i++){const d=addDays(base,i);if(a.days.includes(d.getDay())&&at(d,a.h,a.m)>now)return i}return 0};
-function reveal(i,h){while(i+1>=days.length)addDay();sc.scrollTop=Math.max(0,yOf(i,h)-Math.round(PH*.32))}
+  for(let i=0;i<9;i++){const d=addDays(base,i);if(a.days.includes(d.getDay())&&at(d,a.h,a.m)>now)return i}return 0};
+function reveal(i,h){while(i+1>=days.length)addDay(true);sc.scrollTop=Math.max(0,yOf(i,h)-Math.round(PH*.32))}
 const nearby=()=>{const i0=Math.floor(sc.scrollTop/Lc.dayH);return days.slice(Math.max(0,i0-1),i0+3)};
 
 // ---------- zoom: pinch between 2 · 4 · 8 squares a row; everything glides to its new place (flip) ----------
 function zoomTo(n,anchorY){if(n===N||busy())return;tipDone('pinch');
   const ay0=anchorY==null?PH/2:anchorY;
-  if(n===8){ // out to the months: the day under the fingers keeps its place as a square of its month
-    const i=Math.max(0,Math.min(days.length-1,Math.floor((sc.scrollTop+ay0)/Lc.dayH))),key=ymd(days[i].d);N=8;Lc=lay();zclass();setVL();buildMonths();ph.classList.add('months');
-    const q=MV.querySelector(`.dq[data-date="${key}"]`)||MV.querySelector('.dq.now');sc.scrollTop=Math.max(0,parseFloat(q.parentNode.style.top)+parseFloat(q.style.top)-ay0+Lc.F/2);settleTo(q,true);stickI=-1;upStick();return}
-  if(N===8){ // in from the months: into the day under the fingers
-    const qs=[...MV.querySelectorAll('.dq')].map(q=>[q,rel(q)]).sort((a,b)=>Math.abs(a[1].y+a[1].h/2-ay0)-Math.abs(b[1].y+b[1].h/2-ay0));const key=qs.length?qs[0][0].dataset.date:ymd(new Date());
-    openDay(key<ymd(new Date())?ymd(new Date()):key,ay0);if(n===2)zoomTo(2,ay0);return}
+  if(mon){fromMonths(ay0);if(n!==8)zoomTo(n,ay0);return}
   // the anchor hour: the one under the fingers (or the middle of the screen)
   const ay=anchorY==null?PH/2:anchorY;
   const anchor=nearby().flatMap(D=>D.sqs).map(q=>[q,rel(q)]).filter(([,r])=>r.y<=ay+r.h).sort((a,b)=>Math.abs(a[1].y+a[1].h/2-ay)-Math.abs(b[1].y+b[1].h/2-ay))[0];
@@ -175,23 +169,33 @@ function zoomTo(n,anchorY){if(n===N||busy())return;tipDone('pinch');
   vl.style.transformOrigin=`${r1.x+r1.w/2}px 0px`;
   vl.animate([{transform:`scaleX(${k})`},{transform:'none'}],o);
   buzz(8)}
-const zoomStep=(dir,y)=>{const k=LEVELS.indexOf(N)+dir;if(k>=0&&k<LEVELS.length)zoomTo(LEVELS[k],y)};
+// out to the months: the day under the fingers keeps its place as a square of its month
+function toMonths(ay0){if(mon||busy())return;tipDone('pinch');ay0=ay0==null?PH/2:ay0;track.style.transform='';vl.style.transform='';
+  const i=Math.max(0,Math.min(days.length-1,Math.floor((sc.scrollTop+ay0)/Lc.dayH))),key=ymd(days[i].d);mon=true;buildMonths();ph.classList.add('months');
+  const q=MV.querySelector(`.dq[data-date="${key}"]`)||MV.querySelector('.dq.now');sc.scrollTop=Math.max(0,parseFloat(q.parentNode.style.top)+parseFloat(q.style.top)-ay0+Lc.F/2);settleTo(q,true);stickI=-1;upStick()}
+// in from the months: into the day under the fingers (the 9 days, zoomed out)
+function fromMonths(ay0){if(!mon)return;ay0=ay0==null?PH/2:ay0;MV.style.transform='';vl.style.transform='';
+  const qs=[...MV.querySelectorAll('.dq')].map(q=>[q,rel(q)]).sort((a,b)=>Math.abs(a[1].y+a[1].h/2-ay0)-Math.abs(b[1].y+b[1].h/2-ay0));const key=qs.length?qs[0][0].dataset.date:ymd(new Date());
+  openDay(key<ymd(new Date())?ymd(new Date()):key,ay0)}
+const zoomStep=(dir,y)=>{if(mon){if(dir<0)fromMonths(y);return}if(N===8&&dir>0){toMonths(y);return}const k=LEVELS.indexOf(N)+dir;if(k>=0&&k<LEVELS.length)zoomTo(LEVELS[k],y)};
 let pz=null;const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
 const midP=t=>{const b=ph.getBoundingClientRect();return{x:((t[0].clientX+t[1].clientX)/2-b.left)/S,y:((t[0].clientY+t[1].clientY)/2-b.top)/S}};
 ph.addEventListener('touchstart',e=>{if(e.touches.length===2&&!ringing){pz={d:dist(e.touches),c:midP(e.touches),k:1};
-  if(!sh.classList.contains('on')){(N===8?MV:track).style.transformOrigin=`${pz.c.x}px ${pz.c.y+sc.scrollTop}px`;vl.style.transformOrigin=`${pz.c.x}px 0px`}}},{passive:true});
+  if(!sh.classList.contains('on')){(mon?MV:track).style.transformOrigin=`${pz.c.x}px ${pz.c.y+sc.scrollTop}px`;vl.style.transformOrigin=`${pz.c.x}px 0px`}}},{passive:true});
 ph.addEventListener('touchmove',e=>{if(!pz||e.touches.length!==2)return;e.preventDefault();pz.k=dist(e.touches)/pz.d;
   if(sh.classList.contains('on')){if(pz.k<.75&&!pz.done){pz.done=true;closeSheet(null)}return}
-  const z=Math.max(.55,Math.min(1.8,pz.k));(N===8?MV:track).style.transform=`scale(${z})`;vl.style.transform=`scaleX(${z})`},{passive:false}); // the lines follow the fingers too
+  const z=Math.max(.55,Math.min(1.8,pz.k));(mon?MV:track).style.transform=`scale(${z})`;vl.style.transform=`scaleX(${z})`},{passive:false}); // the lines follow the fingers too
 let pinchT=0; // a pinch must never end as a tap on the square under the fingers
 ph.addEventListener('touchend',e=>{if(!pz||e.touches.length>=2)return;const {k,c,done}=pz;pz=null;pinchT=Date.now();if(done||sh.classList.contains('on'))return;
   // pinch open past the largest squares = open that hour
   if(k>1.2&&N===2){track.style.transform='';const q=document.elementsFromPoint(...client(c)).find(n=>n.classList&&n.classList.contains('sq'));if(q)q.click();return}
   // zoom only when a level exists that way; otherwise the grid always glides back to its true size
+  if(mon){if(k>1.18&&!busy())fromMonths(c.y);else unpinch();return}
+  if(N===8&&k<.85&&!busy()){toMonths(c.y);return}
   const j=LEVELS.indexOf(N)+(k>1.18?-1:k<.85?1:0);
   if(j!==LEVELS.indexOf(N)&&j>=0&&j<LEVELS.length&&!busy())zoomTo(LEVELS[j],c.y);else unpinch()});
 ph.addEventListener('touchcancel',()=>{pz=null;unpinch()});
-function unpinch(){const g=N===8?MV:track,t=g.style.transform,u=vl.style.transform;if(!t)return;g.style.transform='';vl.style.transform='';const o={duration:V('--snap')||180,easing:EASE};
+function unpinch(){const g=mon?MV:track,t=g.style.transform,u=vl.style.transform;if(!t)return;g.style.transform='';vl.style.transform='';const o={duration:V('--snap')||180,easing:EASE};
   g.animate([{transform:t},{transform:'none'}],o);if(u)vl.animate([{transform:u},{transform:'none'}],o)}
 // the browser's own page zoom fights ours and breaks the proportions — keep it off
 ['gesturestart','gesturechange'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault(),{passive:false}));
@@ -483,7 +487,7 @@ addEventListener('pointerup',e=>{if(sy!=null&&ringing&&(sy-e.clientY)/S>PH*.2)st
 let lastMin=-1;
 setInterval(()=>{const n=new Date(),mk=n.getHours()*60+n.getMinutes();
   if(ymd(day0(n))!==ymd(base)&&!busy()){const y=sc.scrollTop;rebuild();sc.scrollTop=Math.max(0,y-Lc.dayH)}
-  if(mk!==lastMin){lastMin=mk;paint(0);if(N===8)buildMonths()}
+  if(mk!==lastMin){lastMin=mk;paint(0);if(mon)buildMonths()}
   if(ringing||EMBED)return;const key=ymd(n)+' '+mk;if(firedAt===key)return;
   const due=alarms.find(a=>a.h===n.getHours()&&a.m===n.getMinutes()&&((a.date===ymd(n)&&!a.days.length)||a.days.includes(n.getDay())));
   if(due){firedAt=key;ring(due)}},1000);
@@ -576,13 +580,13 @@ function askName(then){if(me||EMBED){then&&then();return}
 if(FIRST){alarms=[];drafts={};store();paintAll();askName(()=>{startSplash();setTimeout(tipNow,reduce?400:SPLASHED)})}
 else if(!takeShared()&&!EMBED)setTimeout(()=>askName(tipNow),reduce?400:SPLASHED);
 
-addEventListener('resize',()=>{fit();if(!busy()){layoutAll();if(N===8)buildMonths()}});
+addEventListener('resize',()=>{fit();if(!busy()){layoutAll();if(mon)buildMonths()}});
 // presenting + the live system page
 window.uhr={poster:(i=0)=>poster(alarms[i]).toDataURL('image/png'),posterOf:(o,opt)=>poster({date:ymd(new Date()),days:[],sound:'glass',...o},opt).toDataURL('image/png'),ring:()=>{const n=new Date(),a=alarms.slice().sort((x,y)=>(indexOf(x)*1440+x.h*60+x.m)-(indexOf(y)*1440+y.h*60+y.m))[0];
     ring(a?{...a,id:-1,h:n.getHours(),m:n.getMinutes()}:{id:-1,h:n.getHours(),m:n.getMinutes(),name:'ühr',sound:'rise',days:[]})},
   reset:()=>{alarms=sample();store();paintAll()},
   first:()=>{alarms=[];store();try{localStorage.removeItem(TIPS)}catch(e){}location.reload()},
-  zoom:n=>zoomTo(n),
+  zoom:n=>zoomTo(n),months:()=>toMonths(),
   relayout:()=>{MOVE=V('--move')||640;const y=sc.scrollTop/Lc.dayH;Lc=lay();layoutAll();sc.scrollTop=y*Lc.dayH}};
 if(location.hash==='#ring')setTimeout(()=>window.uhr.ring(),reduce?300:THICK+3200);
 })();
