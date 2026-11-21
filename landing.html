@@ -38,8 +38,8 @@ header .lg{font-size:32px}
 .hero{min-height:100vh;align-content:start;padding-top:6vh}
 .hero .big{grid-column:1/3;font-size:calc((2 * var(--C) + var(--gap)) / 2.457);line-height:.8;margin-top:5vh;margin-left:-.032em}
 /* a day on the grid: 24 squares, eight across, touching. pass over one and it takes a colour of the app (cut, no fade) */
-.field{grid-column:1/-1;display:grid;grid-template-columns:repeat(8,1fr);margin-top:4vh;--fl:color-mix(in srgb,var(--line) 55%,transparent);box-shadow:inset 1px 1px 0 var(--fl)}
-.field i{aspect-ratio:1;display:block;box-shadow:inset -1px -1px 0 var(--fl);touch-action:manipulation}
+.field{grid-column:1/-1;display:grid;grid-template-columns:repeat(8,1fr);margin-top:4vh}
+.field i{aspect-ratio:1;display:block;touch-action:manipulation}
 .field i.f-r{background:var(--red)}.field i.f-b{background:var(--blue)}.field i.f-y{background:var(--yellow)}.field i.f-k{background:var(--ink)} /* the logo's ink spans the four columns exactly: first stem on the first line, the r's end on the last */
 .hero p{grid-column:1/3;font-size:20px;line-height:1.35;margin-top:8vh;max-width:22em}
 .hero .acts{grid-column:1/3;display:flex;gap:var(--gap);margin-top:30px}
@@ -280,7 +280,9 @@ footer{padding:16px 0 28px;font-size:13px;display:flex;justify-content:space-bet
   f.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')hit(document.elementFromPoint(e.clientX,e.clientY)?.closest('.field i'))});
   f.addEventListener('pointerdown',e=>hit(e.target.closest('i')));
   // the hour that is now is red to begin with
-  const n=f.children[new Date().getHours()];if(n)n.className='on f-r';
+  const n=f.children[new Date().getHours()];if(n)n.className='f-r';
+  // a phone has no hover: the squares light and go out by themselves
+  if(matchMedia('(hover:none)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches){const Q=[...f.children];setInterval(()=>{if(document.hidden)return;hit(Q[Math.random()*Q.length|0])},420)}
 })();
 
 requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.add('ready')));
