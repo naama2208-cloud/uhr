@@ -71,7 +71,7 @@ fit();
 const rel=e=>{const a=e.getBoundingClientRect(),b=ph.getBoundingClientRect();return{x:(a.left-b.left)/S,y:(a.top-b.top)/S,w:a.width/S,h:a.height/S}};
 
 // ---------- layout: one rule for every zoom level, read from the tokens ----------
-const LEVELS=[2,4,8];let N=8,mon=false; // home: zoomed out, today and 8 days on; past that, the months
+const LEVELS=[2,4,8];let N=4,mon=false; // home: today's 24 squares; the days go on as you scroll
 function lay(n=N){const M=V('--margin')||21,Gb=V('--gap')||24,g=n===8?Math.round(Gb/3):Gb,F=(W-2*M-(n-1)*g)/n,head=n===8?46:62,row=F+g;
   return{n,M,g,F,head,row,rows:24/n,dayH:head+24/n*row,x:c=>M+c*(F+g)}}
 let Lc=lay();
@@ -86,7 +86,7 @@ function layoutDay(D,i){const de=D.de;de.style.top=i*Lc.dayH+'px';de.style.heigh
   while(D.bands.length>Lc.rows)D.bands.pop().remove();while(D.bands.length<Lc.rows)D.bands.push(el('band',de));
   D.bands.forEach((b,r)=>{b.style.top=Lc.head+r*Lc.row+'px';b.style.height=Lc.F+'px'});
   D.sqs.forEach((q,h)=>{q.style.left=Lc.x(h%Lc.n)+'px';q.style.top=Lc.head+Math.floor(h/Lc.n)*Lc.row+'px';q.style.width=q.style.height=Lc.F+'px'})}
-function addDay(force){if(!force&&days.length>=9)return;const i=days.length,d=addDays(base,i),de=el('day',track);
+function addDay(){const i=days.length,d=addDays(base,i),de=el('day',track);
   // the day's name on the left; a small date on the right, on the same baseline
   const hd=el('dh',de);hd.innerHTML=`<b class="dn">${cap(i===0?'today':DAYS[d.getDay()])}</b><small class="dt">${d.getDate()}.${d.getMonth()+1}</small>`;
   const sqs=[];for(let h=0;h<24;h++){const q=el('sq',de);q.dataset.i=i;q.dataset.h=h;sqs.push(q)}
@@ -109,10 +109,11 @@ function paint(i){const {d,sqs}=days[i],now=new Date();
   if(beck&&beck.i===i)sqs[beck.h].classList.add('beckon')}
 let beck=null;
 const paintAll=()=>days.forEach((_,i)=>paint(i));
-function rebuild(){track.innerHTML='';days=[];base=day0(new Date());for(let k=0;k<9;k++)addDay();setVL();zclass()}
+function rebuild(){track.innerHTML='';days=[];base=day0(new Date());for(let k=0;k<14;k++)addDay();setVL();zclass()}
 rebuild();
 const yOf=(i,h)=>i*Lc.dayH+Lc.head+Math.floor(h/Lc.n)*Lc.row;
-sc.scrollTop=Math.max(0,yOf(0,new Date().getHours())-Math.round(PH*.3));
+sc.scrollTop=0; // open on the whole of today
+sc.addEventListener('scroll',()=>{if(sc.scrollTop+PH*2>days.length*Lc.dayH)for(let k=0;k<7;k++)addDay()},{passive:true});
 // the day you are looking at stays named at the top; the next day's name pushes it out (snap)
 const stick=el('stick',ph);
 // a small i, top right: the page about ühr (not inside the landing page's own demo)
@@ -141,14 +142,14 @@ function buildMonths(){MV.innerHTML='';months=[];const t=day0(new Date());let y=
   MV.style.height=y+Lc.row+'px'}
 const dayIdx=key=>Math.max(0,Math.round((parse(key)-base)/864e5));
 // into a day from the months: the hour grid opens on that day (today: on this hour)
-function openDay(key,y){const i=dayIdx(key),h=i===0?new Date().getHours():8;mon=false;MV.style.transform='';N=8;Lc=lay();ph.classList.remove('months');layoutAll();while(i+1>=days.length)addDay(true);
+function openDay(key,y){const i=dayIdx(key),h=i===0?new Date().getHours():8;mon=false;MV.style.transform='';N=8;Lc=lay();ph.classList.remove('months');layoutAll();while(i+1>=days.length)addDay();
   sc.scrollTop=Math.max(0,yOf(i,h)-Math.round((y==null?PH*.32:y)));settleTo(sqAt(i,h),false);stickI=-1;upStick()}
 function settleTo(q,out){if(!q)return;const r=rel(q),k=out?1.06:.94,o={duration:reduce?1:Math.round(MOVE*.55),easing:EASE},t=mon?MV:track;
   t.style.transformOrigin=`${r.x+r.w/2}px ${r.y+r.h/2+sc.scrollTop}px`;t.animate([{transform:`scale(${k})`},{transform:'none'}],o);
   vl.style.transformOrigin=`${r.x+r.w/2}px 0px`;vl.animate([{transform:`scaleX(${k})`},{transform:'none'}],o);buzz(8)}
 const indexOf=a=>{const now=new Date();if(!a.days.length)return Math.max(0,Math.round((parse(a.date)-base)/864e5));
   for(let i=0;i<9;i++){const d=addDays(base,i);if(a.days.includes(d.getDay())&&at(d,a.h,a.m)>now)return i}return 0};
-function reveal(i,h){while(i+1>=days.length)addDay(true);sc.scrollTop=Math.max(0,yOf(i,h)-Math.round(PH*.32))}
+function reveal(i,h){while(i+1>=days.length)addDay();sc.scrollTop=Math.max(0,yOf(i,h)-Math.round(PH*.32))}
 const nearby=()=>{const i0=Math.floor(sc.scrollTop/Lc.dayH);return days.slice(Math.max(0,i0-1),i0+3)};
 
 // ---------- zoom: pinch between 2 · 4 · 8 squares a row; everything glides to its new place (flip) ----------
