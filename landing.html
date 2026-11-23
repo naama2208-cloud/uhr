@@ -4,7 +4,7 @@
 <meta name="description" content="ühr is an alarm clock built on a grid: every square is an hour of your week.">
 <meta name="theme-color" content="#E6E4DB">
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ühr">
-<link rel="icon" href="icon-192.png"><link rel="stylesheet" href="under.css"><link rel="stylesheet" href="tokens.css?v=11.20">
+<link rel="icon" href="icon-192.png"><link rel="stylesheet" href="under.css"><link rel="stylesheet" href="tokens.css?v=11.21">
 <style>
 /* the landing page, made of the app's own language: four columns, red hairlines, Helvetica and under.
    motion only stretches or cuts — lines grow from an edge, type is uncovered from the left, squares stretch. nothing fades. */
@@ -152,6 +152,7 @@ footer{padding:16px 0 28px;font-size:13px;display:flex;justify-content:space-bet
   section{padding-bottom:10vh}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.insp .ip{grid-column:1/-1;max-width:34em;font-size:clamp(17px,1.6vw,22px);line-height:1.35;margin:0 0 4vh}.insp img{grid-column:1/-1;width:100%;height:auto;display:block}
 </style></head>
 <body>
 <main><div class="wrap">
@@ -189,10 +190,18 @@ footer{padding:16px 0 28px;font-size:13px;display:flex;justify-content:space-bet
   <div class="phone" aria-label="ühr, live, in an iPhone"><div class="body"><i style="left:-4px;top:150px;height:34px"></i><i style="left:-4px;top:215px;height:62px"></i><i style="left:-4px;top:290px;height:62px"></i><i style="right:-4px;top:250px;height:100px"></i><div class="scr"><div class="isl"></div><div class="sb"><span id="clk">9:41</span><span class="bat"><b></b></span></div><iframe src="./?embed" title="ühr — live demo" loading="lazy"></iframe></div></div></div>
 </section>
 
+<!-- inspiration -->
+<section class="insp g">
+  <div class="rule" style="grid-column:1/-1"></div>
+  <div class="k"><b>02</b>inspiration</div>
+  <p class="ip un">josef müller-brockmann. one shape returns, and each time one thing in it changes — measured, in one direction. his book <i>grid systems in graphic design</i> (1981) is the grid ühr is built on: every hour a square, every square in its place.</p>
+  <img class="un" src="site/mb-works.jpg" alt="posters by josef müller-brockmann for musica viva, tonhalle zürich" loading="lazy">
+</section>
+
 <!-- 4 — type -->
 <section class="type g">
   <div class="rule" style="grid-column:1/-1"></div>
-  <div class="k"><b>02</b>two typefaces</div>
+  <div class="k"><b>03</b>two typefaces</div>
   <div class="spec un">
     <div class="gl"><small>u</small><span>u</span></div><div class="gl"><small>h</small><span>h</span></div><div class="gl"><small>r</small><span>r</span></div>
     <div class="gl"><small>0</small><span>0</span></div><div class="gl"><small>1</small><span>1</span></div><div class="gl"><small>7</small><span>7</span></div><div class="gl"><small>:</small><span>:</span></div>
@@ -211,7 +220,7 @@ footer{padding:16px 0 28px;font-size:13px;display:flex;justify-content:space-bet
 <!-- 5 — four colours -->
 <section class="col g">
   <div class="rule" style="grid-column:1/-1"></div>
-  <div class="k"><b>03</b>four colours, four meanings</div>
+  <div class="k"><b>04</b>four colours, four meanings</div>
   <div class="f nw un"><div class="sq"><span>08<br>58</span><em>red — #D50023<br>the hour you are in</em></div><h3>red — now</h3><p>the hour you are in.</p></div>
   <div class="f on un" style="--d:80ms"><div class="sq"><span>17<br>00</span><em>blue — #0052B5<br>one time only</em></div><h3>blue — once</h3><p>the hours that happen one time.</p></div>
   <div class="f fx un" style="--d:160ms"><div class="sq"><span>09<br>00</span><em>black — #20201E<br>every week</em></div><h3>black — every week</h3><p>the hours that come back.</p></div>
@@ -221,7 +230,7 @@ footer{padding:16px 0 28px;font-size:13px;display:flex;justify-content:space-bet
 <!-- 6 — the grid -->
 <section class="grid g">
   <div class="rule" style="grid-column:1/-1"></div>
-  <div class="k"><b>04</b>the grid — after josef müller-brockmann</div>
+  <div class="k"><b>05</b>the grid — after josef müller-brockmann</div>
   <div class="cells un">
     <div class="c" style="--cc:var(--ink)"><span>00<br>00</span></div><div class="c" style="--cc:var(--ink)"><span>01<br>00</span></div><div class="c" style="--cc:var(--ink)"><span>02<br>00</span></div><div class="c" style="--cc:var(--ink)"><span>03<br>00</span></div>
     <div class="c" style="--cc:var(--ink)"><span>04<br>00</span></div><div class="c" style="--cc:var(--blue)"><span>05<br>00</span></div><div class="c" style="--cc:var(--ink)"><span>06<br>00</span></div><div class="c" style="--cc:var(--red)"><span>07<br>00</span></div>
@@ -237,7 +246,7 @@ footer{padding:16px 0 28px;font-size:13px;display:flex;justify-content:space-bet
 <!-- 7 — posters -->
 <section class="posters g">
   <div class="rule" style="grid-column:1/-1"></div>
-  <div class="k"><b>05</b>an hour, as a poster</div>
+  <div class="k"><b>06</b>an hour, as a poster</div>
   <figure class="p un"><video src="site/uhr-screen-training.mp4" poster="site/uhr-screen-training.jpg" muted playsinline preload="metadata"></video><figcaption>Training — once, blue</figcaption></figure>
   <figure class="p un" style="--d:80ms"><video src="site/uhr-screen-coffee.mp4" poster="site/uhr-screen-coffee.jpg" muted playsinline preload="metadata"></video><figcaption>Coffee with Noa — shared, yellow</figcaption></figure>
   <figure class="p un" style="--d:160ms"><video src="site/uhr-screen-submission.mp4" poster="site/uhr-screen-submission.jpg" muted playsinline preload="metadata"></video><figcaption>Submission — now, red</figcaption></figure>
@@ -247,7 +256,7 @@ footer{padding:16px 0 28px;font-size:13px;display:flex;justify-content:space-bet
 <!-- 8 — to wear -->
 <section class="wear g">
   <div class="rule" style="grid-column:1/-1"></div>
-  <div class="k"><b>06</b>to wear</div>
+  <div class="k"><b>07</b>to wear</div>
   <figure class="un"><div class="w"><img src="site/wear-woman.jpg" alt="a white t-shirt with the ühr logo on the chest"></div><figcaption>t-shirt</figcaption></figure>
   <figure class="un" style="--d:80ms"><div class="w"><img src="site/wear-cap.jpg" alt="a white cap with the ühr logo"></div><figcaption>cap</figcaption></figure>
   <figure class="un" style="--d:160ms"><div class="w"><img src="site/wear-label.jpg" alt="a black woven label with the ühr logo on the hem"></div><figcaption>label on the hem</figcaption></figure>
@@ -257,7 +266,7 @@ footer{padding:16px 0 28px;font-size:13px;display:flex;justify-content:space-bet
 <!-- 9 — download: a real install — the browser's own install on android and computers, the share sheet on the iPhone -->
 <section class="dl g" id="download">
   <div class="rule" style="grid-column:1/-1"></div>
-  <div class="k"><b>07</b>download</div>
+  <div class="k"><b>08</b>download</div>
   <h2 class="un">free.<br>on your phone.</h2>
   <p class="un" id="dlp"><span class="lg"><span class="u">u<i></i><i></i></span>hr</span> installs from the browser, like an app — on your home screen, full screen, and it opens without a connection.</p>
   <div class="acts un"><button class="btn go" id="inst" type="button" hidden><span>install <span class="lg"><span class="u">u<i></i><i></i></span>hr</span></span></button><a class="btn" href="./" id="openapp"><span>open <span class="lg"><span class="u">u<i></i><i></i></span>hr</span></span></a></div>

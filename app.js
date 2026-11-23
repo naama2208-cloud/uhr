@@ -490,6 +490,14 @@ setInterval(()=>{const n=new Date(),mk=n.getHours()*60+n.getMinutes();
   if(ringing||EMBED)return;const key=ymd(n)+' '+mk;if(firedAt===key)return;
   const due=alarms.find(a=>a.h===n.getHours()&&a.m===n.getMinutes()&&((a.date===ymd(n)&&!a.days.length)||a.days.includes(n.getDay())));
   if(due){firedAt=key;ring(due)}},1000);
+// so the ring really rings: unlock sound on the first touch, keep the screen awake while ühr is open,
+// and if the phone slept through an hour (up to 15 min ago), ring it the moment ühr is back
+addEventListener('pointerdown',function un(){const c=ctx();if(c){const b=c.createBuffer(1,1,22050),s=c.createBufferSource();s.buffer=b;s.connect(c.destination);s.start(0)}removeEventListener('pointerdown',un,true)},true);
+let wl=null;const wake=async()=>{try{if('wakeLock' in navigator&&document.visibilityState==='visible'&&!wl){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>wl=null)}}catch(e){}};
+wake();addEventListener('pointerdown',wake);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;wake();ctx();if(ringing||EMBED)return;const n=new Date();
+  for(let back=1;back<=15;back++){const t=new Date(n-back*60000),mk=t.getHours()*60+t.getMinutes(),key=ymd(t)+' '+mk;if(firedAt===key)break;
+    const due=alarms.find(a=>a.h===t.getHours()&&a.m===t.getMinutes()&&((a.date===ymd(t)&&!a.days.length)||a.days.includes(t.getDay())));if(due){firedAt=key;ring(due);break}}});
 
 // ---------- splash: ühr (under) breathes thin → black; then now falls into its own square and the grid draws itself ----------
 // the two dots of the ü sit over the u's two stems, whatever the weight (measured on under: weight → stem centres, in em)
